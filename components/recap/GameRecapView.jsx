@@ -14,7 +14,7 @@ export default function GameRecapView({ game, onBack }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-4xl mx-auto"
+      className="w-full px-4 md:px-8 lg:px-12"
     >
       {/* Header */}
       <div className="mb-8">
@@ -27,49 +27,57 @@ export default function GameRecapView({ game, onBack }) {
           Back to Games
         </Button>
 
-        <div className="bg-gradient-to-r from-red-600 to-blue-600 text-white rounded-xl p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Badge
-              variant="secondary"
-              className="bg-white/20 text-white border-white/30"
-            >
-              <Clock className="w-3 h-3 mr-1" />
-              {format(new Date(game.date), "MMMM d, yyyy")}
-            </Badge>
-            <Badge
-              variant="secondary"
-              className="bg-white/20 text-white border-white/30"
-            >
-              <Trophy className="w-3 h-3 mr-1" />
-              Final
-            </Badge>
+        {/* Responsive Header + Image Layout */}
+        <div className="bg-gradient-to-r from-red-600 to-blue-600 text-white rounded-xl overflow-hidden mb-8">
+          <div className="flex flex-col lg:flex-row">
+            {/* Header Content */}
+            <div className="flex-1 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <Badge
+                  variant="secondary"
+                  className="bg-white/20 text-white border-white/30"
+                >
+                  <Clock className="w-3 h-3 mr-1" />
+                  {format(new Date(game.date), "MMMM d, yyyy")}
+                </Badge>
+                <Badge
+                  variant="secondary"
+                  className="bg-white/20 text-white border-white/30"
+                >
+                  <Trophy className="w-3 h-3 mr-1" />
+                  Final
+                </Badge>
+              </div>
+
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">
+                {game.title}
+              </h1>
+              <div className="text-xl font-semibold opacity-90">
+                {finalScore}
+              </div>
+            </div>
+
+            {/* Image - Desktop: Right side, Mobile: Below */}
+            {game.image_url && (
+              <div className="lg:w-1/2 lg:max-w-md lg:min-h-[200px]">
+                <img
+                  src={game.image_url}
+                  alt={game.title}
+                  className="w-full h-auto min-h-[120px] max-h-60 lg:h-full lg:max-h-none lg:min-h-[200px] object-cover"
+                  onError={(e) => {
+                    e.target.parentNode.style.display = "none";
+                  }}
+                />
+              </div>
+            )}
           </div>
-
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">{game.title}</h1>
-
-          <div className="text-xl font-semibold opacity-90">{finalScore}</div>
         </div>
       </div>
-
-      {/* Game Image */}
-      {game.image_url && (
-        <div className="mb-8">
-          <img
-            src={game.image_url}
-            alt={game.title}
-            className="w-full h-64 md:h-96 object-cover rounded-xl shadow-lg"
-            onError={(e) => {
-              e.target.style.display = "none";
-            }}
-          />
-        </div>
-      )}
 
       {/* Recap Content */}
       <div className="bg-white rounded-xl shadow-lg p-8">
         <div className="prose prose-lg max-w-none">
           <ReactMarkdown
-            // className="text-gray-700 leading-relaxed"
             components={{
               h1: ({ children }) => (
                 <h1 className="text-2xl font-bold text-gray-800 mb-4 mt-8">
