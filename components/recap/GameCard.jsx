@@ -85,11 +85,11 @@ export default function GameCard({ game, onClick }) {
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-gray-100">
+          {/* <div className="mt-4 pt-4 border-t border-gray-100">
             <h3 className="text-sm font-medium text-gray-700 line-clamp-2">
               {game.title}
             </h3>
-          </div>
+          </div> */}
         </CardContent>
       </Card>
     </motion.div>

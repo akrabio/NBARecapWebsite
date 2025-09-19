@@ -1,7 +1,7 @@
 // app/api/records/[date]/route.js
 import { MongoClient } from "mongodb";
 
-const uri = `mongodb+srv://pewkmate_db_user:${process.env.MONGODB_PASSWORD}@cluster0.vrszcwe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@cluster0.vrszcwe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 const dbName = "app";
 const collectionName = "game_recaps";
 
@@ -11,6 +11,11 @@ let clientPromise;
 if (!process.env.MONGODB_PASSWORD) {
   throw new Error("Please add your MongoDB password to .env.local");
 }
+
+if (!process.env.MONGODB_USER) {
+  throw new Error("Please add your MongoDB user to .env.local");
+}
+
 
 if (process.env.NODE_ENV === "development") {
   // In development mode, use a global variable to preserve the connection
