@@ -20,32 +20,11 @@ const [selectedDate, setSelectedDate] = useState(() => {
   const [selectedGame, setSelectedGame] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  function getGamesByDate(games, date) {
-    if (!Array.isArray(games)) {
-      console.error("Games parameter must be an array");
-      return [];
-    }
-
-    if (!date || typeof date !== "string") {
-      console.error("Date parameter must be a string in yyyy-MM-dd format");
-      return [];
-    }
-
-    // Validate date format (basic check)
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(date)) {
-      console.error("Date must be in yyyy-MM-dd format");
-      return [];
-    }
-
-    return games.filter((game) => game.date === date);
-  }
-
   const loadGamesForDate = useCallback(async () => {
     setIsLoading(true);
     try {
       const dateString = format(selectedDate, "yyyy-MM-dd");
-      const gamesForDate = await getRecordsByDate(dateString); //getGamesByDate(GameRecap, dateString);
+      const gamesForDate = await getRecordsByDate(dateString);
       setGames(gamesForDate);
     } catch (error) {
       console.error("Error loading games:", error);
@@ -60,7 +39,7 @@ const [selectedDate, setSelectedDate] = useState(() => {
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    setSelectedGame(null); // Reset selected game when changing date
+    setSelectedGame(null);
   };
 
   const handleGameSelect = (game) => {
@@ -73,36 +52,36 @@ const [selectedDate, setSelectedDate] = useState(() => {
 
   if (selectedGame) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8" dir="rtl">
         <GameRecapView game={selectedGame} onBack={handleBackToGames} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100" dir="rtl">
       {/* Header */}
       <div className="bg-gradient-to-r from-red-600 via-red-700 to-blue-600 text-white">
         <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3 mb-4">
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold text-right">
+                    סיכומי משחקי NBA
+                  </h1>
+                  <p className="text-white/80 text-lg text-right">
+                    ניתוח מעמיק ותקצירים
+                  </p>
+                </div>
                 <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
                   <Dribbble className="w-7 h-7" />
-                </div>
-                <div>
-                  <h1 className="text-3xl md:text-4xl font-bold">
-                    NBA Game Recaps
-                  </h1>
-                  <p className="text-white/80 text-lg">
-                    In-depth analysis and highlights
-                  </p>
                 </div>
               </div>
             </div>
             <div className="hidden md:flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg">
               <TrendingUp className="w-5 h-5" />
-              <span className="font-semibold">Latest Recaps</span>
+              <span className="font-semibold">סיכומים אחרונים</span>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import GameCard from "./GameCard";
 import { Calendar, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
+import { he } from "date-fns/locale";
 
 export default function GamesList({
   games,
@@ -12,7 +13,7 @@ export default function GamesList({
 }) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" dir="rtl">
         {Array(6)
           .fill(0)
           .map((_, i) => (
@@ -30,32 +31,33 @@ export default function GamesList({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center py-16"
+        dir="rtl"
       >
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <AlertCircle className="w-8 h-8 text-gray-400" />
         </div>
         <h3 className="text-xl font-semibold text-gray-700 mb-2">
-          No Games Available
+          אין משחקים זמינים
         </h3>
         <p className="text-gray-500 mb-6">
-          No game recaps found for {format(selectedDate, "MMMM d, yyyy")}
+          לא נמצאו סיכומי משחקים עבור {format(selectedDate, "d MMMM yyyy", { locale: he })}
         </p>
         <div className="flex items-center justify-center text-sm text-gray-400">
+          <span>נסה לבחור תאריך אחר</span>
           <Calendar className="w-4 h-4 mr-2" />
-          Try selecting a different date
         </div>
       </motion.div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          Games for {format(selectedDate, "MMMM d, yyyy")}
+          משחקים עבור {format(selectedDate, "d MMMM yyyy", { locale: he })}
         </h2>
         <p className="text-gray-600">
-          {games.length} game{games.length !== 1 ? "s" : ""} available
+          {games.length} {games.length !== 1 ? "משחקים" : "משחק"} זמינים
         </p>
       </div>
 

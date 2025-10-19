@@ -2,14 +2,19 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, MapPin, Trophy } from "lucide-react";
 import { format } from "date-fns";
+import { he } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
 import remarkGfm from "remark-gfm";
 
 export default function GameRecapView({ game, onBack }) {
-  const homeWon = game.home_score >= game.away_score;
-  const finalScore = `${game.away_team} ${game.away_score} - ${game.home_score} ${game.home_team}`;
+
+
+    const getTeamLogo = (teamName) => {
+    // Placeholder - you can replace this with actual logo URLs
+    return `/logos/${teamName.toLowerCase().replace(/\s+/g, '-')}.png`;
+    };
 
 
     const parseGameTitle = (title) => {
@@ -38,6 +43,7 @@ export default function GameRecapView({ game, onBack }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="w-full px-4 md:px-8 lg:px-12"
+      dir="rtl"
     >
       {/* Header */}
       <div className="mb-8">
@@ -46,20 +52,21 @@ export default function GameRecapView({ game, onBack }) {
           onClick={onBack}
           className="mb-6 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Games
+          <span>חזרה למשחקים</span>
+          <ArrowLeft className="w-4 h-4 ml-2" />
         </Button>
+
 
         {/* Responsive Header + Image Layout */}
         <div className="bg-gradient-to-r from-red-600 to-blue-600 text-white rounded-xl overflow-hidden mb-8">
-          <div className="flex flex-col lg:flex-row">
-             {/* Image - Desktop: Right side, Mobile: Below */}
+          <div className="flex flex-col lg:flex-row-reverse">
+             {/* Image - Desktop: Left side, Mobile: Below */}
             {game.image_url && (
-              <div className="lg:w-1/2 lg:max-w-md lg:min-h-[200px]">
+              <div className="lg:w-1/2 lg:max-w-md">
                 <img
                   src={game.image_url}
                   alt={game.title}
-                  className="w-full h-auto min-h-[120px] max-h-60 lg:h-full lg:max-h-none lg:min-h-[200px] object-cover"
+                  className="w-full h-auto max-h-60 lg:max-h-80 object-cover"
                   onError={(e) => {
                     e.target.parentNode.style.display = "none";
                   }}
@@ -73,25 +80,25 @@ export default function GameRecapView({ game, onBack }) {
                   variant="secondary"
                   className="bg-white/20 text-white border-white/30"
                 >
-                  <Clock className="w-3 h-3 mr-1" />
-                  {format(new Date(game.date), "MMMM d, yyyy")}
+                  <span>סיום</span>
+                  <Trophy className="w-3 h-3 ml-1" />
                 </Badge>
                 <Badge
                   variant="secondary"
                   className="bg-white/20 text-white border-white/30"
                 >
-                  <Trophy className="w-3 h-3 mr-1" />
-                  Final
+                  <span>{format(new Date(game.date), "d MMMM yyyy", { locale: he })}</span>
+                  <Clock className="w-3 h-3 ml-1" />
                 </Badge>
               </div>
 
               {/* Game Title Breakdown */}
               {gameInfo.originalTitle ? (
-                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 text-right">
                   {gameInfo.originalTitle}
                 </h1>
               ) : (
-                <div className="space-y-4" dir="rtl">
+                <div className="space-y-4">
                   {/* Teams and Records */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                     {/* Team 1 */}
@@ -102,6 +109,19 @@ export default function GameRecapView({ game, onBack }) {
                       <div className="text-sm md:text-base opacity-80 bg-white/20 rounded-full px-3 py-1 inline-block">
                         {gameInfo.record1}
                       </div>
+                      <img
+                      src={getTeamLogo(game.away_team)}
+                      // alt={`${awayTeam} logo`}
+                      className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain mb-2"
+                      onError={(e) => {
+                        // Fallback to placeholder when image fails to load
+                        e.target.style.display = 'none';
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-500';
+                        placeholder.textContent = awayTeam.substring(0, 2).toUpperCase();
+                        e.target.parentNode.insertBefore(placeholder, e.target);
+                        }}
+                      />
                     </div>
                     
                     {/* Score */}
@@ -113,19 +133,31 @@ export default function GameRecapView({ game, onBack }) {
                     
                     {/* Team 2 */}
                     <div className="text-center md:text-left">
+                      <div className="flex flex-col items-end"> {/* stack + text to the right */}
                       <div className="text-xl md:text-2xl lg:text-3xl font-bold mb-1">
                         {gameInfo.team2}
                       </div>
                       <div className="text-sm md:text-base opacity-80 bg-white/20 rounded-full px-3 py-1 inline-block">
                         {gameInfo.record2}
                       </div>
+                      <img
+                        src={getTeamLogo(game.home_team)}
+                          alt={`${game.home_team} logo`}
+                          className="block float-left clear-both w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain mb-2"
+                          onError={(e) => {
+                          // Fallback to placeholder when image fails to load
+                          e.target.style.display = 'none';
+                          const placeholder = document.createElement('div');
+                          placeholder.className = 'w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-500';
+                          placeholder.textContent = awayTeam.substring(0, 2).toUpperCase();
+                          e.target.parentNode.insertBefore(placeholder, e.target);
+                        }}
+                      />
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
-              {/* <div className="text-xl font-semibold opacity-90">
-                {finalScore}
-              </div> */}
             </div>
             
           </div>
@@ -134,7 +166,7 @@ export default function GameRecapView({ game, onBack }) {
 
       {/* Recap Content */}
       <div className="bg-white rounded-xl shadow-lg p-8">
-        <div className="prose prose-lg max-w-none" dir="rtl">
+        <div className="prose prose-lg max-w-none">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
@@ -181,7 +213,7 @@ export default function GameRecapView({ game, onBack }) {
                 </strong>
               ),
               table: ({ children }) => (
-                <div className="overflow-x-auto my-6">
+                <div className="overflow-x-auto my-6" dir="rtl">
                   <table className="w-full border-collapse bg-white shadow-sm rounded-lg overflow-hidden border border-gray-200">
                     {children}
                   </table>
@@ -208,7 +240,7 @@ export default function GameRecapView({ game, onBack }) {
                 </th>
               ),
               td: ({ children }) => (
-                <td className="px-4 py-3 text-sm text-gray-800 text-center font-medium border-r border-gray-200 last:border-r-0">
+                <td className="px-4 py-3 text-sm text-gray-800 text-center font-medium border-l border-gray-200 last:border-l-0">
                   {children}
                 </td>
               ),

@@ -1,5 +1,6 @@
 import React from "react";
 import { format, startOfWeek, addDays, isSameDay, isToday } from "date-fns";
+import { he } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -20,7 +21,7 @@ export default function DatePicker({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+    <div className="bg-white rounded-xl shadow-lg p-6 mb-8" dir="rtl">
       <div className="flex items-center justify-between mb-6">
         <Button
           variant="outline"
@@ -28,11 +29,11 @@ export default function DatePicker({
           onClick={goToPreviousWeek}
           className="hover:bg-blue-50 hover:border-blue-200"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4" />
         </Button>
 
         <h2 className="text-lg font-semibold text-gray-800">
-          {format(weekStart, "MMMM yyyy")}
+          {format(weekStart, "MMMM yyyy", { locale: he })}
         </h2>
 
         <Button
@@ -41,7 +42,7 @@ export default function DatePicker({
           onClick={goToNextWeek}
           className="hover:bg-blue-50 hover:border-blue-200"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronLeft className="h-4 w-4" />
         </Button>
       </div>
 
@@ -64,7 +65,7 @@ export default function DatePicker({
               }`}
             >
               <span className="text-xs font-medium uppercase tracking-wide">
-                {format(date, "EEE")}
+                {format(date, "EEE", { locale: he })}
               </span>
               <span className="text-lg font-bold">{format(date, "d")}</span>
             </Button>

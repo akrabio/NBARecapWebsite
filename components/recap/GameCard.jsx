@@ -9,6 +9,34 @@ export default function GameCard({ game, onClick }) {
   const homeWon = game.home_score >= game.away_score;
   const awayWon = game.away_score >= game.home_score;
 
+  // Parse team names from title
+  const parseGameTitle = (title) => {
+    const regex = /^(.+?)\s*\((\d+-\d+)\)\s*(\d+)\s*[-–]\s*(\d+)\s*(.+?)\s*\((\d+-\d+)\)$/;
+    const match = title.match(regex);
+    
+    if (match) {
+      const [, team1, record1, score1, score2, team2, record2] = match;
+      return {
+        awayTeam: team1.trim(),
+        homeTeam: team2.trim()
+      };
+    }
+    
+    // Fallback to original team names
+    return {
+      awayTeam: game.away_team,
+      homeTeam: game.home_team
+    };
+  };
+
+  const { awayTeam, homeTeam } = parseGameTitle(game.title);
+
+  // Helper function to get team logo URL (placeholder - replace with actual logo URLs)
+  const getTeamLogo = (teamName) => {
+    // Placeholder - you can replace this with actual logo URLs
+    return `/logos/${teamName.toLowerCase().replace(/\s+/g, '-')}.png`;
+  };
+
   return (
     <motion.div
       whileHover={{ y: -4, shadow: "0 10px 25px rgba(0,0,0,0.1)" }}
@@ -17,9 +45,10 @@ export default function GameCard({ game, onClick }) {
       <Card
         className="cursor-pointer hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50"
         onClick={() => onClick(game)}
+        dir="rtl"
       >
         <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-start mb-4">
             <Badge
               variant={game.game_status === "final" ? "default" : "secondary"}
               className={`${
@@ -30,13 +59,13 @@ export default function GameCard({ game, onClick }) {
             >
               {game.game_status === "final" ? (
                 <>
-                  <Trophy className="w-3 h-3 mr-1" />
-                  Final
+                  <span>סיום</span>
+                  <Trophy className="w-3 h-3 ml-1" />
                 </>
               ) : (
                 <>
-                  <Clock className="w-3 h-3 mr-1" />
-                  {game.game_status}
+                  <span>{game.game_status}</span>
+                  <Clock className="w-3 h-3 ml-1" />
                 </>
               )}
             </Badge>
@@ -45,13 +74,24 @@ export default function GameCard({ game, onClick }) {
           <div className="space-y-4">
             {/* Away Team */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 space-x-reverse">
+                <img
+                  src={getTeamLogo(game.away_team)}
+                  alt={`${awayTeam} logo`}
+                  className="w-8 h-8 object-contain"
+                  onError={(e) => {
+                    // Fallback to placeholder when image fails to load
+                    e.target.style.display = 'none';
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-500';
+                    placeholder.textContent = awayTeam.substring(0, 2).toUpperCase();
+                    e.target.parentNode.insertBefore(placeholder, e.target);
+                  }}
+                />
                 <div className="text-lg font-bold text-gray-800">
-                  {game.away_team}
+                  {awayTeam}
+                  
                 </div>
-                {awayWon && game.game_status === "final" && (
-                  <Trophy className="w-4 h-4 text-yellow-500" />
-                )}
               </div>
               <div
                 className={`text-xl font-bold ${
@@ -67,13 +107,24 @@ export default function GameCard({ game, onClick }) {
 
             {/* Home Team */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 space-x-reverse">
+                <img
+                  src={getTeamLogo(game.home_team)}
+                  alt={`${homeTeam} logo`}
+                  className="w-8 h-8 object-contain"
+                  onError={(e) => {
+                    // Fallback to placeholder when image fails to load
+                    e.target.style.display = 'none';
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-500';
+                    placeholder.textContent = homeTeam.substring(0, 2).toUpperCase();
+                    e.target.parentNode.insertBefore(placeholder, e.target);
+                  }}
+                />
                 <div className="text-lg font-bold text-gray-800">
-                  {game.home_team}
+                  {homeTeam}
                 </div>
-                {homeWon && game.game_status === "final" && (
-                  <Trophy className="w-4 h-4 text-yellow-500" />
-                )}
+                
               </div>
               <div
                 className={`text-xl font-bold ${
@@ -84,12 +135,6 @@ export default function GameCard({ game, onClick }) {
               </div>
             </div>
           </div>
-
-          {/* <div className="mt-4 pt-4 border-t border-gray-100">
-            <h3 className="text-sm font-medium text-gray-700 line-clamp-2">
-              {game.title}
-            </h3>
-          </div> */}
         </CardContent>
       </Card>
     </motion.div>
