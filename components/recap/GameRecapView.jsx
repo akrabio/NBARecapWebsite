@@ -102,26 +102,28 @@ export default function GameRecapView({ game, onBack }) {
                   {/* Teams and Records */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                     {/* Team 1 */}
-                    <div className="text-center md:text-right">
-                      <div className="text-xl md:text-2xl lg:text-3xl font-bold mb-1">
-                        {gameInfo.team1}
+                    <div className="text-center">
+                      <div className="flex flex-col items-center ">                       
+                        <div className="text-xl md:text-2xl lg:text-3xl font-bold mb-1">
+                          {gameInfo.team1}
+                        </div>
+                        <div className="text-sm md:text-base opacity-80 bg-white/20 rounded-full px-3 py-1 inline-block">
+                          {gameInfo.record1}
+                        </div>
+                        <img
+                        src={getTeamLogo(game.away_team)}
+                        // alt={`${awayTeam} logo`}
+                        className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain mb-2"
+                        onError={(e) => {
+                          // Fallback to placeholder when image fails to load
+                          e.target.style.display = 'none';
+                          const placeholder = document.createElement('div');
+                          placeholder.className = 'w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-500';
+                          placeholder.textContent = awayTeam.substring(0, 2).toUpperCase();
+                          e.target.parentNode.insertBefore(placeholder, e.target);
+                          }}
+                        />
                       </div>
-                      <div className="text-sm md:text-base opacity-80 bg-white/20 rounded-full px-3 py-1 inline-block">
-                        {gameInfo.record1}
-                      </div>
-                      <img
-                      src={getTeamLogo(game.away_team)}
-                      // alt={`${awayTeam} logo`}
-                      className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain mb-2"
-                      onError={(e) => {
-                        // Fallback to placeholder when image fails to load
-                        e.target.style.display = 'none';
-                        const placeholder = document.createElement('div');
-                        placeholder.className = 'w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-500';
-                        placeholder.textContent = awayTeam.substring(0, 2).toUpperCase();
-                        e.target.parentNode.insertBefore(placeholder, e.target);
-                        }}
-                      />
                     </div>
                     
                     {/* Score */}
@@ -132,27 +134,27 @@ export default function GameRecapView({ game, onBack }) {
                     </div>
                     
                     {/* Team 2 */}
-                    <div className="text-center md:text-left">
-                      <div className="flex flex-col items-end"> {/* stack + text to the right */}
-                      <div className="text-xl md:text-2xl lg:text-3xl font-bold mb-1">
-                        {gameInfo.team2}
-                      </div>
-                      <div className="text-sm md:text-base opacity-80 bg-white/20 rounded-full px-3 py-1 inline-block">
-                        {gameInfo.record2}
-                      </div>
-                      <img
-                        src={getTeamLogo(game.home_team)}
-                          alt={`${game.home_team} logo`}
-                          className="block float-left clear-both w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain mb-2"
-                          onError={(e) => {
-                          // Fallback to placeholder when image fails to load
-                          e.target.style.display = 'none';
-                          const placeholder = document.createElement('div');
-                          placeholder.className = 'w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-500';
-                          placeholder.textContent = awayTeam.substring(0, 2).toUpperCase();
-                          e.target.parentNode.insertBefore(placeholder, e.target);
-                        }}
-                      />
+                    <div className="text-center">
+                      <div className="flex flex-col items-center"> 
+                        <div className="text-xl md:text-2xl lg:text-3xl font-bold mb-1">
+                          {gameInfo.team2}
+                        </div>
+                        <div className="text-sm md:text-base opacity-80 bg-white/20 rounded-full px-3 py-1 inline-block">
+                          {gameInfo.record2}
+                        </div>
+                        <img
+                          src={getTeamLogo(game.home_team)}
+                            alt={`${game.home_team} logo`}
+                            className="block loat-left clear-both w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain mb-2"
+                            onError={(e) => {
+                              // Fallback to placeholder when image fails to load
+                              e.target.style.display = 'none';
+                              const placeholder = document.createElement('div');
+                              placeholder.className = 'w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-500';
+                              placeholder.textContent = awayTeam.substring(0, 2).toUpperCase();
+                              e.target.parentNode.insertBefore(placeholder, e.target);
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
