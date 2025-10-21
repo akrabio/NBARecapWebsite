@@ -1,5 +1,5 @@
 import React from "react";
-import { format, startOfWeek, addDays, isSameDay, isToday } from "date-fns";
+import { format, addDays, isSameDay } from "date-fns";
 import { he } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -49,7 +49,7 @@ export default function DatePicker({
       <div className="grid grid-cols-7 gap-2">
         {weekDays.map((date, index) => {
           const isSelected = isSameDay(date, selectedDate);
-          const isTodayDate = isToday(date);
+          const isTodayDate = format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
 
           return (
             <Button

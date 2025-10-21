@@ -42,7 +42,7 @@ export default function GameRecapView({ game, onBack }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full px-4 md:px-8 lg:px-12"
+      className="w-full px-1 md:px-8 lg:px-12"
       dir="rtl"
     >
       {/* Header */}
@@ -167,7 +167,7 @@ export default function GameRecapView({ game, onBack }) {
       </div>
 
       {/* Recap Content */}
-      <div className="bg-white rounded-xl shadow-lg p-8">
+      <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 lg:p-8">
         <div className="prose prose-lg max-w-none">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
