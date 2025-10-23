@@ -9,27 +9,44 @@ export default function GameCard({ game, onClick }) {
   const homeWon = game.home_score >= game.away_score;
   const awayWon = game.away_score >= game.home_score;
 
-  // Parse team names from title
-  const parseGameTitle = (title) => {
-    const regex = /^(.+?)\s*\((\d+-\d+)\)\s*(\d+)\s*[-–]\s*(\d+)\s*(.+?)\s*\((\d+-\d+)\)$/;
-    const match = title.match(regex);
-    
-    if (match) {
-      const [, team1, record1, score1, score2, team2, record2] = match;
-      return {
-        awayTeam: team1.trim(),
-        homeTeam: team2.trim()
-      };
-    }
-    
-    // Fallback to original team names
-    return {
-      awayTeam: game.away_team,
-      homeTeam: game.home_team
-    };
-  };
+const nbaEnToHe = {
+  "Atlanta Hawks": "אטלנטה הוקס",
+  "Boston Celtics": "בוסטון סלטיקס",
+  "Brooklyn Nets": "ברוקלין נטס",
+  "Charlotte Hornets": "שארלוט הורנטס",
+  "Chicago Bulls": "שיקגו בולס",
+  "Cleveland Cavaliers": "קליבלנד קאבלירס",
+  "Dallas Mavericks": "דאלאס מאבריקס",
+  "Denver Nuggets": "דנבר נאגטס",
+  "Detroit Pistons": "דטרויט פיסטונס",
+  "Golden State Warriors": "גולדן סטייט ווריורס",
+  "Houston Rockets": "יוסטון רוקטס",
+  "Indiana Pacers": "אינדיאנה פייסרס",
+  "LA Clippers": "לוס אנג'לס קליפרס",
+  "LA Lakers": "לוס אנג'לס לייקרס",
+  "Memphis Grizzlies": "ממפיס גריזליס",
+  "Miami Heat": "מיאמי היט",
+  "Milwaukee Bucks": "מילווקי באקס",
+  "Minnesota Timberwolves": "מינסוטה טימברוולבס",
+  "New Orleans Pelicans": "ניו אורלינס פליקנס",
+  "New York Knicks": "ניו יורק ניקס",
+  "Oklahoma City Thunder": "אוקלהומה סיטי ת'אנדר",
+  "Orlando Magic": "אורלנדו מג'יק",
+  "Philadelphia 76ers": "פילדלפיה 76'רס",
+  "Phoenix Suns": "פיניקס סאנס",
+  "Portland Trail Blazers": "פורטלנד טרייל בלייזרס",
+  "Sacramento Kings": "סקרמנטו קינגס",
+  "San Antonio Spurs": "סן אנטוניו ספרס",
+  "Toronto Raptors": "טורונטו ראפטורס",
+  "Utah Jazz": "יוטה ג'אז",
+  "Washington Wizards": "וושינגטון ויזארדס"
+};
 
-  const { awayTeam, homeTeam } = parseGameTitle(game.title);
+  console.log(game.home_team)
+  console.log(game.away_team)
+
+  const homeTeam = nbaEnToHe[game.home_team]
+  const awayTeam = nbaEnToHe[game.away_team]
 
   // Helper function to get team logo URL (placeholder - replace with actual logo URLs)
   const getTeamLogo = (teamName) => {
