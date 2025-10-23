@@ -3,47 +3,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
+import { nbaEnToHe } from "../../utils/consts"
 
 export default function GameCard({ game, onClick }) {
   const winnerScore = Math.max(game.home_score || 0, game.away_score || 0);
   const homeWon = game.home_score >= game.away_score;
   const awayWon = game.away_score >= game.home_score;
-
-const nbaEnToHe = {
-  "Atlanta Hawks": "אטלנטה הוקס",
-  "Boston Celtics": "בוסטון סלטיקס",
-  "Brooklyn Nets": "ברוקלין נטס",
-  "Charlotte Hornets": "שארלוט הורנטס",
-  "Chicago Bulls": "שיקגו בולס",
-  "Cleveland Cavaliers": "קליבלנד קאבלירס",
-  "Dallas Mavericks": "דאלאס מאבריקס",
-  "Denver Nuggets": "דנבר נאגטס",
-  "Detroit Pistons": "דטרויט פיסטונס",
-  "Golden State Warriors": "גולדן סטייט ווריורס",
-  "Houston Rockets": "יוסטון רוקטס",
-  "Indiana Pacers": "אינדיאנה פייסרס",
-  "LA Clippers": "לוס אנג'לס קליפרס",
-  "LA Lakers": "לוס אנג'לס לייקרס",
-  "Memphis Grizzlies": "ממפיס גריזליס",
-  "Miami Heat": "מיאמי היט",
-  "Milwaukee Bucks": "מילווקי באקס",
-  "Minnesota Timberwolves": "מינסוטה טימברוולבס",
-  "New Orleans Pelicans": "ניו אורלינס פליקנס",
-  "New York Knicks": "ניו יורק ניקס",
-  "Oklahoma City Thunder": "אוקלהומה סיטי ת'אנדר",
-  "Orlando Magic": "אורלנדו מג'יק",
-  "Philadelphia 76ers": "פילדלפיה 76'רס",
-  "Phoenix Suns": "פיניקס סאנס",
-  "Portland Trail Blazers": "פורטלנד טרייל בלייזרס",
-  "Sacramento Kings": "סקרמנטו קינגס",
-  "San Antonio Spurs": "סן אנטוניו ספרס",
-  "Toronto Raptors": "טורונטו ראפטורס",
-  "Utah Jazz": "יוטה ג'אז",
-  "Washington Wizards": "וושינגטון ויזארדס"
-};
-
-  console.log(game.home_team)
-  console.log(game.away_team)
 
   const homeTeam = nbaEnToHe[game.home_team]
   const awayTeam = nbaEnToHe[game.away_team]
