@@ -12,7 +12,7 @@ export default function GameCard({ game, onClick }) {
 
   const homeTeam = nbaEnToHe[game.home_team]
   const awayTeam = nbaEnToHe[game.away_team]
-
+  
   // Helper function to get team logo URL (placeholder - replace with actual logo URLs)
   const getTeamLogo = (teamName) => {
     // Placeholder - you can replace this with actual logo URLs
