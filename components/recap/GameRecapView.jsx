@@ -19,7 +19,7 @@ export default function GameRecapView({ game, onBack }) {
 
 
     const parseGameTitle = (title) => {
-    const regex = /^(.+?)\s*\((\d+-\d+)\)\s*(\d+)\s*[-–]\s*(\d+)\s*(.+?)\s*\((\d+-\d+)\)$/;
+    const regex = /^(.+?)\s*\((\d+:\d+)\)\s*(\d+)\s*[-–]\s*(\d+)\s*(.+?)\s*\((\d+:\d+)\)$/;
     const match = title.match(regex);
     
     if (match) {
