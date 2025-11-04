@@ -13,6 +13,16 @@ export default function GameCard({ game, onClick }) {
   const homeTeam = nbaEnToHe[game.home_team]
   const awayTeam = nbaEnToHe[game.away_team]
   
+  // Check if mobile (simple viewport width check)
+  const [isMobile, setIsMobile] = React.useState(false);
+  
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
   // Helper function to get team logo URL (placeholder - replace with actual logo URLs)
   const getTeamLogo = (teamName) => {
     // Placeholder - you can replace this with actual logo URLs
@@ -21,11 +31,22 @@ export default function GameCard({ game, onClick }) {
 
   return (
     <motion.div
-      whileHover={{ y: -4, shadow: "0 10px 25px rgba(0,0,0,0.1)" }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ 
+        y: -8, 
+        scale: 1.02,
+        transition: { duration: 0.2 }
+      }}
+      whileTap={{ 
+        scale: 0.97,
+        transition: { duration: 0.1 }
+      }}
     >
       <Card
-        className="cursor-pointer hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50"
+        className={`cursor-pointer transition-all duration-300 bg-gradient-to-br from-white to-gray-50 ${
+          isMobile 
+            ? 'border-2 border-blue-300 shadow-lg' 
+            : 'border-2 border-transparent hover:border-blue-400 hover:shadow-2xl'
+        }`}
         onClick={() => onClick(game)}
         dir="rtl"
       >
