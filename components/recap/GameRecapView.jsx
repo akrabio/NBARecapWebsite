@@ -19,7 +19,7 @@ export default function GameRecapView({ game, onBack }) {
 
 
     const parseGameTitle = (title) => {
-    const regex = /^(.+?)\s*\((\d+[:-]\d+)\)\s*(\d+)\s*[-–]\s*(\d+)\s*(.+?)\s*\((\d+[:-]\d+)\)$/;
+const regex = /^\*{0,2}\s*(?<team1>.+?)\s*\((?<record1>\d+[:-]\d+)\)\s*(?<score1>\d+)\s*[-–—]\s*(?<score2>\d+)\s*(?<team2>.+?)\s*\((?<record2>\d+[:-]\d+)\)\s*\*{0,2}$/;
     const match = title.match(regex);
     
     if (match) {
@@ -38,6 +38,7 @@ export default function GameRecapView({ game, onBack }) {
     return { originalTitle: title };
   };
   const gameInfo = parseGameTitle(game.title);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -108,7 +109,7 @@ export default function GameRecapView({ game, onBack }) {
                           {nbaEnToHe[game.home_team]}
                         </div>
                         <div className="text-sm md:text-base opacity-80 bg-white/20 rounded-full px-3 py-1 inline-block">
-                          {gameInfo.team1 == nbaEnToHe[game.home_team] ? gameInfo.record2 : gameInfo.record1}
+                          {gameInfo.team1 == nbaEnToHe[game.home_team] ? gameInfo.record1 : gameInfo.record2}
                         </div>
                         <img
                         src={getTeamLogo(game.home_team)}
@@ -140,7 +141,7 @@ export default function GameRecapView({ game, onBack }) {
                           {nbaEnToHe[game.away_team]}
                         </div>
                         <div className="text-sm md:text-base opacity-80 bg-white/20 rounded-full px-3 py-1 inline-block">
-                          {gameInfo.team2 == nbaEnToHe[game.away_team] ? gameInfo.record1 : gameInfo.record2}
+                          {gameInfo.team2 == nbaEnToHe[game.away_team] ? gameInfo.record2 : gameInfo.record1}
                         </div>
                         <img
                           src={getTeamLogo(game.away_team)}
