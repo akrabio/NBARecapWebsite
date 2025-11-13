@@ -108,7 +108,7 @@ export default function GameRecapView({ game, onBack }) {
                           {nbaEnToHe[game.home_team]}
                         </div>
                         <div className="text-sm md:text-base opacity-80 bg-white/20 rounded-full px-3 py-1 inline-block">
-                          {gameInfo.team1 == nbaEnToHe[game.home_team] ? gameInfo.record1 : gameInfo.record2}
+                          {gameInfo.team1 == nbaEnToHe[game.home_team] ? gameInfo.record2 : gameInfo.record1}
                         </div>
                         <img
                         src={getTeamLogo(game.home_team)}
@@ -140,7 +140,7 @@ export default function GameRecapView({ game, onBack }) {
                           {nbaEnToHe[game.away_team]}
                         </div>
                         <div className="text-sm md:text-base opacity-80 bg-white/20 rounded-full px-3 py-1 inline-block">
-                          {gameInfo.team2 == nbaEnToHe[game.away_team] ? gameInfo.record2 : gameInfo.record1}
+                          {gameInfo.team2 == nbaEnToHe[game.away_team] ? gameInfo.record1 : gameInfo.record2}
                         </div>
                         <img
                           src={getTeamLogo(game.away_team)}
