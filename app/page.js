@@ -9,16 +9,18 @@ import { Dribbble, TrendingUp } from "lucide-react";
 import { getRecordsByDate } from "@/utils/api";
 
 export default function GameRecaps() {
-const [selectedDate, setSelectedDate] = useState(() => {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return d;
-  });  const [weekStart, setWeekStart] = useState(
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d;
+  });
+  const [weekStart, setWeekStart] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 0 })
   );
   const [games, setGames] = useState([]);
   const [selectedGame, setSelectedGame] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  
 
   const loadGamesForDate = useCallback(async () => {
     setIsLoading(true);
