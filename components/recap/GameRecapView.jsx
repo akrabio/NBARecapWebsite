@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion";
 import remarkGfm from "remark-gfm";
 import { nbaEnToHe } from "@/utils/consts";
+import { similarity } from "@/utils/levinshtein";
 
 export default function GameRecapView({ game, onBack }) {
 
@@ -17,13 +18,14 @@ export default function GameRecapView({ game, onBack }) {
     return `/logos/${teamName.toLowerCase().replace(/\s+/g, '-')}.png`;
     };
 
-
-    const parseGameTitle = (title) => {
-const regex = /^\*{0,2}\s*(?<team1>.+?)\s*\((?<record1>\d+[:-]\d+)\)\s*(?<score1>\d+)\s*[-–—]\s*(?<score2>\d+)\s*(?<team2>.+?)\s*\((?<record2>\d+[:-]\d+)\)\s*\*{0,2}$/;
+  const parseGameTitle = (title) => {
+    const regex = /^\*{0,2}\s*(?<team1>.+?)\s*\((?<record1>\d+[:-]\d+)\)\s*(?<score1>\d+)\s*[-–—]\s*(?<score2>\d+)\s*(?<team2>.+?)\s*\((?<record2>\d+[:-]\d+)\)\s*\*{0,2}$/;
     const match = title.match(regex);
     
-    if (match) {
-      const [, team1, record1, score1, score2, team2, record2] = match;
+    if (match?.groups) {
+      const { team1, record1, score1, score2, team2, record2 } = match.groups;
+          console.log(`team1 ${team1}, record1 ${record1}, team2 ${team2}, record2 ${record2}`)
+
       return {
         team1: team1.trim(),
         record1: record1.trim(),
@@ -33,11 +35,11 @@ const regex = /^\*{0,2}\s*(?<team1>.+?)\s*\((?<record1>\d+[:-]\d+)\)\s*(?<score1
         record2: record2.trim()
       };
     }
-    
-    // Fallback - return original title
     return { originalTitle: title };
   };
   const gameInfo = parseGameTitle(game.title);
+      console.log(nbaEnToHe[game.home_team], gameInfo.team1)
+      console.log(similarity(gameInfo.team1, nbaEnToHe[game.home_team]))
 
   return (
     <motion.div
@@ -109,7 +111,7 @@ const regex = /^\*{0,2}\s*(?<team1>.+?)\s*\((?<record1>\d+[:-]\d+)\)\s*(?<score1
                           {nbaEnToHe[game.home_team]}
                         </div>
                         <div className="text-sm md:text-base opacity-80 bg-white/20 rounded-full px-3 py-1 inline-block">
-                          {gameInfo.team1 == nbaEnToHe[game.home_team] ? gameInfo.record1 : gameInfo.record2}
+                          {similarity(gameInfo.team1, nbaEnToHe[game.home_team]) > 0.85 ? gameInfo.record1 : gameInfo.record2}
                         </div>
                         <img
                         src={getTeamLogo(game.home_team)}
@@ -141,7 +143,7 @@ const regex = /^\*{0,2}\s*(?<team1>.+?)\s*\((?<record1>\d+[:-]\d+)\)\s*(?<score1
                           {nbaEnToHe[game.away_team]}
                         </div>
                         <div className="text-sm md:text-base opacity-80 bg-white/20 rounded-full px-3 py-1 inline-block">
-                          {gameInfo.team2 == nbaEnToHe[game.away_team] ? gameInfo.record2 : gameInfo.record1}
+                          {similarity(gameInfo.team2, nbaEnToHe[game.away_team]) > 0.85 ? gameInfo.record2 : gameInfo.record1}
                         </div>
                         <img
                           src={getTeamLogo(game.away_team)}
