@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "NBA Recaps",
-  description: "Your place for daily NBA recaps",
+  title: "סיכומי NBA בעברית - ניתוח מקצועי ומעמיק",
+  description: "סיכומי משחקי NBA בעברית עם ניתוח סטטיסטי מקצועי ומעמיק",
 };
 
 export default function RootLayout({ children }) {

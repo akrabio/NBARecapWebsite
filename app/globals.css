@@ -119,3 +119,82 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom Animations for Redesign */
+
+/* Gradient animations for featured cards */
+@keyframes gradient-rotate {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-gradient-rotate {
+  background-size: 200% 200%;
+  animation: gradient-rotate 4s ease infinite;
+}
+
+/* Glow effect for featured cards */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4), 0 0 30px rgba(147, 51, 234, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.6), 0 0 50px rgba(147, 51, 234, 0.4);
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* Shimmer effect for loading skeletons */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg,
+    rgb(229 231 235) 0%,
+    rgb(209 213 219) 50%,
+    rgb(229 231 235) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Hero gradient shift */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* Team-color glow pulse (dynamic) */
+@keyframes team-glow-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 30px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 30px currentColor) drop-shadow(0 0 50px currentColor);
+  }
+}
+
+.animate-team-glow-pulse {
+  animation: team-glow-pulse 3s ease-in-out infinite;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-gradient-rotate,
+  .animate-glow-pulse,
+  .animate-shimmer,
+  .animate-gradient-shift,
+  .animate-team-glow-pulse {
+    animation: none;
+  }
+}

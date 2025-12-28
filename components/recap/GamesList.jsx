@@ -1,7 +1,7 @@
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import GameCard from "./GameCard";
-import { Calendar, AlertCircle } from "lucide-react";
+import { Calendar, AlertCircle, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 
@@ -10,17 +10,15 @@ export default function GamesList({
   selectedDate,
   onGameSelect,
   isLoading,
+  featured = false,
+  showDateHeaders = false,
+  hideHeader = false,
 }) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" dir="rtl">
-        {Array(6)
-          .fill(0)
-          .map((_, i) => (
-            <div key={i} className="animate-pulse">
-              <div className="bg-gray-200 rounded-xl h-48"></div>
-            </div>
-          ))}
+      <div className="flex flex-col items-center justify-center py-20" dir="rtl">
+        <Loader2 className="w-12 h-12 animate-spin text-blue-600 mb-4" />
+        <p className="text-lg font-medium text-gray-600">טוען משחקים...</p>
       </div>
     );
   }
@@ -40,10 +38,10 @@ export default function GamesList({
           אין משחקים זמינים
         </h3>
         <p className="text-gray-500 mb-6">
-          לא נמצאו סיכומי משחקים עבור {format(selectedDate, "d MMMM yyyy", { locale: he })}
+          {showDateHeaders ? "לא נמצאו משחקים לקבוצה זו" : `לא נמצאו סיכומי משחקים עבור ${format(selectedDate, "d MMMM yyyy", { locale: he })}`}
         </p>
         <div className="flex items-center justify-center text-sm text-gray-400">
-          <span>נסה לבחור תאריך אחר</span>
+          <span>{showDateHeaders ? "נסה קבוצה אחרת" : "נסה לבחור תאריך אחר"}</span>
           <Calendar className="w-4 h-4 mr-2" />
         </div>
       </motion.div>
@@ -52,30 +50,51 @@ export default function GamesList({
 
   return (
     <div className="space-y-6" dir="rtl">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          משחקים עבור {format(selectedDate, "d MMMM yyyy", { locale: he })}
-        </h2>
-        <p className="text-gray-600">
-          {games.length} {games.length !== 1 ? "משחקים" : "משחק"} זמינים
-        </p>
-      </div>
+      {!showDateHeaders && !hideHeader && (
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            משחקים עבור {format(selectedDate, "d MMMM yyyy", { locale: he })}
+          </h2>
+          <p className="text-gray-600">
+            {games.length} {games.length !== 1 ? "משחקים" : "משחק"} זמינים
+          </p>
+        </div>
+      )}
 
       <AnimatePresence>
         <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ staggerChildren: 0.1 }}
+          variants={{
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.08
+              }
+            }
+          }}
+          initial="hidden"
+          animate="show"
         >
           {games.map((game, index) => (
             <motion.div
               key={game._id?.toString() || index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              variants={{
+                hidden: { opacity: 0, y: 20, scale: 0.95 },
+                show: {
+                  opacity: 1,
+                  y: 0,
+                  scale: 1,
+                  transition: { duration: 0.4, ease: "easeOut" }
+                }
+              }}
             >
-              <GameCard game={game} onClick={onGameSelect} />
+              <GameCard
+                game={game}
+                onClick={onGameSelect}
+                featured={featured}
+                showDate={showDateHeaders}
+              />
             </motion.div>
           ))}
         </motion.div>

@@ -1,5 +1,6 @@
 // app/api/records/[date]/route.js
 import { MongoClient } from "mongodb";
+import { enrichGamesWithEspnIds } from "@/utils/espnGameId";
 
 const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@cluster0.vrszcwe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 const dbName = "app";
@@ -45,7 +46,10 @@ export async function GET(request, { params }) {
     const db = client.db(dbName);
     const collection = db.collection(collectionName);
 
-    const records = await collection.find({ date }).toArray();
+    let records = await collection.find({ date }).toArray();
+
+    // Enrich records with ESPN game IDs if missing
+    records = await enrichGamesWithEspnIds(records);
 
     return Response.json({ records });
   } catch (error) {
