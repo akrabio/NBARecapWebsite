@@ -88,20 +88,11 @@ export default function BoxScore({ gameId }) {
             </div>
 
             {/* Stats Table */}
-            <div
-              className="overflow-x-auto"
-              style={{
-                WebkitOverflowScrolling: 'touch',
-                touchAction: 'pan-x pan-y',
-                overscrollBehavior: 'contain',
-                position: 'relative',
-                isolation: 'isolate'
-              }}
-            >
-              <table className="w-full" style={{ willChange: 'auto' }}>
+            <div className="overflow-x-auto">
+              <table className="w-full">
                 <thead className="bg-gray-50 border-b-2 border-gray-200">
                   <tr>
-                    <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider min-w-[150px]">
+                    <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider sticky right-0 bg-gray-50 min-w-[150px]">
                       שחקן
                     </th>
                     {statNames.map((name, i) => (
@@ -121,7 +112,7 @@ export default function BoxScore({ gameId }) {
 
                     return (
                       <tr key={athleteIndex} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900 min-w-[150px]">
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900 sticky right-0 bg-white hover:bg-gray-50 min-w-[150px]">
                           <div className="flex items-center gap-2">
                             <span>{playerName}</span>
                             {athlete.athlete?.jersey && (
@@ -147,7 +138,7 @@ export default function BoxScore({ gameId }) {
                   {/* Totals Row */}
                   {totals && totals.length > 0 && (
                     <tr className="bg-gray-100 font-bold border-t-2 border-gray-300">
-                      <td className="px-4 py-3 text-sm text-gray-900">
+                      <td className="px-4 py-3 text-sm text-gray-900 sticky right-0 bg-gray-100">
                         סה"כ קבוצה
                       </td>
                       {totals.map((total, totalIndex) => (

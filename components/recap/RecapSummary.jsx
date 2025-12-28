@@ -54,17 +54,8 @@ export default function RecapSummary({ content, homeTeam, awayTeam }) {
       <strong className="font-black text-gray-900">{children}</strong>
     ),
     table: ({ children }) => (
-      <div
-        className="overflow-x-auto my-8 rounded-xl shadow-lg"
-        style={{
-          WebkitOverflowScrolling: 'touch',
-          touchAction: 'pan-x pan-y',
-          overscrollBehavior: 'contain',
-          position: 'relative',
-          isolation: 'isolate'
-        }}
-      >
-        <table className="min-w-full border-collapse" style={{ willChange: 'auto' }}>
+      <div className="overflow-x-auto my-8 rounded-xl shadow-lg">
+        <table className="min-w-full border-collapse">
           {children}
         </table>
       </div>

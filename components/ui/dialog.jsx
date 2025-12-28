@@ -24,7 +24,6 @@ const DialogContent = React.forwardRef(
       <DialogPrimitive.Content
         ref={ref}
         className="fixed left-0 top-0 z-50 w-full h-full overflow-y-auto bg-white data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
-        style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}
         {...props}
       >
         {children}

@@ -64,7 +64,6 @@ export default function GameRecapView({ game, onBack }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              style={{ pointerEvents: 'auto' }}
             >
               <RecapSummary
                 content={game.content}
@@ -81,7 +80,6 @@ export default function GameRecapView({ game, onBack }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              style={{ pointerEvents: 'auto' }}
             >
               <BoxScore gameId={game.espn_game_id || game.game_id} />
             </motion.div>
