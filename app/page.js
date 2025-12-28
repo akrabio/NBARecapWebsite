@@ -213,14 +213,6 @@ export default function GameRecaps() {
                 <span className="font-bold text-lg text-gray-900">
                   {format(selectedDate, "dd/MM/yyyy")}
                 </span>
-                {!isToday(selectedDate) && !isToday(addDays(selectedDate, 1)) && (
-                  <button
-                    onClick={handleToday}
-                    className="mr-2 text-sm text-blue-600 hover:text-purple-600 font-medium transition-colors"
-                  >
-                    היום
-                  </button>
-                )}
               </div>
 
               <motion.button
