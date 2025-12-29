@@ -120,6 +120,27 @@
   }
 }
 
+/* Touch scrolling support for mobile */
+.touch-pan-x {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  overscroll-behavior-x: contain;
+  /* Force the browser to always consider this scrollable */
+  scroll-behavior: smooth;
+  /* Ensure the element is a scroll container */
+  isolation: isolate;
+}
+
+/* Remove focus outline for touch-pan-x to avoid visual clutter on mobile */
+.touch-pan-x:focus {
+  outline: none;
+}
+
+/* Ensure focus is captured but without visible outline */
+.touch-pan-x:focus-visible {
+  outline: none;
+}
+
 /* Custom Animations for Redesign */
 
 /* Gradient animations for featured cards */

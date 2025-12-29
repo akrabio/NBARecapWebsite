@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { TeamColorProvider } from "./TeamColorProvider";
 import RecapHeader from "./RecapHeader";
 import RecapSummary from "./RecapSummary";
@@ -56,14 +56,14 @@ export default function GameRecapView({ game, onBack }) {
         </div>
 
         {/* Content with Smooth Transitions */}
-        <AnimatePresence mode="wait">
+        <div style={{ position: 'relative' }}>
           {activeTab === "recap" && (
             <motion.div
               key="recap"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
+              style={{ pointerEvents: 'auto' }}
             >
               <RecapSummary
                 content={game.content}
@@ -78,13 +78,13 @@ export default function GameRecapView({ game, onBack }) {
               key="boxscore"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
+              style={{ pointerEvents: 'auto' }}
             >
               <BoxScore gameId={game.espn_game_id || game.game_id} />
             </motion.div>
           )}
-        </AnimatePresence>
+        </div>
       </div>
     </TeamColorProvider>
   );

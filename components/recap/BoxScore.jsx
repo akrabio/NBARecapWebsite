@@ -88,7 +88,16 @@ export default function BoxScore({ gameId }) {
             </div>
 
             {/* Stats Table */}
-            <div className="overflow-x-auto">
+            <div
+              className="overflow-x-auto touch-pan-x"
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                position: 'relative'
+              }}
+              tabIndex={0}
+              role="region"
+              aria-label={`טבלת נתונים ${teamName}`}
+            >
               <table className="w-full">
                 <thead className="bg-gray-50 border-b-2 border-gray-200">
                   <tr>
