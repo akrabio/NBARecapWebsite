@@ -36,7 +36,7 @@ DialogContent.displayName = DialogPrimitive.Content.displayName;
 const DialogClose = React.forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Close
     ref={ref}
-    className="absolute left-4 top-4 rounded-full p-2 bg-white/80 backdrop-blur-sm hover:bg-white transition-all opacity-70 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none z-50"
+    className="fixed left-4 top-4 rounded-full p-2 bg-white/80 backdrop-blur-sm hover:bg-white transition-all opacity-70 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none z-50 shadow-lg"
     {...props}
   >
     <X className="h-5 w-5" />
