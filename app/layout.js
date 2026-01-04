@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "סיכומי NBA בעברית - ניתוח מקצועי ומעמיק",
   description: "סיכומי משחקי NBA בעברית עם ניתוח סטטיסטי מקצועי ומעמיק",
+  icons: {
+    icon: '/icon-192.png',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({ children }) {
