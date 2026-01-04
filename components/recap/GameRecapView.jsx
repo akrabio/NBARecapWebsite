@@ -80,6 +80,7 @@ export default function GameRecapView({ game, onBack }) {
                 content={game.content}
                 homeTeam={game.home_team}
                 awayTeam={game.away_team}
+                gameId={game.espn_game_id || game.game_id}
               />
             </motion.div>
           )}
