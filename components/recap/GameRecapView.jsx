@@ -6,6 +6,7 @@ import { TeamColorProvider } from "./TeamColorProvider";
 import RecapHeader from "./RecapHeader";
 import RecapSummary from "./RecapSummary";
 import BoxScore from "./BoxScore";
+import HighlightsTab from "./HighlightsTab";
 import { DialogClose, DialogTitle, VisuallyHidden } from "@/components/ui/dialog";
 
 export default function GameRecapView({ game, onBack }) {
@@ -51,6 +52,16 @@ export default function GameRecapView({ game, onBack }) {
               >
                 נתוני משחק
               </button>
+              <button
+                onClick={() => setActiveTab("highlights")}
+                className={`flex-1 py-4 px-6 text-lg font-bold transition-all ${
+                  activeTab === "highlights"
+                    ? "text-blue-600 border-b-4 border-blue-600"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                תקציר
+              </button>
             </div>
           </div>
         </div>
@@ -82,6 +93,18 @@ export default function GameRecapView({ game, onBack }) {
               style={{ pointerEvents: 'auto' }}
             >
               <BoxScore gameId={game.espn_game_id || game.game_id} />
+            </motion.div>
+          )}
+
+          {activeTab === "highlights" && (
+            <motion.div
+              key="highlights"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              style={{ pointerEvents: 'auto' }}
+            >
+              <HighlightsTab game={game} />
             </motion.div>
           )}
         </div>
