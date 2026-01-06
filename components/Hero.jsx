@@ -40,20 +40,35 @@ export default function Hero() {
         >
         </motion.div>
 
-        <motion.h1
-          className="text-4xl md:text-6xl font-black text-white text-center mb-3 drop-shadow-lg"
+        <motion.div
+          className="flex flex-col items-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
         >
-          סיכומי NBA בעברית
-        </motion.h1>
+          <h1
+            className="text-4xl md:text-6xl font-black text-center mb-6 drop-shadow-lg"
+            style={{
+              background: "linear-gradient(to bottom, #ffffff, #e0e7ff)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              letterSpacing: "0.02em",
+            }}
+          >
+            סיכומי NBA בעברית
+          </h1>
+        </motion.div>
 
         <motion.p
-          className="text-lg md:text-xl text-blue-100 font-medium text-center max-w-2xl drop-shadow"
+          className="text-lg md:text-xl text-blue-50 font-medium text-center max-w-2xl drop-shadow-md"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.6 }}
+          style={{
+            letterSpacing: "0.01em",
+            lineHeight: "1.6",
+          }}
         >
           ניתוח סטטיסטי מעמיק ומקצועי של משחקי NBA
         </motion.p>
