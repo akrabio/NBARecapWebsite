@@ -90,15 +90,22 @@ export default function BoxScore({ gameId }) {
             {/* Stats Table */}
             <div
               className="overflow-x-auto touch-pan-x"
-              style={{
-                WebkitOverflowScrolling: 'touch',
-                position: 'relative'
+              dir="ltr"
+              ref={(el) => {
+                if (el && el.scrollLeft === 0) {
+                  // Set initial scroll position to the right (max scroll in LTR)
+                  el.scrollLeft = el.scrollWidth - el.clientWidth;
+                }
               }}
               tabIndex={0}
               role="region"
               aria-label={`טבלת נתונים ${teamName}`}
+              onTouchStart={(e) => {
+                // Force immediate scroll capture on touch
+                e.currentTarget.style.pointerEvents = 'auto';
+              }}
             >
-              <table className="w-full">
+              <table className="w-full" dir="rtl">
                 <thead className="bg-gray-50 border-b-2 border-gray-200">
                   <tr>
                     <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider sticky right-0 bg-gray-50 min-w-[150px]">

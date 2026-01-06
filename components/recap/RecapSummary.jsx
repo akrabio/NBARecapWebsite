@@ -82,8 +82,21 @@ export default function RecapSummary({ content, homeTeam, awayTeam, gameId }) {
       <strong className="font-black text-gray-900">{children}</strong>
     ),
     table: ({ children }) => (
-      <div className="overflow-x-auto my-8 rounded-xl shadow-lg">
-        <table className="min-w-full border-collapse">
+      <div
+        className="overflow-x-auto my-8 rounded-xl shadow-lg touch-pan-x"
+        dir="ltr"
+        ref={(el) => {
+          if (el && el.scrollLeft === 0) {
+            // Set initial scroll position to the right (max scroll in LTR)
+            el.scrollLeft = el.scrollWidth - el.clientWidth;
+          }
+        }}
+        onTouchStart={(e) => {
+          // Force immediate scroll capture on touch
+          e.currentTarget.style.pointerEvents = 'auto';
+        }}
+      >
+        <table className="min-w-full border-collapse" dir="rtl">
           {children}
         </table>
       </div>

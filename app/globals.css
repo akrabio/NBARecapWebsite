@@ -129,6 +129,11 @@
   scroll-behavior: smooth;
   /* Ensure the element is a scroll container */
   isolation: isolate;
+  /* Force GPU acceleration for smoother scrolling */
+  transform: translateZ(0);
+  will-change: scroll-position;
+  /* Ensure it's a proper scroll container */
+  contain: layout style paint;
 }
 
 /* Remove focus outline for touch-pan-x to avoid visual clutter on mobile */
