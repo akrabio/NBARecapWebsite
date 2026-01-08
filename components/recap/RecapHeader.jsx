@@ -103,7 +103,8 @@ export default function RecapHeader({ game }) {
 
   // Extract records from title
   const extractRecord = (title, teamName) => {
-    const regex = new RegExp(`${teamName}\\s*\\((\\d+-\\d+)\\)`, 'i');
+    const hebrewTeamName = nbaEnToHe[teamName] || teamName;
+    const regex = new RegExp(`${hebrewTeamName}\\s*\\((\\d+-\\d+)\\)`, 'i');
     const match = title?.match(regex);
     return match ? match[1] : null;
   };
