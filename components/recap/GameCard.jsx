@@ -1,37 +1,25 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import TeamLogo from "@/components/ui/TeamLogo";
 import { Clock, Trophy, TrendingUp, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
-import { nbaEnToHe } from "../../utils/consts"
+import { nbaEnToHe } from "@/utils/consts";
+import { extractRecord } from "@/utils/gameUtils";
 
 export default function GameCard({ game, onClick, featured = false, showDate = false }) {
-  const winnerScore = Math.max(game.home_score || 0, game.away_score || 0);
   const homeWon = game.home_score >= game.away_score;
   const awayWon = game.away_score > game.home_score;
 
-  const homeTeam = nbaEnToHe[game.home_team]
-  const awayTeam = nbaEnToHe[game.away_team]
-
-  // Extract team records from title if available
-  const extractRecord = (title, teamName) => {
-    if (!title) return null;
-    // Look for patterns like "Lakers (23-19)" or similar
-    const regex = new RegExp(`${teamName}[^(]*\\((\\d+-\\d+)\\)`, 'i');
-    const match = title.match(regex);
-    return match ? match[1] : null;
-  };
+  const homeTeam = nbaEnToHe[game.home_team];
+  const awayTeam = nbaEnToHe[game.away_team];
 
   const homeRecord = extractRecord(game.title, game.home_team);
   const awayRecord = extractRecord(game.title, game.away_team);
 
-  // Helper function to get team logo URL (placeholder - replace with actual logo URLs)
-  const getTeamLogo = (teamName) => {
-    // Placeholder - you can replace this with actual logo URLs
-    return `/logos/${teamName.toLowerCase().replace(/\s+/g, '-')}.png`;
-  };
+  const logoSize = featured ? "md" : "sm";
 
   const cardContent = (
     <motion.div
@@ -103,17 +91,10 @@ export default function GameCard({ game, onClick, featured = false, showDate = f
               awayWon ? 'bg-emerald-50 border-l-4 border-emerald-500' : 'bg-gray-50'
             }`}>
               <div className="flex items-center gap-3 flex-1">
-                <img
-                  src={getTeamLogo(game.away_team)}
-                  alt={`${awayTeam} logo`}
-                  className={`${featured ? 'w-10 h-10' : 'w-8 h-8'} object-contain`}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    const placeholder = document.createElement('div');
-                    placeholder.className = `${featured ? 'w-10 h-10' : 'w-8 h-8'} bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm`;
-                    placeholder.textContent = (awayTeam || 'TM').substring(0, 2).toUpperCase();
-                    e.target.parentNode.insertBefore(placeholder, e.target);
-                  }}
+                <TeamLogo
+                  teamName={game.away_team}
+                  hebrewName={awayTeam}
+                  size={logoSize}
                 />
                 <div className="flex flex-col">
                   <div className={`${featured ? 'text-lg' : 'text-base'} font-bold text-gray-900`}>
@@ -145,17 +126,10 @@ export default function GameCard({ game, onClick, featured = false, showDate = f
               homeWon ? 'bg-emerald-50 border-l-4 border-emerald-500' : 'bg-gray-50'
             }`}>
               <div className="flex items-center gap-3 flex-1">
-                <img
-                  src={getTeamLogo(game.home_team)}
-                  alt={`${homeTeam} logo`}
-                  className={`${featured ? 'w-10 h-10' : 'w-8 h-8'} object-contain`}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    const placeholder = document.createElement('div');
-                    placeholder.className = `${featured ? 'w-10 h-10' : 'w-8 h-8'} bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm`;
-                    placeholder.textContent = (homeTeam || 'TM').substring(0, 2).toUpperCase();
-                    e.target.parentNode.insertBefore(placeholder, e.target);
-                  }}
+                <TeamLogo
+                  teamName={game.home_team}
+                  hebrewName={homeTeam}
+                  size={logoSize}
                 />
                 <div className="flex flex-col">
                   <div className={`${featured ? 'text-lg' : 'text-base'} font-bold text-gray-900`}>

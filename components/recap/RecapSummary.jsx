@@ -71,7 +71,14 @@ export default function RecapSummary({ content, homeTeam, awayTeam, gameId }) {
       };
 
       return (
-        <p className="text-lg md:text-xl leading-loose text-gray-700 mb-6 text-right">
+        <p
+          className="text-lg md:text-xl text-gray-700 mb-6 text-right"
+          style={{
+            lineHeight: '2',
+            letterSpacing: '0.01em',
+            wordSpacing: '0.05em',
+          }}
+        >
           {React.Children.map(children, child =>
             typeof child === 'string' ? highlightTeams(child) : child
           )}

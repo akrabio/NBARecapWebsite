@@ -7,6 +7,8 @@ import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { useTeamColors } from "./TeamColorProvider";
 import { nbaEnToHe } from "@/utils/consts";
+import { extractRecord } from "@/utils/gameUtils";
+import TeamLogo from "@/components/ui/TeamLogo";
 import { Badge } from "@/components/ui/badge";
 
 // Animated score counter hook with easing
@@ -40,10 +42,6 @@ function useAnimatedScore(finalScore, duration = 1000) {
 function TeamSection({ team, score, record, isWinner, isHome }) {
   const animatedScore = useAnimatedScore(score);
 
-  const getTeamLogo = (teamName) => {
-    return `/logos/${teamName.toLowerCase().replace(/\s+/g, '-')}.png`;
-  };
-
   return (
     <motion.div
       className="flex flex-col items-center gap-4"
@@ -54,14 +52,11 @@ function TeamSection({ team, score, record, isWinner, isHome }) {
       {/* Team Logo */}
       <div className={`relative ${isWinner ? 'animate-glow-pulse' : ''}`}>
         <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white shadow-2xl flex items-center justify-center overflow-hidden">
-          <img
-            src={getTeamLogo(team)}
-            alt={team}
-            className="w-20 h-20 md:w-28 md:h-28 object-contain"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.parentElement.innerHTML = `<div class="text-2xl md:text-3xl font-black text-gray-700">${team.split(' ').map(w => w[0]).join('')}</div>`;
-            }}
+          <TeamLogo
+            teamName={team}
+            hebrewName={nbaEnToHe[team]}
+            size="xl"
+            showFallbackCircle={false}
           />
         </div>
         {isWinner && (
@@ -99,15 +94,7 @@ function TeamSection({ team, score, record, isWinner, isHome }) {
 }
 
 export default function RecapHeader({ game }) {
-  const { homeColors, awayColors, gameGradient } = useTeamColors();
-
-  // Extract records from title
-  const extractRecord = (title, teamName) => {
-    const hebrewTeamName = nbaEnToHe[teamName] || teamName;
-    const regex = new RegExp(`${hebrewTeamName}\\s*\\((\\d+-\\d+)\\)`, 'i');
-    const match = title?.match(regex);
-    return match ? match[1] : null;
-  };
+  const { gameGradient } = useTeamColors();
 
   const homeRecord = extractRecord(game.title, game.home_team);
   const awayRecord = extractRecord(game.title, game.away_team);

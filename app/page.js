@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { format, subDays, addDays, isToday } from "date-fns";
+import React from "react";
+import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { motion } from "framer-motion";
 import GamesList from "../components/recap/GamesList";
@@ -9,120 +9,36 @@ import GameRecapView from "../components/recap/GameRecapView";
 import Hero from "../components/Hero";
 import Footer from "../components/Footer";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Dribbble, ChevronLeft, ChevronRight, Calendar, TrendingUp, Loader2, AlertCircle } from "lucide-react";
-import { getRecordsByDate, getRecordsByTeam } from "@/utils/api";
+import { Circle, ChevronLeft, ChevronRight, Calendar, TrendingUp } from "lucide-react";
 import { nbaEnToHe } from "@/utils/consts";
-import { getFeaturedGames as getFeaturedGamesUtil } from "@/utils/gameScoring";
+import useGameData from "@/hooks/useGameData";
+import { GamesListSkeleton } from "@/components/ui/GameCardSkeleton";
 
 export default function GameRecaps() {
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    return d;
-  });
-  const [games, setGames] = useState([]);
-  const [selectedGame, setSelectedGame] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedTeam, setSelectedTeam] = useState(null);
-  const [teamFilterActive, setTeamFilterActive] = useState(false);
-  
-
-  const loadGamesForDate = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const dateString = format(selectedDate, "yyyy-MM-dd");
-      const gamesForDate = await getRecordsByDate(dateString);
-      setGames(gamesForDate);
-    } catch (error) {
-      console.error("Error loading games:", error);
-      setGames([]);
-    }
-    setIsLoading(false);
-  }, [selectedDate]);
-
-  const loadGamesForTeam = useCallback(async (teamName) => {
-    setIsLoading(true);
-    try {
-      const teamGames = await getRecordsByTeam(teamName, 5);
-      setGames(teamGames);
-    } catch (error) {
-      console.error("Error loading team games:", error);
-      setGames([]);
-    }
-    setIsLoading(false);
-  }, []);
-
-  useEffect(() => {
-    if (teamFilterActive && selectedTeam) {
-      loadGamesForTeam(selectedTeam);
-    } else {
-      loadGamesForDate();
-    }
-  }, [loadGamesForDate, loadGamesForTeam, teamFilterActive, selectedTeam]);
-
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-    setSelectedGame(null);
-    setTeamFilterActive(false);
-    setSelectedTeam(null);
-  };
-
-  const handlePreviousDay = () => {
-    setSelectedDate((prev) => subDays(prev, 1));
-    setSelectedGame(null);
-    setTeamFilterActive(false);
-    setSelectedTeam(null);
-  };
-
-  const handleNextDay = () => {
-    setSelectedDate((prev) => addDays(prev, 1));
-    setSelectedGame(null);
-    setTeamFilterActive(false);
-    setSelectedTeam(null);
-  };
-
-  const handleToday = () => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1); // Yesterday is "today" for game recaps
-    setSelectedDate(d);
-    setSelectedGame(null);
-    setTeamFilterActive(false);
-    setSelectedTeam(null);
-  };
-
-  const handleTeamFilter = (team) => {
-    if (team) {
-      setSelectedTeam(team);
-      setTeamFilterActive(true);
-      setSelectedGame(null);
-    } else {
-      setTeamFilterActive(false);
-      setSelectedTeam(null);
-    }
-  };
-
-  const handleGameSelect = (game) => {
-    setSelectedGame(game);
-  };
-
-  const handleBackToGames = () => {
-    setSelectedGame(null);
-  };
-
-  const featuredGames = getFeaturedGamesUtil(games, 3);
-  const otherGames = games.filter(
-    (g) => !featuredGames.find((fg) => fg._id === g._id)
-  );
+  const {
+    selectedDate,
+    games,
+    selectedGame,
+    isLoading,
+    selectedTeam,
+    teamFilterActive,
+    featuredGames,
+    otherGames,
+    handlePreviousDay,
+    handleNextDay,
+    handleTeamFilter,
+    handleGameSelect,
+    handleBackToGames,
+  } = useGameData();
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden" dir="rtl">
       {/* Game Recap Modal */}
-      <Dialog open={selectedGame !== null} onOpenChange={(open) => !open && setSelectedGame(null)}>
+      <Dialog open={selectedGame !== null} onOpenChange={(open) => !open && handleBackToGames()}>
         <DialogContent>
           {selectedGame && (
             <GameRecapView
               game={selectedGame}
-              onBack={handleBackToGames}
             />
           )}
         </DialogContent>
@@ -149,7 +65,7 @@ export default function GameRecaps() {
                 transition={{ duration: 0.6 }}
                 className="w-12 h-12 bg-gradient-to-br from-blue-600 via-purple-600 to-red-600 rounded-xl flex items-center justify-center shadow-lg"
               >
-                <Dribbble className="w-7 h-7 text-white" />
+                <Circle className="w-7 h-7 text-white" strokeWidth={2.5} />
               </motion.div>
               <div>
                 <h1 className="text-xl md:text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -244,9 +160,23 @@ export default function GameRecaps() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20" dir="rtl">
-            <Loader2 className="w-12 h-12 animate-spin text-blue-600 mb-4" />
-            <p className="text-lg font-medium text-gray-600">טוען משחקים...</p>
+          <div dir="rtl">
+            {/* Featured section skeleton */}
+            <div className="mb-12">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-1 h-8 bg-gray-200 rounded-full"></div>
+                <div className="w-40 h-8 bg-gray-200 rounded animate-shimmer"></div>
+              </div>
+              <GamesListSkeleton count={3} featured={true} />
+            </div>
+            {/* Other games section skeleton */}
+            <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-1 h-6 bg-gray-300 rounded-full"></div>
+                <div className="w-28 h-6 bg-gray-200 rounded animate-shimmer"></div>
+              </div>
+              <GamesListSkeleton count={3} featured={false} />
+            </div>
           </div>
         ) : (
           <>
@@ -305,12 +235,18 @@ export default function GameRecaps() {
             )}
 
             {!teamFilterActive && otherGames.length > 0 && (
-              <div>
+              <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-gray-900">
-                    שאר המשחקים
-                  </h2>
-                  <div className="h-1 flex-1 bg-gradient-to-l from-transparent to-gray-200 mr-4"></div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-6 bg-gray-400 rounded-full"></div>
+                    <h2 className="text-xl font-bold text-gray-800">
+                      שאר המשחקים
+                    </h2>
+                    <span className="text-sm text-gray-500 bg-gray-200 px-2 py-1 rounded-full font-medium">
+                      {otherGames.length}
+                    </span>
+                  </div>
+                  <div className="h-px flex-1 bg-gradient-to-l from-transparent to-gray-200 mr-4"></div>
                 </div>
                 <GamesList
                   games={otherGames}
@@ -336,21 +272,62 @@ export default function GameRecaps() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center py-16"
+                className="text-center py-20"
                 dir="rtl"
               >
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <AlertCircle className="w-8 h-8 text-gray-400" />
+                {/* Animated basketball illustration */}
+                <div className="w-24 h-24 mx-auto mb-6 relative">
+                  <motion.div
+                    className="w-24 h-24 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full flex items-center justify-center shadow-lg"
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <Circle className="w-12 h-12 text-orange-500" strokeWidth={3} />
+                  </motion.div>
+                  {/* Shadow that grows/shrinks with bounce */}
+                  <motion.div
+                    className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-3 bg-gray-300/50 rounded-full blur-sm"
+                    animate={{ scale: [1, 0.8, 1], opacity: [0.5, 0.3, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
+
+                <h3 className="text-2xl font-bold text-gray-800 mb-3">
                   אין משחקים זמינים
                 </h3>
-                <p className="text-gray-500 mb-6">
-                  {teamFilterActive ? "לא נמצאו משחקים לקבוצה זו" : `לא נמצאו סיכומי משחקים עבור ${format(selectedDate, "d MMMM yyyy", { locale: he })}`}
+                <p className="text-gray-500 mb-8 max-w-md mx-auto leading-relaxed">
+                  {teamFilterActive
+                    ? "לא נמצאו משחקים לקבוצה זו. נסה לבחור קבוצה אחרת או חזור לתצוגה לפי תאריך."
+                    : `לא נמצאו סיכומי משחקים ל-${format(selectedDate, "d MMMM yyyy", { locale: he })}. נסה לבחור תאריך אחר.`}
                 </p>
-                <div className="flex items-center justify-center text-sm text-gray-400">
-                  <span>{teamFilterActive ? "נסה קבוצה אחרת" : "נסה לבחור תאריך אחר"}</span>
-                  <Calendar className="w-4 h-4 mr-2" />
+
+                {/* Action buttons */}
+                <div className="flex gap-3 justify-center flex-wrap">
+                  {teamFilterActive ? (
+                    <button
+                      onClick={() => handleTeamFilter(null)}
+                      className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
+                    >
+                      הצג את כל המשחקים
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={handlePreviousDay}
+                        className="flex items-center gap-2 px-5 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                        יום קודם
+                      </button>
+                      <button
+                        onClick={handleNextDay}
+                        className="flex items-center gap-2 px-5 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                      >
+                        יום הבא
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </motion.div>
             )}

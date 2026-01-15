@@ -1,34 +1,6 @@
 // app/api/records/team/[teamName]/route.js
-import { MongoClient } from "mongodb";
+import clientPromise, { DB_NAME, COLLECTIONS } from "@/lib/mongodb";
 import { enrichGamesWithEspnIds } from "@/utils/espnGameId";
-
-const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@cluster0.vrszcwe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
-const dbName = "app";
-const collectionName = "game_recaps";
-
-let client;
-let clientPromise;
-
-if (!process.env.MONGODB_PASSWORD) {
-  throw new Error("Please add your MongoDB password to .env.local");
-}
-
-if (!process.env.MONGODB_USER) {
-  throw new Error("Please add your MongoDB user to .env.local");
-}
-
-if (process.env.NODE_ENV === "development") {
-  // In development mode, use a global variable to preserve the connection
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri);
-    global._mongoClientPromise = client.connect();
-  }
-  clientPromise = global._mongoClientPromise;
-} else {
-  // In production mode, create a new client
-  client = new MongoClient(uri);
-  clientPromise = client.connect();
-}
 
 export async function GET(request, { params }) {
   try {
@@ -44,8 +16,8 @@ export async function GET(request, { params }) {
     }
 
     const client = await clientPromise;
-    const db = client.db(dbName);
-    const collection = db.collection(collectionName);
+    const db = client.db(DB_NAME);
+    const collection = db.collection(COLLECTIONS.GAME_RECAPS);
 
     // Query for games where either home_team or away_team matches the team name
     let records = await collection
