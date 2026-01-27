@@ -97,6 +97,11 @@ function TeamStatsTable({ teamName, teamColors, statNames, athletes, totals }) {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
+  // Reorder stats so DREB and OREB come right after REB
+  const reorderIndices = getReorderIndices(statNames);
+  const orderedStatNames = reorderArray(statNames, reorderIndices);
+  const orderedTotals = reorderArray(totals, reorderIndices);
+
   useEffect(() => {
     // Hide scroll hint after 3 seconds
     const timer = setTimeout(() => setShowScrollHint(false), 3000);
@@ -165,7 +170,7 @@ function TeamStatsTable({ teamName, teamColors, statNames, athletes, totals }) {
                 <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider sticky right-0 bg-gray-50 min-w-[150px] z-20">
                   שחקן
                 </th>
-                {statNames.map((name, i) => (
+                {orderedStatNames.map((name, i) => (
                   <th
                     key={i}
                     className="px-3 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap"
@@ -178,6 +183,7 @@ function TeamStatsTable({ teamName, teamColors, statNames, athletes, totals }) {
             <tbody className="divide-y divide-gray-200">
               {athletes.map((athlete, athleteIndex) => {
                 const stats = athlete.stats || [];
+                const orderedStats = reorderArray(stats, reorderIndices);
                 const playerName = athlete.athlete?.displayName || athlete.athlete?.name || "שחקן";
 
                 return (
@@ -193,7 +199,7 @@ function TeamStatsTable({ teamName, teamColors, statNames, athletes, totals }) {
                         <div className="text-xs text-gray-500">{athlete.athlete.position.abbreviation}</div>
                       )}
                     </td>
-                    {stats.map((stat, statIndex) => (
+                    {orderedStats.map((stat, statIndex) => (
                       <td
                         key={statIndex}
                         className="px-3 py-3 text-sm text-gray-700 text-center whitespace-nowrap font-medium"
@@ -211,7 +217,7 @@ function TeamStatsTable({ teamName, teamColors, statNames, athletes, totals }) {
                   <td className="px-4 py-3 text-sm text-gray-900 sticky right-0 bg-gray-100 z-20">
                     סה"כ קבוצה
                   </td>
-                  {totals.map((total, totalIndex) => (
+                  {orderedTotals.map((total, totalIndex) => (
                     <td
                       key={totalIndex}
                       className="px-3 py-3 text-sm text-gray-900 text-center whitespace-nowrap"
@@ -227,6 +233,39 @@ function TeamStatsTable({ teamName, teamColors, statNames, athletes, totals }) {
       </div>
     </div>
   );
+}
+
+// Helper function to get reordering indices so DREB and OREB come right after REB
+function getReorderIndices(statNames) {
+  const rebIndex = statNames.indexOf("REB");
+  const drebIndex = statNames.indexOf("DREB");
+  const orebIndex = statNames.indexOf("OREB");
+
+  // If REB doesn't exist or DREB/OREB don't exist, return null (no reordering)
+  if (rebIndex === -1 || (drebIndex === -1 && orebIndex === -1)) {
+    return null;
+  }
+
+  // Create new order: all stats up to and including REB, then DREB, OREB, then the rest
+  const newOrder = [];
+  for (let i = 0; i <= rebIndex; i++) {
+    newOrder.push(i);
+  }
+  if (drebIndex !== -1 && drebIndex > rebIndex) newOrder.push(drebIndex);
+  if (orebIndex !== -1 && orebIndex > rebIndex) newOrder.push(orebIndex);
+  for (let i = rebIndex + 1; i < statNames.length; i++) {
+    if (i !== drebIndex && i !== orebIndex) {
+      newOrder.push(i);
+    }
+  }
+
+  return newOrder;
+}
+
+// Helper function to reorder an array based on indices
+function reorderArray(arr, indices) {
+  if (!indices) return arr;
+  return indices.map(i => arr[i]);
 }
 
 // Helper function to translate stat names to Hebrew
