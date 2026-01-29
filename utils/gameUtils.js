@@ -46,7 +46,7 @@ function levenshtein(a, b) {
  * @param {number} maxDistance - Maximum Levenshtein distance allowed
  * @returns {string|null} - Record string or null
  */
-function fuzzyExtractRecord(title, targetName, maxDistance = 2) {
+function fuzzyExtractRecord(title, targetName, maxDistance = 3) {
   // Find all patterns like "text (record)" in the title
   const recordPattern = /([^\d(]+?)\s*\((\d+[:-]\d+)\)/g;
   let match;
