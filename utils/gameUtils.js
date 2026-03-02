@@ -49,7 +49,7 @@ function levenshtein(a, b) {
 function fuzzyExtractRecord(title, targetName, maxDistance = 3) {
   // Find all patterns like "text (record)" in the title
   // Pattern allows digits within team names (e.g., "76ers") but must start with non-digit
-  const recordPattern = /([^\d(\s][^(]*?)\s*\((\d+[:-]\d+)\)/g;
+  const recordPattern = /([^\d(\s–—][^(]*?)\s*\((\d+[:-]\d+)\)/g;
   let match;
 
   while ((match = recordPattern.exec(title)) !== null) {
