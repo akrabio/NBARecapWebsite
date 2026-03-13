@@ -30,3 +30,7 @@ export const nbaEnToHe = {
   "Utah Jazz": "יוטה ג'אז",
   "Washington Wizards": "וושינגטון ויזארדס"
 };
+
+export const nbaHeAltNames = {
+  "Philadelphia 76ers": ["פילדלפיה סיקסרס", "פילדלפיה 76'רס"],
+};

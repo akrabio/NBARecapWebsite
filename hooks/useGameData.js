@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { format, subDays, addDays } from "date-fns";
 import { getRecordsByDate, getRecordsByTeam } from "@/utils/api";
-import { getFeaturedGames } from "@/utils/gameScoring";
+import { getFeaturedGames, scoreGame } from "@/utils/gameScoring";
 
 export default function useGameData() {
   // Date state - defaults to yesterday (most recent games)
@@ -112,9 +112,9 @@ export default function useGameData() {
 
   // Computed values
   const featuredGames = getFeaturedGames(games, 3);
-  const otherGames = games.filter(
-    (g) => !featuredGames.find((fg) => fg._id === g._id)
-  );
+  const otherGames = games
+    .filter((g) => !featuredGames.find((fg) => fg._id === g._id))
+    .sort((a, b) => scoreGame(b) - scoreGame(a));
 
   return {
     // State

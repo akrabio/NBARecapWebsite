@@ -1,4 +1,4 @@
-import { nbaEnToHe } from "./consts";
+import { nbaEnToHe, nbaHeAltNames } from "./consts";
 
 /**
  * Normalize apostrophe-like characters to a standard apostrophe
@@ -95,6 +95,16 @@ export function extractRecord(title, teamName) {
 
     // Fall back to fuzzy matching for spelling variations
     const fuzzyResult = fuzzyExtractRecord(normalizedTitle, normalizedHebrewName);
+    if (fuzzyResult) return fuzzyResult;
+  }
+
+  // Try alternate Hebrew names (e.g. "פילדלפיה סיקסרס" vs "פילדלפיה 76'רס")
+  for (const alt of (nbaHeAltNames[teamName] || [])) {
+    const normalizedAlt = normalizeApostrophes(alt);
+    const altRegex = new RegExp(`${normalizedAlt}\\s*\\((\\d+[:-]\\d+)\\)`, 'i');
+    const altMatch = normalizedTitle.match(altRegex);
+    if (altMatch) return altMatch[1];
+    const fuzzyResult = fuzzyExtractRecord(normalizedTitle, normalizedAlt);
     if (fuzzyResult) return fuzzyResult;
   }
 
