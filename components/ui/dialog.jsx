@@ -45,6 +45,20 @@ const DialogClose = React.forwardRef(({ className, ...props }, ref) => (
 ));
 DialogClose.displayName = DialogPrimitive.Close.displayName;
 
+const DialogHeader = ({ className, ...props }) => (
+  <div className={className} {...props} />
+);
+DialogHeader.displayName = "DialogHeader";
+
+const DialogDescription = React.forwardRef(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description
+    ref={ref}
+    className={className}
+    {...props}
+  />
+));
+DialogDescription.displayName = DialogPrimitive.Description.displayName;
+
 const DialogTitle = React.forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
@@ -65,4 +79,4 @@ const VisuallyHidden = React.forwardRef(({ className, children, ...props }, ref)
 ));
 VisuallyHidden.displayName = "VisuallyHidden";
 
-export { Dialog, DialogTrigger, DialogPortal, DialogOverlay, DialogContent, DialogClose, DialogTitle, VisuallyHidden };
+export { Dialog, DialogTrigger, DialogPortal, DialogOverlay, DialogContent, DialogClose, DialogHeader, DialogDescription, DialogTitle, VisuallyHidden };

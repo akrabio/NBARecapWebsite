@@ -1,77 +1,75 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Calendar, Dribbble } from "lucide-react";
+import { format } from "date-fns";
+import { he } from "date-fns/locale";
 
-export default function Hero() {
+export default function Hero({ selectedDate, gameCount, isLoading }) {
+  const formattedDate = selectedDate
+    ? format(selectedDate, "d MMMM yyyy", { locale: he })
+    : null;
+
   return (
     <motion.section
-      className="relative overflow-hidden hero-background"
+      className="relative overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
+      transition={{ duration: 0.5 }}
       dir="rtl"
       style={{
         backgroundImage: "url('/hero_background.png')",
         backgroundSize: "cover",
         backgroundPosition: "center center",
         backgroundRepeat: "no-repeat",
+        minHeight: "88px",
       }}
     >
-      {/* Dark blue tinted overlay */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundColor: "rgba(11, 24, 65, 0.1)",
-          mixBlendMode: "multiply"
-        }}
-      ></div>
-
-      {/* Additional subtle gradient for depth */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-950/30 to-blue-950/50"></div>
+      {/* Dark overlay for text readability */}
+      <div className="absolute inset-0 bg-black/45" />
 
       {/* Content */}
-      <div className="relative max-w-7xl mx-auto px-4 py-12 md:py-16 flex flex-col items-center justify-center">
-        {/* Basketball Logo */}
-        <motion.div
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="mb-6"
-        >
-        </motion.div>
+      <div className="relative max-w-7xl mx-auto px-4 flex items-center justify-between py-4 gap-4 flex-wrap">
 
-        <motion.div
-          className="flex flex-col items-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-        >
-          <h1
-            className="text-4xl md:text-6xl font-black text-center mb-6 drop-shadow-lg"
-            style={{
-              background: "linear-gradient(to bottom, #ffffff, #e0e7ff)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              letterSpacing: "0.02em",
-            }}
-          >
+        {/* Brand mark */}
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+            <Dribbble className="w-5 h-5 text-white" strokeWidth={2.5} />
+          </div>
+          <span className="text-white font-black text-base tracking-wide drop-shadow">
             סיכומי NBA בעברית
-          </h1>
-        </motion.div>
+          </span>
+        </div>
 
-        <motion.p
-          className="text-lg md:text-xl text-blue-50 font-medium text-center max-w-2xl drop-shadow-md"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
-          style={{
-            letterSpacing: "0.01em",
-            lineHeight: "1.6",
-          }}
-        >
-          ניתוח סטטיסטי מעמיק ומקצועי של משחקי NBA
-        </motion.p>
+        {/* Date + Game Count */}
+        <div className="flex items-center gap-3 flex-wrap">
+          {formattedDate && (
+            <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-full px-4 py-1.5 border border-white/20">
+              <Calendar className="w-4 h-4 text-white/80" />
+              <span className="text-white text-sm font-semibold">
+                {formattedDate}
+              </span>
+            </div>
+          )}
+
+          {isLoading ? (
+            <div className="h-7 w-24 bg-white/20 rounded-full animate-shimmer" />
+          ) : gameCount != null ? (
+            <div
+              className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 border text-sm font-semibold ${
+                gameCount > 0
+                  ? "bg-emerald-500/80 border-emerald-400/50 text-white"
+                  : "bg-white/15 border-white/20 text-white/70"
+              }`}
+            >
+              <span>
+                {gameCount > 0
+                  ? `${gameCount} ${gameCount === 1 ? "משחק" : "משחקים"}`
+                  : "אין משחקים"}
+              </span>
+            </div>
+          ) : null}
+        </div>
       </div>
     </motion.section>
   );

@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { nbaEnToHe } from "@/utils/consts";
 import { extractRecord } from "@/utils/gameUtils";
+import { getTeamColors } from "@/utils/teamColors";
 
 export default function GameCard({ game, onClick, featured = false, showDate = false }) {
   const homeWon = game.home_score >= game.away_score;
@@ -20,6 +21,8 @@ export default function GameCard({ game, onClick, featured = false, showDate = f
   const awayRecord = extractRecord(game.title, game.away_team);
 
   const logoSize = featured ? "md" : "sm";
+  const homeColors = getTeamColors(game.home_team);
+  const cardStyle = featured ? {} : { borderTop: `3px solid ${homeColors.primary}` };
 
   const cardContent = (
     <motion.div
@@ -36,11 +39,12 @@ export default function GameCard({ game, onClick, featured = false, showDate = f
       <Card
         className={`cursor-pointer transition-all duration-300 overflow-hidden ${
           featured
-            ? 'border-0 shadow-2xl hover:shadow-3xl bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50'
+            ? 'border-0 shadow-2xl hover:shadow-3xl bg-white'
             : 'border border-gray-200 shadow-md hover:shadow-lg bg-white hover:border-blue-300'
         }`}
         onClick={() => onClick(game)}
         dir="rtl"
+        style={cardStyle}
       >
         <CardContent className={`${featured ? 'p-6' : 'p-5'}`}>
           {/* Date Badge - shown when filtering by team */}
@@ -88,7 +92,7 @@ export default function GameCard({ game, onClick, featured = false, showDate = f
           <div className="space-y-3">
             {/* Away Team */}
             <div className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
-              awayWon ? 'bg-emerald-50 border-l-4 border-emerald-500' : 'bg-gray-50'
+              awayWon ? 'bg-emerald-50 border-r-4 border-emerald-500' : 'bg-gray-50'
             }`}>
               <div className="flex items-center gap-3 flex-1">
                 <TeamLogo
@@ -123,7 +127,7 @@ export default function GameCard({ game, onClick, featured = false, showDate = f
 
             {/* Home Team */}
             <div className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
-              homeWon ? 'bg-emerald-50 border-l-4 border-emerald-500' : 'bg-gray-50'
+              homeWon ? 'bg-emerald-50 border-r-4 border-emerald-500' : 'bg-gray-50'
             }`}>
               <div className="flex items-center gap-3 flex-1">
                 <TeamLogo

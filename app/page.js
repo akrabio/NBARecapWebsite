@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { motion } from "framer-motion";
@@ -10,12 +11,86 @@ import GameRecapView from "../components/recap/GameRecapView";
 import Hero from "../components/Hero";
 import Footer from "../components/Footer";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Circle, ChevronLeft, ChevronRight, Calendar, TrendingUp } from "lucide-react";
+import { Dribbble, Circle, ChevronLeft, ChevronRight, Calendar, TrendingUp, Check, ChevronsUpDown, X } from "lucide-react";
 import { nbaEnToHe } from "@/utils/consts";
 import useGameData from "@/hooks/useGameData";
 import { GamesListSkeleton } from "@/components/ui/GameCardSkeleton";
+import { Button } from "@/components/ui/button";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export default function GameRecaps() {
+function TeamCombobox({ selectedTeam, onSelect }) {
+  const [open, setOpen] = React.useState(false);
+
+  const teams = Object.entries(nbaEnToHe).map(([en, he]) => ({
+    value: en,
+    label: he,
+  }));
+
+  const selectedLabel = selectedTeam ? nbaEnToHe[selectedTeam] : null;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-44 justify-between font-medium text-sm"
+          dir="rtl"
+        >
+          <span className="truncate">{selectedLabel ?? "כל הקבוצות"}</span>
+          <ChevronsUpDown className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-44 p-0" dir="rtl" align="end">
+        <Command dir="rtl">
+          <CommandInput placeholder="חפש קבוצה..." className="text-right" />
+          <CommandList>
+            <CommandEmpty>לא נמצאה קבוצה</CommandEmpty>
+            <CommandGroup>
+              <CommandItem
+                value="all"
+                onSelect={() => { onSelect(null); setOpen(false); }}
+                className="justify-between"
+              >
+                כל הקבוצות
+                {!selectedTeam && <Check className="ml-2 h-4 w-4" />}
+              </CommandItem>
+              {teams.map((team) => (
+                <CommandItem
+                  key={team.value}
+                  value={team.label}
+                  onSelect={() => {
+                    onSelect(team.value === selectedTeam ? null : team.value);
+                    setOpen(false);
+                  }}
+                  className="justify-between"
+                >
+                  {team.label}
+                  {selectedTeam === team.value && <Check className="ml-2 h-4 w-4 text-blue-600" />}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <GameRecaps />
+    </Suspense>
+  );
+}
+
+function GameRecaps() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const {
     selectedDate,
     games,
@@ -32,10 +107,39 @@ export default function GameRecaps() {
     handleBackToGames,
   } = useGameData();
 
+  // Auto-open game from URL param on load
+  useEffect(() => {
+    const gameId = searchParams.get("game");
+    if (gameId && games.length > 0 && !selectedGame) {
+      const match = games.find(
+        (g) => (g.espn_game_id || g._id?.toString()) === gameId
+      );
+      if (match) handleGameSelect(match);
+    }
+  }, [games, searchParams]);
+
+  // Opens a game and sets the URL param
+  const handleGameOpen = (game) => {
+    handleGameSelect(game);
+    const id = game.espn_game_id || game._id?.toString();
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("game", id);
+    router.replace(`/?${params.toString()}`);
+  };
+
+  // Clears game from URL on modal close
+  const handleModalClose = () => {
+    handleBackToGames();
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("game");
+    const qs = params.toString();
+    router.replace(qs ? `/?${qs}` : "/");
+  };
+
   return (
     <div className="min-h-screen bg-white relative overflow-hidden" dir="rtl">
       {/* Game Recap Modal */}
-      <Dialog open={selectedGame !== null} onOpenChange={(open) => !open && handleBackToGames()}>
+      <Dialog open={selectedGame !== null} onOpenChange={(open) => !open && handleModalClose()}>
         <DialogContent>
           {selectedGame && (
             <GameRecapView
@@ -53,7 +157,11 @@ export default function GameRecaps() {
       </div>
 
       {/* Hero Section */}
-      <Hero />
+      <Hero
+        selectedDate={!teamFilterActive ? selectedDate : null}
+        gameCount={!isLoading ? games.length : null}
+        isLoading={isLoading}
+      />
 
       {/* Enhanced Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50 shadow-lg">
@@ -66,7 +174,7 @@ export default function GameRecaps() {
                 transition={{ duration: 0.6 }}
                 className="w-12 h-12 bg-gradient-to-br from-blue-600 via-purple-600 to-red-600 rounded-xl flex items-center justify-center shadow-lg"
               >
-                <Circle className="w-7 h-7 text-white" strokeWidth={2.5} />
+                <Dribbble className="w-7 h-7 text-white" strokeWidth={2.5} />
               </motion.div>
               <div>
                 <h1 className="text-xl md:text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -81,25 +189,17 @@ export default function GameRecaps() {
             {/* Team Filter */}
             <div className="flex items-center gap-3">
               {teamFilterActive && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => handleTeamFilter(null)}
-                  className="text-sm px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
+                  className="text-sm font-medium gap-1"
                 >
+                  <X className="w-3 h-3" />
                   נקה סינון
-                </button>
+                </Button>
               )}
-              <select
-                value={selectedTeam || ""}
-                onChange={(e) => handleTeamFilter(e.target.value || null)}
-                className="text-sm px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
-              >
-                <option value="">כל הקבוצות</option>
-                {Object.keys(nbaEnToHe).map((team) => (
-                  <option key={team} value={team}>
-                    {nbaEnToHe[team]}
-                  </option>
-                ))}
-              </select>
+              <TeamCombobox selectedTeam={selectedTeam} onSelect={handleTeamFilter} />
             </div>
           </div>
         </div>
@@ -202,7 +302,7 @@ export default function GameRecaps() {
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-3">
                     <div className="w-1 h-8 bg-gradient-to-b from-blue-600 to-purple-600 rounded-full"></div>
-                    <h2 className="text-3xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    <h2 className="text-3xl font-black text-blue-700">
                       משחקים מובילים
                     </h2>
                     <motion.div
@@ -217,7 +317,7 @@ export default function GameRecaps() {
                 <GamesList
                   games={featuredGames}
                   selectedDate={selectedDate}
-                  onGameSelect={handleGameSelect}
+                  onGameSelect={handleGameOpen}
                   isLoading={false}
                   featured={true}
                   hideHeader={true}
@@ -252,7 +352,7 @@ export default function GameRecaps() {
                 <GamesList
                   games={otherGames}
                   selectedDate={selectedDate}
-                  onGameSelect={handleGameSelect}
+                  onGameSelect={handleGameOpen}
                   isLoading={false}
                   hideHeader={true}
                 />
@@ -263,7 +363,7 @@ export default function GameRecaps() {
               <GamesList
                 games={games}
                 selectedDate={selectedDate}
-                onGameSelect={handleGameSelect}
+                onGameSelect={handleGameOpen}
                 isLoading={false}
                 showDateHeaders={true}
               />

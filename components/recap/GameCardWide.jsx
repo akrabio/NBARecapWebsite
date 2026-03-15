@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { nbaEnToHe } from "@/utils/consts";
 import { extractRecord } from "@/utils/gameUtils";
+import { getTeamColors } from "@/utils/teamColors";
 
 function extractFirstParagraph(content) {
   if (!content) return null;
@@ -37,6 +38,8 @@ export default function GameCardWide({ game, onClick, featured = false, showDate
   const awayRecord = extractRecord(game.title, game.away_team);
 
   const snippet = extractFirstParagraph(game.content);
+  const homeColors = getTeamColors(game.home_team);
+  const cardStyle = featured ? {} : { borderTop: `3px solid ${homeColors.primary}` };
 
   const cardContent = (
     <motion.div
@@ -53,11 +56,12 @@ export default function GameCardWide({ game, onClick, featured = false, showDate
       <Card
         className={`cursor-pointer transition-all duration-300 overflow-hidden ${
           featured
-            ? "border-0 shadow-2xl hover:shadow-3xl bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50"
+            ? "border-0 shadow-2xl hover:shadow-3xl bg-white"
             : "border border-gray-200 shadow-md hover:shadow-lg bg-white hover:border-blue-300"
         }`}
         onClick={() => onClick(game)}
         dir="rtl"
+        style={cardStyle}
       >
         <CardContent className={`${featured ? "p-6" : "p-5"}`}>
           {/* Date Badge */}
@@ -110,7 +114,7 @@ export default function GameCardWide({ game, onClick, featured = false, showDate
             <div
               className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
                 awayWon
-                  ? "bg-emerald-50 border-l-4 border-emerald-500"
+                  ? "bg-emerald-50 border-r-4 border-emerald-500"
                   : "bg-gray-50"
               }`}
             >
@@ -151,7 +155,7 @@ export default function GameCardWide({ game, onClick, featured = false, showDate
             <div
               className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
                 homeWon
-                  ? "bg-emerald-50 border-l-4 border-emerald-500"
+                  ? "bg-emerald-50 border-r-4 border-emerald-500"
                   : "bg-gray-50"
               }`}
             >

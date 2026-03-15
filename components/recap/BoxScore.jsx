@@ -1,7 +1,63 @@
 import React, { useState, useEffect, useRef } from "react";
 import { getBoxScore } from "@/utils/api";
-import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTeamColors } from "./TeamColorProvider";
+
+function BoxScoreSkeleton() {
+  const rows = Array(8).fill(null);
+  const cols = Array(8).fill(null);
+
+  return (
+    <div className="space-y-8 py-4" dir="rtl">
+      {[0, 1].map((teamIdx) => (
+        <div key={teamIdx} className="bg-white rounded-lg border border-gray-200 overflow-hidden mx-4">
+          <div className="h-14 bg-gray-200 animate-shimmer" />
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b-2 border-gray-200">
+                <tr>
+                  <th className="px-4 py-3 min-w-[150px]">
+                    <div className="h-3 w-16 bg-gray-300 rounded animate-shimmer" />
+                  </th>
+                  {cols.map((_, i) => (
+                    <th key={i} className="px-3 py-3 text-center">
+                      <div className="h-3 w-8 bg-gray-300 rounded animate-shimmer mx-auto" />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {rows.map((_, rowIdx) => (
+                  <tr key={rowIdx}>
+                    <td className="px-4 py-3 min-w-[150px]">
+                      <div className="h-3 w-28 bg-gray-200 rounded animate-shimmer mb-1" />
+                      <div className="h-2.5 w-12 bg-gray-100 rounded animate-shimmer" />
+                    </td>
+                    {cols.map((_, colIdx) => (
+                      <td key={colIdx} className="px-3 py-3 text-center">
+                        <div className="h-3 w-8 bg-gray-200 rounded animate-shimmer mx-auto" />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+                <tr className="bg-gray-100 border-t-2 border-gray-300">
+                  <td className="px-4 py-3">
+                    <div className="h-3 w-20 bg-gray-300 rounded animate-shimmer" />
+                  </td>
+                  {cols.map((_, i) => (
+                    <td key={i} className="px-3 py-3 text-center">
+                      <div className="h-3 w-8 bg-gray-300 rounded animate-shimmer mx-auto" />
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function BoxScore({ gameId }) {
   const [boxScore, setBoxScore] = useState(null);
@@ -34,12 +90,7 @@ export default function BoxScore({ gameId }) {
   }, [gameId]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        <span className="mr-3 text-gray-600">טוען נתונים...</span>
-      </div>
-    );
+    return <BoxScoreSkeleton />;
   }
 
   if (error) {
@@ -126,10 +177,10 @@ function TeamStatsTable({ teamName, teamColors, statNames, athletes, totals }) {
   }, []);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mx-4">
+    <div className="bg-white rounded-lg border border-gray-200 mx-4">
       {/* Team Header with Team Colors */}
       <div
-        className="text-white px-6 py-4"
+        className="text-white px-6 py-4 rounded-t-lg"
         style={{ background: `linear-gradient(135deg, ${teamColors.primary}, ${teamColors.secondary})` }}
       >
         <h3 className="text-xl font-bold">{teamName}</h3>
@@ -158,14 +209,15 @@ function TeamStatsTable({ teamName, teamColors, statNames, athletes, totals }) {
 
         <div
           ref={scrollRef}
-          className="overflow-x-auto touch-pan-x scrollbar-thin"
+          className="touch-pan-x scrollbar-thin"
+          style={{ overflowX: 'auto', overflowY: 'clip' }}
           dir="ltr"
           tabIndex={0}
           role="region"
           aria-label={`טבלת נתונים ${teamName}`}
         >
           <table className="w-full" dir="rtl">
-            <thead className="bg-gray-50 border-b-2 border-gray-200">
+            <thead className="bg-gray-50 border-b-2 border-gray-200 sticky top-14 z-10">
               <tr>
                 <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider sticky right-0 bg-gray-50 min-w-[150px] z-20">
                   שחקן

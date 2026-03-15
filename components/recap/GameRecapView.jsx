@@ -8,6 +8,7 @@ import RecapSummary from "./RecapSummary";
 import BoxScore from "./BoxScore";
 import HighlightsTab from "./HighlightsTab";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { X } from "lucide-react";
 import { DialogClose, DialogTitle, VisuallyHidden } from "@/components/ui/dialog";
 
 function TabButton({ isActive, onClick, label }) {
@@ -46,7 +47,10 @@ export default function GameRecapView({ game }) {
         </VisuallyHidden>
 
         {/* Close Button */}
-        <DialogClose />
+        <DialogClose className="fixed left-4 top-4 z-50 flex items-center gap-1.5 rounded-full pl-3 pr-2 py-2 bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg transition-all opacity-80 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-white/50 text-gray-700 hover:text-gray-900 text-sm font-semibold">
+          <span>סגור</span>
+          <X className="h-4 w-4" />
+        </DialogClose>
 
         {/* Header with Team Colors and Animated Scores */}
         <RecapHeader game={game} />

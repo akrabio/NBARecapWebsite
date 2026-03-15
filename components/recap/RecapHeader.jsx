@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Calendar } from "lucide-react";
+import { Calendar, Crown } from "lucide-react";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { useTeamColors } from "./TeamColorProvider";
@@ -60,8 +60,8 @@ function TeamSection({ team, score, record, isWinner, isHome }) {
           />
         </div>
         {isWinner && (
-          <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white text-lg">
-            👑
+          <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-md">
+            <Crown className="w-4 h-4 text-white" strokeWidth={2} />
           </div>
         )}
       </div>
