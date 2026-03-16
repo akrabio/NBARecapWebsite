@@ -217,7 +217,7 @@ function TeamStatsTable({ teamName, teamColors, statNames, athletes, totals }) {
           aria-label={`טבלת נתונים ${teamName}`}
         >
           <table className="w-full" dir="rtl">
-            <thead className="bg-gray-50 border-b-2 border-gray-200 sticky top-14 z-10">
+            <thead className="bg-gray-50 border-b-2 border-gray-200">
               <tr>
                 <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider sticky right-0 bg-gray-50 min-w-[150px] z-20">
                   שחקן
