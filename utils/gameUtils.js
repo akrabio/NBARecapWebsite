@@ -49,7 +49,7 @@ function levenshtein(a, b) {
 function fuzzyExtractRecord(title, targetName, maxDistance = 3) {
   // Find all patterns like "text (record)" in the title
   // Pattern allows digits within team names (e.g., "76ers") but must start with non-digit
-  const recordPattern = /([^\d(\s–—][^(]*?)\s*\((\d+[:-]\d+)\)/g;
+  const recordPattern = /([^\d(\s–—][^(]*?)\s*\((\d+[:\-\u2010-\u2015]\d+)\)/g;
   let match;
 
   while ((match = recordPattern.exec(title)) !== null) {
@@ -79,7 +79,7 @@ export function extractRecord(title, teamName) {
   const normalizedTitle = normalizeApostrophes(title);
 
   // Try English name first (exact match)
-  let regex = new RegExp(`${teamName}[^(]*\\((\\d+[:-]\\d+)\\)`, 'i');
+  let regex = new RegExp(`${teamName}[^(]*\\((\\d+[:\\-\\u2010-\\u2015]\\d+)\\)`, 'i');
   let match = normalizedTitle.match(regex);
   if (match) return match[1];
 
@@ -89,7 +89,7 @@ export function extractRecord(title, teamName) {
     const normalizedHebrewName = normalizeApostrophes(hebrewName);
 
     // Try exact match first
-    regex = new RegExp(`${normalizedHebrewName}\\s*\\((\\d+[:-]\\d+)\\)`, 'i');
+    regex = new RegExp(`${normalizedHebrewName}\\s*\\((\\d+[:\\-\\u2010-\\u2015]\\d+)\\)`, 'i');
     match = normalizedTitle.match(regex);
     if (match) return match[1];
 
@@ -101,7 +101,7 @@ export function extractRecord(title, teamName) {
   // Try alternate Hebrew names (e.g. "פילדלפיה סיקסרס" vs "פילדלפיה 76'רס")
   for (const alt of (nbaHeAltNames[teamName] || [])) {
     const normalizedAlt = normalizeApostrophes(alt);
-    const altRegex = new RegExp(`${normalizedAlt}\\s*\\((\\d+[:-]\\d+)\\)`, 'i');
+    const altRegex = new RegExp(`${normalizedAlt}\\s*\\((\\d+[:\\-\\u2010-\\u2015]\\d+)\\)`, 'i');
     const altMatch = normalizedTitle.match(altRegex);
     if (altMatch) return altMatch[1];
     const fuzzyResult = fuzzyExtractRecord(normalizedTitle, normalizedAlt);

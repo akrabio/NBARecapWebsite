@@ -19,7 +19,7 @@ function extractFirstParagraph(content) {
     // Skip markdown headers
     if (trimmed.startsWith("#")) continue;
     // Skip score/record header lines like "ניו יורק ניקס (34-44) 124 - 59 פילדלפיה 76רס (33-45)"
-    if (/\(\d+-\d+\)/.test(trimmed)) continue;
+    if (/\(\d+[\-\u2010-\u2015]\d+\)/.test(trimmed)) continue;
     // Strip remaining markdown: bold/italic/code markers
     const plain = trimmed.replace(/[*_`#]/g, "").trim();
     if (plain.length > 30) return plain;
