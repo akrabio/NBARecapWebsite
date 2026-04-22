@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { nbaEnToHe } from "@/utils/consts";
-import { extractRecord } from "@/utils/gameUtils";
+import { extractRecord, extractSeriesRecord } from "@/utils/gameUtils";
 import { getTeamColors } from "@/utils/teamColors";
 
 function extractFirstParagraph(content) {
@@ -36,6 +36,7 @@ export default function GameCardWide({ game, onClick, featured = false, showDate
 
   const homeRecord = extractRecord(game.title, game.home_team);
   const awayRecord = extractRecord(game.title, game.away_team);
+  const seriesRecord = extractSeriesRecord(game.content);
 
   const snippet = extractFirstParagraph(game.content);
   const homeColors = getTeamColors(game.home_team);
@@ -145,9 +146,14 @@ export default function GameCardWide({ game, onClick, featured = false, showDate
             </div>
 
             {/* Divider */}
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center gap-2">
               <div className="h-px flex-1 bg-gray-300"></div>
-              <span className="px-2 text-xs text-gray-400 font-medium">VS</span>
+              <span className="text-xs text-gray-400 font-medium">VS</span>
+              {seriesRecord && (
+                <Badge className="bg-amber-100 text-amber-700 border border-amber-300 text-xs font-bold">
+                  סדרה {seriesRecord}
+                </Badge>
+              )}
               <div className="h-px flex-1 bg-gray-300"></div>
             </div>
 

@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { he } from "date-fns/locale";
 import { useTeamColors } from "./TeamColorProvider";
 import { nbaEnToHe } from "@/utils/consts";
-import { extractRecord } from "@/utils/gameUtils";
+import { extractRecord, extractSeriesRecord } from "@/utils/gameUtils";
 import TeamLogo from "@/components/ui/TeamLogo";
 import { Badge } from "@/components/ui/badge";
 
@@ -98,6 +98,7 @@ export default function RecapHeader({ game }) {
 
   const homeRecord = extractRecord(game.title, game.home_team);
   const awayRecord = extractRecord(game.title, game.away_team);
+  const seriesRecord = extractSeriesRecord(game.content);
   const isHomeWinner = game.home_score > game.away_score;
 
   return (
@@ -165,6 +166,12 @@ export default function RecapHeader({ game }) {
           <Badge className="bg-white/20 text-white border-white/30">
             {game.game_status === "final" ? "נגמר" : "בהמשך"}
           </Badge>
+
+          {seriesRecord && (
+            <Badge className="bg-amber-400/30 text-white border-amber-300/50 font-bold">
+              סדרה {seriesRecord}
+            </Badge>
+          )}
         </motion.div>
       </div>
     </div>

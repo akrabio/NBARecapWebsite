@@ -76,7 +76,7 @@ function fuzzyExtractRecord(title, targetName, maxDistance = 3) {
 export function extractRecord(title, teamName) {
   if (!title || !teamName) return null;
 
-  const normalizedTitle = normalizeApostrophes(title);
+  const normalizedTitle = normalizeApostrophes(title.replace(/\*+/g, ''));
 
   // Try English name first (exact match)
   let regex = new RegExp(`${teamName}[^(]*\\((\\d+[:\\-\\u2010-\\u2015]\\d+)\\)`, 'i');
@@ -109,6 +109,24 @@ export function extractRecord(title, teamName) {
   }
 
   return null;
+}
+
+/**
+ * Extract playoff series record from game title
+ * Supports format: "| סדרה: 3-1" or "סדרה: 1-0"
+ * @param {string} title - Game title
+ * @returns {string|null} - Series record (e.g., "3-1") or null
+ */
+export function extractSeriesRecord(content) {
+  if (!content) return null;
+  // The series record lives in the first header line of the content, e.g.:
+  // "**סן אנטוניו ספרס (62-20) 103 – 106 פורטלנד טרייל בלייזרס (42-40) | סדרה: 1-1**"
+  const firstLine = content.split('\n')[0];
+  const normalized = normalizeApostrophes(
+    firstLine.replace(/\*+/g, '').replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '')
+  );
+  const match = normalized.match(/סדרה[^0-9]*(\d+[-\u2010-\u2015]\d+)/);
+  return match ? match[1] : null;
 }
 
 /**
