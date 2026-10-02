@@ -1,14 +1,17 @@
-// Extract team record (wins-losses) from game title
-const extractTeamRecords = (game) => {
-  const regex = /\((\d+)[:-](\d+)\)/g;
-  const matches = [...(game.title?.matchAll(regex) || [])];
+import { extractRecord, extractSeriesRecord } from "./gameUtils";
 
-  if (matches.length >= 2) {
-    const record1 = { wins: parseInt(matches[0][1]), losses: parseInt(matches[0][2]) };
-    const record2 = { wins: parseInt(matches[1][1]), losses: parseInt(matches[1][2]) };
-    return [record1, record2];
-  }
-  return null;
+// Team records (wins-losses) from the game title, looked up by team name.
+// The title lists the home team first, so position-based parsing would swap them.
+const getTeamRecords = (game) => {
+  const parse = (team) => {
+    const record = extractRecord(game.title, team);
+    if (!record) return null;
+    const [wins, losses] = record.split(/[-:‐-―]/).map(Number);
+    return { wins, losses };
+  };
+  const away = parse(game.away_team);
+  const home = parse(game.home_team);
+  return away && home ? { away, home } : null;
 };
 
 // Calculate win percentage from a record
@@ -36,18 +39,27 @@ const hasPopularTeam = (game) => {
   );
 };
 
+const isPortlandGame = (game) =>
+  [game.home_team, game.away_team].some((t) => /trail blazers|portland/i.test(t || ""));
+
+// Win percentages and whether the underdog won
+const getMatchup = (game) => {
+  const records = getTeamRecords(game);
+  if (!records) return null;
+  const awayPct = getWinPercentage(records.away);
+  const homePct = getWinPercentage(records.home);
+  const awayWon = (game.away_score || 0) > (game.home_score || 0);
+  const winnerPct = awayWon ? awayPct : homePct;
+  const loserPct = awayWon ? homePct : awayPct;
+  return { awayPct, homePct, isUpset: loserPct > 0.6 && winnerPct <= 0.5, diff: Math.abs(awayPct - homePct) };
+};
+
 // Score a game based on priority criteria
 export const scoreGame = (game) => {
   let score = 0;
 
   // Priority 1: Portland Trail Blazers (highest priority)
-  const isPortland =
-    game.home_team?.toLowerCase().includes("trail blazers") ||
-    game.away_team?.toLowerCase().includes("trail blazers") ||
-    game.home_team?.toLowerCase().includes("portland") ||
-    game.away_team?.toLowerCase().includes("portland");
-
-  if (isPortland) {
+  if (isPortlandGame(game)) {
     score += 10000; // Guaranteed top priority
   }
 
@@ -56,36 +68,18 @@ export const scoreGame = (game) => {
     score += 200;
   }
 
-  const records = extractTeamRecords(game);
-
-  if (records) {
-    const [record1, record2] = records;
-    const winPct1 = getWinPercentage(record1);
-    const winPct2 = getWinPercentage(record2);
-    const avgWinPct = (winPct1 + winPct2) / 2;
-    const minWinPct = Math.min(winPct1, winPct2);
-    const maxWinPct = Math.max(winPct1, winPct2);
-
+  const matchup = getMatchup(game);
+  if (matchup) {
     // Priority 2: Matchup between two good teams (both >= 0.5)
-    if (winPct1 >= 0.5 && winPct2 >= 0.5) {
+    if (matchup.awayPct >= 0.5 && matchup.homePct >= 0.5) {
       // Higher average win percentage = better matchup
-      score += avgWinPct * 1000;
+      score += ((matchup.awayPct + matchup.homePct) / 2) * 1000;
     }
 
     // Priority 3: Upset - bad team beat good team
-    if (maxWinPct > 0.6 && minWinPct <= 0.5) {
-      // Check if the underdog actually won
-      // record1 = away team, record2 = home team (based on title format)
-      const awayWon = (game.away_score || 0) > (game.home_score || 0);
-      const homeWon = (game.home_score || 0) > (game.away_score || 0);
-      const underdogWon =
-        (winPct1 < winPct2 && awayWon) || (winPct2 < winPct1 && homeWon);
-
-      if (underdogWon) {
-        // More extreme difference = more interesting upset
-        const recordDiff = Math.abs(winPct1 - winPct2);
-        score += recordDiff * 1000;
-      }
+    if (matchup.isUpset) {
+      // More extreme difference = more interesting upset
+      score += matchup.diff * 1000;
     }
   }
 
@@ -114,4 +108,21 @@ export const getFeaturedGames = (games, limit = 3) => {
 
   // Take top N games
   return scoredGames.slice(0, limit).map((sg) => sg.game);
+};
+
+// Splits a day's games into featured and the rest, both sorted by score.
+export const orderGames = (games, featuredCount = 3) => {
+  const sorted = [...games].sort((a, b) => scoreGame(b) - scoreGame(a));
+  return { featured: sorted.slice(0, featuredCount), rest: sorted.slice(featuredCount) };
+};
+
+// A short label explaining why a game is worth reading, or null.
+export const getGameReason = (game) => {
+  if (isPortlandGame(game)) return { key: "deni", label: "דני אבדיה" };
+  if (extractSeriesRecord(game.content)) return { key: "playoffs", label: "פלייאוף" };
+  const matchup = getMatchup(game);
+  if (matchup?.isUpset) return { key: "upset", label: "הפתעה" };
+  if (Math.abs((game.home_score || 0) - (game.away_score || 0)) <= 5) return { key: "close", label: "צמוד עד הסוף" };
+  if (matchup && matchup.awayPct >= 0.5 && matchup.homePct >= 0.5) return { key: "top", label: "קרב צמרת" };
+  return null;
 };

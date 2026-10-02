@@ -3,6 +3,9 @@
 import React, { useState } from "react";
 import { getTeamLogoUrl, getTeamInitials } from "@/utils/gameUtils";
 
+// Mostly-black logos that disappear on the dark theme (see .logo-on-dark)
+const DARK_LOGOS = new Set(["Brooklyn Nets", "San Antonio Spurs"]);
+
 const SIZES = {
   xs: "w-6 h-6 text-[8px]",
   sm: "w-8 h-8 text-xs",
@@ -45,7 +48,7 @@ export default function TeamLogo({
     <img
       src={getTeamLogoUrl(teamName)}
       alt={`${hebrewName || teamName} logo`}
-      className={`${sizeClasses} object-contain ${className}`}
+      className={`${sizeClasses} object-contain ${DARK_LOGOS.has(teamName) ? "logo-on-dark" : ""} ${className}`}
       onError={() => setHasError(true)}
     />
   );
