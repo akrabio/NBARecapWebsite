@@ -34,3 +34,36 @@ export const nbaEnToHe = {
 export const nbaHeAltNames = {
   "Philadelphia 76ers": ["פילדלפיה סיקסרס", "פילדלפיה 76'רס"],
 };
+// Short Hebrew team nicknames, for compact score rows
+export const nbaShortHe = {
+  "Atlanta Hawks": "הוקס",
+  "Boston Celtics": "סלטיקס",
+  "Brooklyn Nets": "נטס",
+  "Charlotte Hornets": "הורנטס",
+  "Chicago Bulls": "בולס",
+  "Cleveland Cavaliers": "קאבלירס",
+  "Dallas Mavericks": "מאבריקס",
+  "Denver Nuggets": "נאגטס",
+  "Detroit Pistons": "פיסטונס",
+  "Golden State Warriors": "ווריורס",
+  "Houston Rockets": "רוקטס",
+  "Indiana Pacers": "פייסרס",
+  "LA Clippers": "קליפרס",
+  "Los Angeles Lakers": "לייקרס",
+  "Memphis Grizzlies": "גריזליס",
+  "Miami Heat": "היט",
+  "Milwaukee Bucks": "באקס",
+  "Minnesota Timberwolves": "טימברוולבס",
+  "New Orleans Pelicans": "פליקנס",
+  "New York Knicks": "ניקס",
+  "Oklahoma City Thunder": "ת'אנדר",
+  "Orlando Magic": "מג'יק",
+  "Philadelphia 76ers": "76'רס",
+  "Phoenix Suns": "סאנס",
+  "Portland Trail Blazers": "בלייזרס",
+  "Sacramento Kings": "קינגס",
+  "San Antonio Spurs": "ספרס",
+  "Toronto Raptors": "ראפטורס",
+  "Utah Jazz": "ג'אז",
+  "Washington Wizards": "ויזארדס"
+};

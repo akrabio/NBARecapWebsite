@@ -28,7 +28,7 @@ export async function fetchEspnGameId(homeTeam, awayTeam, date) {
     const espnDate = date.replace(/-/g, "");
     const espnUrl = `https://site.web.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${espnDate}`;
 
-    const response = await fetch(espnUrl);
+    const response = await fetch(espnUrl, { next: { revalidate: 3600 } });
     if (!response.ok) {
       console.error("Failed to fetch from ESPN:", response.status);
       return null;

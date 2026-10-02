@@ -1,35 +1,18 @@
-"use client";
-
-
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white mt-20" dir="rtl">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex items-center gap-3">
-            <h3 className="text-xl font-bold">סיכומי NBA בעברית</h3>
-          </div>
-          <p className="text-gray-400 text-sm text-center">
-            ניתוח מקצועי ומעמיק של משחקי NBA
-          </p>
-
-          {/* Social Links */}
-          <a
-            href="https://x.com/NRecaps84077"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all group"
-          >
-            <img src="icons/x.svg" className="w-4 h-4 fill-white group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-medium">עקבו אחרינו ב-X</span>
-          </a>
-
-          <div className="h-px w-32 bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
-          <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} כל הזכויות שמורות
-          </p>
-        </div>
-      </div>
+    <footer className="mx-auto mt-6 flex max-w-3xl flex-col items-center gap-3 px-4 pt-6 pb-[calc(32px+env(safe-area-inset-bottom))] text-center">
+      <a
+        href="https://x.com/NRecaps84077"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex h-11 items-center gap-2 rounded-xl border bg-surface px-4 text-sm font-semibold text-body"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+        </svg>
+        עקבו אחרינו ב-X
+      </a>
+      <p className="text-xs text-faint">© {new Date().getFullYear()} סיכומי NBA בעברית</p>
     </footer>
   );
 }
