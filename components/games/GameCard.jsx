@@ -2,14 +2,16 @@ import { ChevronLeft } from "lucide-react";
 import TeamLogo from "@/components/ui/TeamLogo";
 import GameLink from "./GameLink";
 import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
-import { extractRecord, extractSeriesRecord } from "@/utils/gameUtils";
+import { extractRecord, extractSeriesRecord, formatScore, getWinner } from "@/utils/gameUtils";
 import { getGameReason } from "@/utils/gameScoring";
 import { getTeamColors } from "@/utils/teamColors";
 import { getSnippet } from "@/lib/recap";
 import { formatShortDate } from "@/lib/dates";
 
-function TeamLine({ game, team, score, compact }) {
-  const won = team === (game.home_score > game.away_score ? game.home_team : game.away_team);
+function TeamLine({ game, side, compact }) {
+  const team = game[`${side}_team`];
+  const score = game[`${side}_score`];
+  const won = getWinner(game) === side;
   const record = extractRecord(game.title, team);
   return (
     <div className="flex items-center gap-2.5 py-[3px]">
@@ -28,7 +30,7 @@ function TeamLine({ game, team, score, compact }) {
           won ? "text-win" : "text-faint"
         }`}
       >
-        {score}
+        {formatScore(score)}
       </span>
     </div>
   );
@@ -37,8 +39,8 @@ function TeamLine({ game, team, score, compact }) {
 function Teams({ game, compact }) {
   return (
     <div>
-      <TeamLine game={game} team={game.away_team} score={game.away_score} compact={compact} />
-      <TeamLine game={game} team={game.home_team} score={game.home_score} compact={compact} />
+      <TeamLine game={game} side="away" compact={compact} />
+      <TeamLine game={game} side="home" compact={compact} />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
+import { formatScore } from "@/utils/gameUtils";
 
 function periodLabel(i) {
   if (i < 4) return `ר${i + 1}`;
@@ -17,7 +18,9 @@ export default function LineScore({ game, linescores }) {
     <table className="mt-2.5 w-full overflow-hidden rounded-xl bg-surface text-[13px] tabular-nums">
       <thead>
         <tr className="text-[11.5px] text-faint">
-          <th />
+          <th scope="col">
+            <span className="sr-only">קבוצה</span>
+          </th>
           {Array.from({ length: periods }, (_, i) => (
             <th key={i} className="px-1 py-1.5 font-semibold">{periodLabel(i)}</th>
           ))}
@@ -31,7 +34,7 @@ export default function LineScore({ game, linescores }) {
             {Array.from({ length: periods }, (_, i) => (
               <td key={i} className="px-1 py-1.5 text-center">{line?.periods[i] ?? "–"}</td>
             ))}
-            <td className="px-1 py-1.5 text-center font-extrabold">{score}</td>
+            <td className="px-1 py-1.5 text-center font-extrabold">{formatScore(score)}</td>
           </tr>
         ))}
       </tbody>

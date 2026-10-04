@@ -1,45 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { getTeamLogoUrl, getTeamInitials } from "@/utils/gameUtils";
-
-// Mostly-black logos that disappear on the dark theme (see .logo-on-dark)
-const DARK_LOGOS = new Set(["Brooklyn Nets", "San Antonio Spurs"]);
+import { DARK_LOGOS } from "@/utils/consts";
 
 const SIZES = {
   xs: "w-6 h-6 text-[8px]",
   sm: "w-8 h-8 text-xs",
   md: "w-10 h-10 text-xs",
-  lg: "w-20 h-20 text-lg",
-  xl: "w-24 h-24 text-xl md:w-28 md:h-28",
-  "2xl": "w-24 h-24 md:w-32 md:h-32 text-2xl md:text-3xl",
 };
 
-export default function TeamLogo({
-  teamName,
-  hebrewName,
-  size = "md",
-  className = "",
-  showFallbackCircle = true
-}) {
+// Logos sit next to the team name almost everywhere, so they're decorative by
+// default (alt=""). Pass `alt` where the logo stands on its own.
+export default function TeamLogo({ teamName, hebrewName, size = "md", className = "", alt = "" }) {
   const [hasError, setHasError] = useState(false);
-
   const sizeClasses = SIZES[size] || SIZES.md;
-  const initials = getTeamInitials(hebrewName || teamName);
 
-  if (hasError) {
-    if (showFallbackCircle) {
-      return (
-        <div
-          className={`${sizeClasses} bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center font-bold text-white shadow-sm ${className}`}
-        >
-          {initials}
-        </div>
-      );
-    }
+  if (hasError || !teamName) {
     return (
-      <div className={`${sizeClasses} flex items-center justify-center font-black text-gray-700 ${className}`}>
-        {initials}
+      <div
+        role={alt ? "img" : undefined}
+        aria-label={alt || undefined}
+        aria-hidden={alt ? undefined : true}
+        className={`${sizeClasses} bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center font-bold text-white shadow-sm ${className}`}
+      >
+        {getTeamInitials(hebrewName || teamName)}
       </div>
     );
   }
@@ -47,7 +32,7 @@ export default function TeamLogo({
   return (
     <img
       src={getTeamLogoUrl(teamName)}
-      alt={`${hebrewName || teamName} logo`}
+      alt={alt}
       className={`${sizeClasses} object-contain ${DARK_LOGOS.has(teamName) ? "logo-on-dark" : ""} ${className}`}
       onError={() => setHasError(true)}
     />

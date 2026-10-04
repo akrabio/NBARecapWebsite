@@ -1,4 +1,8 @@
-import { extractRecord, extractSeriesRecord } from "./gameUtils";
+import { extractRecord, extractSeriesRecord, getWinner } from "./gameUtils";
+
+// Records this short say little about team quality (1-0 vs 1-0 isn't a "top
+// matchup"), so they don't count until both teams have played this many games.
+const MIN_GAMES_FOR_RECORDS = 10;
 
 // Team records (wins-losses) from the game title, looked up by team name.
 // The title lists the home team first, so position-based parsing would swap them.
@@ -7,7 +11,7 @@ const getTeamRecords = (game) => {
     const record = extractRecord(game.title, team);
     if (!record) return null;
     const [wins, losses] = record.split(/[-:‐-―]/).map(Number);
-    return { wins, losses };
+    return wins + losses >= MIN_GAMES_FOR_RECORDS ? { wins, losses } : null;
   };
   const away = parse(game.away_team);
   const home = parse(game.home_team);
@@ -48,10 +52,11 @@ const getMatchup = (game) => {
   if (!records) return null;
   const awayPct = getWinPercentage(records.away);
   const homePct = getWinPercentage(records.home);
-  const awayWon = (game.away_score || 0) > (game.home_score || 0);
-  const winnerPct = awayWon ? awayPct : homePct;
-  const loserPct = awayWon ? homePct : awayPct;
-  return { awayPct, homePct, isUpset: loserPct > 0.6 && winnerPct <= 0.5, diff: Math.abs(awayPct - homePct) };
+  const winner = getWinner(game);
+  const winnerPct = winner === "away" ? awayPct : homePct;
+  const loserPct = winner === "away" ? homePct : awayPct;
+  const isUpset = winner !== null && loserPct > 0.6 && winnerPct <= 0.5;
+  return { awayPct, homePct, isUpset, diff: Math.abs(awayPct - homePct) };
 };
 
 // Score a game based on priority criteria
@@ -84,7 +89,8 @@ export const scoreGame = (game) => {
   }
 
   // Priority 4: Close game (lower score differential = more exciting)
-  const scoreDiff = Math.abs((game.home_score || 0) - (game.away_score || 0));
+  // (Without scores, a game is neither close nor a blowout.)
+  const scoreDiff = getWinner(game) ? Math.abs(game.home_score - game.away_score) : Infinity;
   // Inverse scoring: closer games get more points
   // Max 100 points for games decided by 20 or less
   if (scoreDiff <= 20) {
@@ -92,22 +98,6 @@ export const scoreGame = (game) => {
   }
 
   return score;
-};
-
-// Get featured games sorted by score
-export const getFeaturedGames = (games, limit = 3) => {
-  if (!games || games.length === 0) return [];
-
-  // Score all games and sort by score (highest first)
-  const scoredGames = games.map((game) => ({
-    game,
-    score: scoreGame(game),
-  }));
-
-  scoredGames.sort((a, b) => b.score - a.score);
-
-  // Take top N games
-  return scoredGames.slice(0, limit).map((sg) => sg.game);
 };
 
 // Splits a day's games into featured and the rest, both sorted by score.
@@ -122,7 +112,7 @@ export const getGameReason = (game) => {
   if (extractSeriesRecord(game.content)) return { key: "playoffs", label: "פלייאוף" };
   const matchup = getMatchup(game);
   if (matchup?.isUpset) return { key: "upset", label: "הפתעה" };
-  if (Math.abs((game.home_score || 0) - (game.away_score || 0)) <= 5) return { key: "close", label: "צמוד עד הסוף" };
+  if (getWinner(game) && Math.abs(game.home_score - game.away_score) <= 5) return { key: "close", label: "צמוד עד הסוף" };
   if (matchup && matchup.awayPct >= 0.5 && matchup.homePct >= 0.5) return { key: "top", label: "קרב צמרת" };
   return null;
 };

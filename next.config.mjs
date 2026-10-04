@@ -1,16 +1,18 @@
-import withPWA from 'next-pwa';
-
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
-
-const pwaConfig = withPWA({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
-  fallbacks: {
-    document: '/offline',
+const nextConfig = {
+  // The game share image reads team logos from disk; bundle them with it.
+  outputFileTracingIncludes: {
+    "/game/**": ["./public/logos/**/*"],
   },
-});
+  async headers() {
+    return [
+      {
+        // Always revalidate the service worker so updates roll out promptly.
+        source: "/sw.js",
+        headers: [{ key: "Cache-Control", value: "no-cache" }],
+      },
+    ];
+  },
+};
 
-export default pwaConfig(nextConfig);
+export default nextConfig;

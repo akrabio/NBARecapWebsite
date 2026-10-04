@@ -14,9 +14,14 @@ import { parseRecap } from "@/lib/recap";
 import { formatLongDate } from "@/lib/dates";
 import { getBoxScore } from "@/utils/api";
 import { getGameReason } from "@/utils/gameScoring";
-import { extractRecord } from "@/utils/gameUtils";
+import { extractRecord, formatScore, getWinner, matchupText } from "@/utils/gameUtils";
 import { getTeamColors } from "@/utils/teamColors";
 import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
+
+const TABS = [
+  ["recap", "סיכום"],
+  ["box", "נתונים"],
+];
 
 const shortName = (team) => nbaShortHe[team] || nbaEnToHe[team] || team;
 
@@ -33,12 +38,12 @@ function HeroTeam({ team, record, reverse }) {
 }
 
 function Score({ game, className = "" }) {
-  const homeWon = game.home_score > game.away_score;
+  const winner = getWinner(game);
   return (
     <div className={`flex items-center gap-2 font-black tabular-nums ${className}`}>
-      <span className={homeWon ? "text-faint" : ""}>{game.away_score}</span>
+      <span className={winner === "home" ? "text-faint" : ""}>{formatScore(game.away_score)}</span>
       <i className="text-[0.45em] not-italic text-faint">–</i>
-      <span className={homeWon ? "" : "text-faint"}>{game.home_score}</span>
+      <span className={winner === "away" ? "text-faint" : ""}>{formatScore(game.home_score)}</span>
     </div>
   );
 }
@@ -57,14 +62,14 @@ function PagerLink({ game, label, align }) {
       <div className="min-w-0">
         <small className="block text-[11.5px] text-subtle">{label}</small>
         <b className="block truncate text-[13.5px]">
-          {shortName(game.away_team)} {game.away_score}–{game.home_score} {shortName(game.home_team)}
+          {matchupText(game, shortName)}
         </b>
       </div>
     </Link>
   );
 }
 
-export default function GameView({ game, siblings }) {
+export default function GameView({ game, media, siblings }) {
   const router = useRouter();
   const recap = useMemo(() => parseRecap(game.content), [game.content]);
   const reason = getGameReason(game);
@@ -72,8 +77,8 @@ export default function GameView({ game, siblings }) {
   const [summary, setSummary] = useState({ status: game.espn_game_id ? "loading" : "missing" });
   const [showLines, setShowLines] = useState(false);
   const [heroVisible, setHeroVisible] = useState(true);
-  const [progress, setProgress] = useState(0);
   const heroRef = useRef(null);
+  const progressRef = useRef(null);
   const tabsRef = useRef(null);
 
   // Box score + quarter scores (one ESPN request, shared by both tabs)
@@ -97,15 +102,29 @@ export default function GameView({ game, siblings }) {
     return () => observer.disconnect();
   }, []);
 
-  // Reading progress
+  // Reading progress. Written straight to the bar (no state), so scrolling
+  // doesn't re-render the recap.
   useEffect(() => {
-    const onScroll = () => {
+    const bar = progressRef.current;
+    if (tab !== "recap") {
+      bar.style.width = "0";
+      return;
+    }
+    let frame = 0;
+    const update = () => {
+      frame = 0;
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(max > 0 ? Math.min(1, window.scrollY / max) : 0);
+      bar.style.width = `${max > 0 ? Math.min(1, window.scrollY / max) * 100 : 0}%`;
     };
-    onScroll();
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+    };
   }, [tab]);
 
   // Desktop: ↑ / ↓ move through the list beside the recap
@@ -152,6 +171,17 @@ export default function GameView({ game, siblings }) {
     if (window.scrollY > tabsTop) window.scrollTo(0, tabsTop);
   };
 
+  // Arrow keys move between tabs (reversed, since the page is right-to-left).
+  const onTabsKeyDown = (e) => {
+    const step = { ArrowLeft: 1, ArrowRight: -1, Home: -TABS.length, End: TABS.length }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    const current = TABS.findIndex(([key]) => key === tab);
+    const [next] = TABS[Math.min(TABS.length - 1, Math.max(0, current + step))];
+    switchTab(next);
+    document.getElementById(`tab-${next}`)?.focus();
+  };
+
   const index = siblings.findIndex((g) => g.id === game.id);
   const awayColor = getTeamColors(game.away_team).primary;
   const homeColor = getTeamColors(game.home_team).primary;
@@ -162,20 +192,20 @@ export default function GameView({ game, siblings }) {
       {/* Top bar */}
       <div className="sticky top-0 z-30 border-b bg-[color-mix(in_srgb,var(--app-bg)_92%,transparent)] backdrop-blur-xl">
         <div className="mx-auto grid h-[52px] max-w-[760px] grid-cols-[1fr_auto_1fr] items-center px-1">
-          <button onClick={goBack} className="flex h-11 items-center gap-0.5 justify-self-start px-2 text-[15px] font-bold text-brand lg:invisible">
+          <button onClick={goBack} className="flex h-11 items-center gap-0.5 justify-self-start px-2 text-[15px] font-bold text-brand-ink lg:invisible">
             <ChevronRight className="h-5 w-5" />
             משחקים
           </button>
           <div className={`flex items-center gap-2 transition-opacity duration-200 ${heroVisible ? "opacity-0" : "opacity-100"}`} aria-hidden={heroVisible}>
-            <TeamLogo teamName={game.away_team} hebrewName={nbaEnToHe[game.away_team]} size="xs" />
+            <TeamLogo teamName={game.away_team} hebrewName={nbaEnToHe[game.away_team]} alt={nbaEnToHe[game.away_team]} size="xs" />
             <Score game={game} className="text-[15px]" />
-            <TeamLogo teamName={game.home_team} hebrewName={nbaEnToHe[game.home_team]} size="xs" />
+            <TeamLogo teamName={game.home_team} hebrewName={nbaEnToHe[game.home_team]} alt={nbaEnToHe[game.home_team]} size="xs" />
           </div>
           <button onClick={share} aria-label="שיתוף" className="grid h-11 w-11 place-items-center justify-self-end rounded-xl text-subtle">
             <Share className="h-5 w-5" />
           </button>
         </div>
-        <div className="absolute bottom-[-1px] right-0 h-0.5 bg-brand" style={{ width: tab === "recap" ? `${progress * 100}%` : 0 }} />
+        <div ref={progressRef} className="absolute bottom-[-1px] right-0 h-0.5 w-0 bg-brand" />
       </div>
 
       {/* Compact score header: one row, so the recap starts above the fold */}
@@ -188,7 +218,7 @@ export default function GameView({ game, siblings }) {
       >
         <div className="mx-auto max-w-[696px]">
           <h1 className="sr-only">
-            {nbaEnToHe[game.away_team]} {game.away_score} – {game.home_score} {nbaEnToHe[game.home_team]}
+            {matchupText(game, (team) => nbaEnToHe[team] || team)}
           </h1>
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
             <HeroTeam team={game.away_team} record={extractRecord(game.title, game.away_team)} />
@@ -197,7 +227,10 @@ export default function GameView({ game, siblings }) {
           </div>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[12.5px] text-subtle">
             <span>{formatLongDate(game.date)}</span>
-            {reason && <span className={`tag tag-${reason.key}`}>{reason.label}</span>}
+            {/* The series tag already says "playoffs" */}
+            {reason && !(reason.key === "playoffs" && recap.series) && (
+              <span className={`tag tag-${reason.key}`}>{reason.label}</span>
+            )}
             {recap.series && <span className="tag tag-playoffs">סדרה {recap.series}</span>}
             {hasLines && (
               <button
@@ -215,15 +248,15 @@ export default function GameView({ game, siblings }) {
 
       {/* Tabs */}
       <div ref={tabsRef} className="sticky top-[52px] z-20 border-b bg-app">
-        <div className="mx-auto flex max-w-[696px]" role="tablist">
-          {[
-            ["recap", "סיכום"],
-            ["box", "נתונים"],
-          ].map(([key, label]) => (
+        <div className="mx-auto flex max-w-[696px]" role="tablist" aria-label="תוכן המשחק" onKeyDown={onTabsKeyDown}>
+          {TABS.map(([key, label]) => (
             <button
               key={key}
+              id={`tab-${key}`}
               role="tab"
               aria-selected={tab === key}
+              aria-controls="game-tabpanel"
+              tabIndex={tab === key ? 0 : -1}
               onClick={() => switchTab(key)}
               className={`-mb-px h-11 flex-1 border-b-2 text-[14.5px] font-bold ${
                 tab === key ? "border-brand text-ink" : "border-transparent text-subtle"
@@ -235,10 +268,15 @@ export default function GameView({ game, siblings }) {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[680px] px-4 pt-4 pb-[calc(40px+env(safe-area-inset-bottom))]">
+      <div
+        id="game-tabpanel"
+        role="tabpanel"
+        aria-labelledby={`tab-${tab}`}
+        className="mx-auto max-w-[680px] px-4 pt-4 pb-[calc(40px+env(safe-area-inset-bottom))]"
+      >
         {tab === "recap" ? (
           <>
-            <RecapBody game={game} recap={recap} />
+            <RecapBody game={game} recap={recap} media={media} />
             {siblings.length > 1 && (
               <nav className="mt-7 grid grid-cols-2 gap-2 lg:hidden" aria-label="משחקים נוספים מאותו יום">
                 <PagerLink game={siblings[index - 1]} label="› הקודם" />

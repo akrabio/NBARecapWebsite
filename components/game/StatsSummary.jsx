@@ -57,7 +57,7 @@ export default function StatsSummary({ game, tables }) {
         {[away, home].flatMap(({ team, table }) =>
           tablePlayers(table).map((row) => (
             <div key={team + row[0]} className="flex items-center gap-2.5 rounded-xl border bg-surface px-3 py-2.5">
-              <TeamLogo teamName={team} hebrewName={nbaEnToHe[team]} size="xs" className="shrink-0" />
+              <TeamLogo teamName={team} hebrewName={nbaEnToHe[team]} alt={nbaEnToHe[team]} size="xs" className="shrink-0" />
               <span dir="ltr" className="truncate text-[14.5px] font-bold">{row[0]}</span>
               <span className="ms-auto whitespace-nowrap text-[12.5px] text-subtle">
                 <b className="text-[17px] text-ink">{tableCell(table, row, "PTS")}</b> נק׳ · {tableCell(table, row, "REB")} ריב׳ ·{" "}

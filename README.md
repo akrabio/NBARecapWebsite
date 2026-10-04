@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# סיכומי NBA בעברית
 
-## Getting Started
+Hebrew recaps of NBA games, mobile-first. A Next.js (App Router) site that reads recaps from MongoDB and adds box scores, quarter scores, photos and a highlights video from ESPN and YouTube.
 
-First, run the development server:
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev     # http://localhost:3000
+npm run build && npm start   # production build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create `.env.local` with the database credentials, either as a full connection string:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```
+MONGODB_URI=mongodb+srv://user:password@host/?retryWrites=true&w=majority
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+or as separate values (the host defaults to the production cluster):
 
-## Learn More
+```
+MONGODB_USER=...
+MONGODB_PASSWORD=...
+MONGODB_HOST=...   # optional
+```
 
-To learn more about Next.js, take a look at the following resources:
+The connection opens on first use, so `npm run build` works without credentials.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Data
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Recaps live in the `app.game_recaps` collection. The site only reads them, with one exception: when a recap has no `espn_game_id`, the id is looked up on ESPN's scoreboard and saved back to the document.
 
-## Deploy on Vercel
+| Field | Example |
+|---|---|
+| `date` | `"2026-06-13"` (US game date, `yyyy-MM-dd`) |
+| `home_team`, `away_team` | `"San Antonio Spurs"`: English names as in `nbaEnToHe` (`utils/consts.js`) |
+| `home_score`, `away_score` | numbers |
+| `title` | contains each team's record, e.g. `סן אנטוניו ספרס (62-20)` |
+| `content` | markdown (format below) |
+| `espn_game_id` | optional; filled in automatically |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`content` is parsed by `lib/recap.js`:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+**<home> (62-20) 95 – 105 <away> (53-29) | סדרה: 0-0**   ← header line; "סדרה" only in the playoffs
+
+<paragraphs…>
+
+| | MIN | PTS | REB | AST | … |       ← two stat tables, one per team,
+| Starters | … |                       matched to teams by the "Team" row's PTS
+```
+
+## Structure
+
+- `app/`: pages (`/`, `/game/[id]`), API routes, sitemap/robots, error pages
+- `app/api/`: `boxscore` and `game-images` (ESPN summary, cached), `youtube-search` (highlights video), `records/counts` (calendar dots)
+- `components/games/`: the games list, header, date strip, calendar and team picker
+- `components/game/`: the game page (recap, stats, box score, video)
+- `lib/`: server data access (`games.js`, `browse.js`), recap parsing, dates, ESPN client
+- `utils/`: team names, colors, record extraction, game ranking
+- `public/sw.js`: service worker that shows `/offline` when there's no connection
+
+## Deploy
+
+Deployed on Vercel. Set the MongoDB variables in the project settings; `VERCEL_PROJECT_PRODUCTION_URL` (set by Vercel) is used for canonical, Open Graph and sitemap URLs.

@@ -39,7 +39,7 @@ export default function DateStrip({ date, today, counts, onOpenCalendar }) {
               key={key}
               onClick={() => navigate(`/?date=${key}`)}
               aria-current={selected ? "date" : undefined}
-              aria-label={`${d.getDate()}.${d.getMonth() + 1}, ${count} משחקים`}
+              aria-label={`${d.getDate()}.${d.getMonth() + 1}, ${count === 1 ? "משחק אחד" : `${count} משחקים`}`}
               className={`min-h-[58px] w-[50px] shrink-0 rounded-xl py-1.5 text-center ${
                 selected ? "bg-brand text-on-brand" : "text-subtle active:bg-surface-2 lg:hover:bg-surface-2"
               }`}

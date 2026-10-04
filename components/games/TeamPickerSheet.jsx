@@ -5,15 +5,17 @@ import { Star } from "lucide-react";
 import Sheet from "@/components/ui/Sheet";
 import TeamLogo from "@/components/ui/TeamLogo";
 import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
+import { normalizeApostrophes } from "@/utils/gameUtils";
 
 const TEAMS = Object.keys(nbaEnToHe);
 
 export default function TeamPickerSheet({ open, onOpenChange, mode, favorite, onPick, onRemoveFavorite }) {
   const [query, setQuery] = useState("");
 
-  const q = query.trim();
+  // Hebrew keyboards type ׳ (geresh) or ' interchangeably: "ג׳אז" should find "ג'אז".
+  const q = normalizeApostrophes(query.trim()).toLowerCase();
   const matches = TEAMS.filter(
-    (team) => !q || nbaEnToHe[team].includes(q) || team.toLowerCase().includes(q.toLowerCase())
+    (team) => !q || normalizeApostrophes(nbaEnToHe[team]).includes(q) || team.toLowerCase().includes(q)
   );
 
   const pick = (team) => {
@@ -24,7 +26,10 @@ export default function TeamPickerSheet({ open, onOpenChange, mode, favorite, on
   return (
     <Sheet
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(next) => {
+        if (!next) setQuery("");
+        onOpenChange(next);
+      }}
       title={mode === "favorite" ? "בחרו את הקבוצה שלכם" : "משחקים אחרונים של קבוצה"}
     >
       <input
@@ -32,6 +37,7 @@ export default function TeamPickerSheet({ open, onOpenChange, mode, favorite, on
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && matches[0] && pick(matches[0])}
         placeholder="הקלידו שם קבוצה…"
+        aria-label="חיפוש קבוצה"
         autoComplete="off"
         enterKeyHint="search"
         className="w-full border-b bg-transparent px-[18px] py-3 text-base outline-none"
@@ -46,7 +52,7 @@ export default function TeamPickerSheet({ open, onOpenChange, mode, favorite, on
               q && i === 0 ? "bg-surface-2 text-ink" : ""
             }`}
           >
-            {team === favorite && <Star className="absolute top-1.5 left-2 h-3.5 w-3.5 fill-brand text-brand" />}
+            {team === favorite && <Star className="absolute top-1.5 left-2 h-3.5 w-3.5 fill-brand text-brand-ink" />}
             <TeamLogo teamName={team} hebrewName={nbaEnToHe[team]} size="sm" className="!h-[34px] !w-[34px]" />
             {nbaShortHe[team]}
           </button>

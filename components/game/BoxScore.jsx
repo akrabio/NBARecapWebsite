@@ -3,6 +3,7 @@
 import { useState } from "react";
 import TeamLogo from "@/components/ui/TeamLogo";
 import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
+import { getWinner } from "@/utils/gameUtils";
 
 const STAT_LABELS = {
   MIN: "דק׳",
@@ -54,8 +55,8 @@ function Message({ children }) {
 }
 
 export default function BoxScore({ game, summary }) {
-  const homeWon = game.home_score > game.away_score;
-  const [side, setSide] = useState(homeWon ? "home" : "away");
+  // Open on the winner's players (home if the score is missing)
+  const [side, setSide] = useState(getWinner(game) === "away" ? "away" : "home");
   const [showAll, setShowAll] = useState(false);
 
   if (summary.status === "loading") {
@@ -104,7 +105,7 @@ export default function BoxScore({ game, summary }) {
           const value = stat(a.stats, name);
           const leader = LEADER_STATS.includes(name) && leaders[name] > 0 && Number(value) === leaders[name];
           return (
-            <td key={name} dir="ltr" className={`px-2 py-2.5 text-center ${leader ? "font-extrabold text-brand" : "text-body"}`}>
+            <td key={name} dir="ltr" className={`px-2 py-2.5 text-center ${leader ? "font-extrabold text-brand-ink" : "text-body"}`}>
               {value || "–"}
             </td>
           );
@@ -124,14 +125,13 @@ export default function BoxScore({ game, summary }) {
   return (
     <div>
       <div className="mb-3 flex gap-2">
-        <div className="flex flex-1 rounded-xl border bg-surface p-[3px]" role="tablist" aria-label="קבוצה">
+        <div className="flex flex-1 rounded-xl border bg-surface p-[3px]" role="group" aria-label="קבוצה">
           {["away", "home"].map((s) => {
             const name = s === "home" ? game.home_team : game.away_team;
             return (
               <button
                 key={s}
-                role="tab"
-                aria-selected={side === s}
+                aria-pressed={side === s}
                 onClick={() => setSide(s)}
                 className={`flex h-[38px] flex-1 items-center justify-center gap-1.5 rounded-[9px] text-sm font-bold ${
                   side === s ? "bg-surface-2 text-ink" : "text-subtle"
@@ -146,7 +146,7 @@ export default function BoxScore({ game, summary }) {
         <button
           onClick={() => setShowAll(!showAll)}
           aria-pressed={showAll}
-          className={`h-11 whitespace-nowrap rounded-xl border px-3 text-[13px] ${showAll ? "border-brand font-bold text-brand" : "text-subtle"}`}
+          className={`h-11 whitespace-nowrap rounded-xl border px-3 text-[13px] ${showAll ? "border-brand font-bold text-brand-ink" : "text-subtle"}`}
         >
           {showAll ? "מקוצר" : "כל הנתונים"}
         </button>

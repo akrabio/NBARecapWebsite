@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import VideoEmbed from "./VideoEmbed";
@@ -44,28 +44,19 @@ function GameImage({ image }) {
   );
 }
 
-export default function RecapBody({ game, recap }) {
-  const [images, setImages] = useState([]);
-
-  useEffect(() => {
-    if (!game.espn_game_id) return;
-    let cancelled = false;
-    fetch(`/api/game-images/${game.espn_game_id}`)
-      .then((res) => (res.ok ? res.json() : { images: [] }))
-      .then((data) => !cancelled && setImages(data.images || []))
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [game.espn_game_id]);
+// `media` ({ photos, videoId }) comes from the server with the page, so the
+// photos and video are in place on first render.
+export default function RecapBody({ game, recap, media }) {
+  const images = media?.photos || [];
 
   const tables = matchTablesToTeams(game, recap.tables);
-  const paragraphCount = recap.blocks.filter((b) => b.type === "text").length;
-  const slots = imageSlots(paragraphCount, images.length);
+  // Each text block's paragraph number (-1 for tables), for placing the video and photos
+  let count = -1;
+  const paragraphOf = recap.blocks.map((b) => (b.type === "text" ? ++count : -1));
+  const slots = imageSlots(count + 1, images.length);
+  // Matched tables are shown once, as a summary, where the first table was
+  const summaryAt = tables ? recap.blocks.findIndex((b) => b.type === "table") : -1;
   const colors = { away: getTeamColors(game.away_team).primary, home: getTeamColors(game.home_team).primary };
-
-  let paragraph = -1;
-  let statsShown = false;
 
   return (
     <article className="[&>p:first-of-type]:text-lg [&>p:first-of-type]:font-medium [&>p:first-of-type]:text-ink">
@@ -73,11 +64,7 @@ export default function RecapBody({ game, recap }) {
       {recap.blocks.map((block, i) => {
         if (block.type === "table") {
           // Matched tables become one labeled summary; otherwise show them as-is.
-          if (tables) {
-            if (statsShown) return null;
-            statsShown = true;
-            return <StatsSummary key={i} game={game} tables={tables} />;
-          }
+          if (tables) return i === summaryAt ? <StatsSummary key={i} game={game} tables={tables} /> : null;
           const table = recap.tables[block.index];
           const markdown = [table.head, table.head.map(() => "---"), ...table.rows].map((r) => `| ${r.join(" | ")} |`).join("\n");
           return (
@@ -87,14 +74,14 @@ export default function RecapBody({ game, recap }) {
           );
         }
 
-        paragraph += 1;
+        const paragraph = paragraphOf[i];
         const imageIndex = slots.indexOf(paragraph);
         return (
           <Fragment key={i}>
             <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
               {block.text}
             </ReactMarkdown>
-            {paragraph === 0 && <VideoEmbed game={game} colors={colors} />}
+            {paragraph === 0 && <VideoEmbed game={game} videoId={media?.videoId} colors={colors} />}
             {imageIndex >= 0 && images[imageIndex] && <GameImage image={images[imageIndex]} />}
           </Fragment>
         );
