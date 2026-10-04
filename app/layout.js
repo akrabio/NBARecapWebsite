@@ -1,6 +1,9 @@
 import { Heebo } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next"
 import Toaster from "@/components/ui/Toast";
+import ServiceWorker from "@/components/ServiceWorker";
+import ThemeSync from "@/components/ThemeSync";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const heebo = Heebo({
@@ -9,14 +12,16 @@ const heebo = Heebo({
 });
 
 export const metadata = {
-  // Absolute base for canonical/Open Graph URLs (Vercel sets this in production).
-  metadataBase: new URL(
-    process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : "http://localhost:3000"
-  ),
+  metadataBase: new URL(SITE_URL),
   title: "סיכומי NBA בעברית",
   description: "סיכומי משחקי NBA בעברית עם ניתוח סטטיסטי מקצועי ומעמיק",
+  openGraph: {
+    title: "סיכומי NBA בעברית",
+    description: "סיכומי משחקי NBA בעברית עם ניתוח סטטיסטי מקצועי ומעמיק",
+    type: "website",
+    locale: "he_IL",
+    siteName: "סיכומי NBA בעברית",
+  },
   icons: {
     icon: '/icon-192.png',
     apple: '/apple-touch-icon.png',
@@ -55,6 +60,8 @@ export default function RootLayout({ children }) {
         {children}
         <Toaster />
         <Analytics />
+        <ServiceWorker />
+        <ThemeSync />
       </body>
     </html>
   );

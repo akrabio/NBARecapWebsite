@@ -13,6 +13,7 @@
   --color-subtle: var(--subtle);
   --color-faint: var(--faint);
   --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
   --color-on-brand: var(--on-brand);
   --color-win: var(--win);
 }
@@ -24,12 +25,18 @@
   --line: #e2e5ea;
   --ink: #11141a;
   --body: #2f3541;
-  --subtle: #687083;
-  --faint: #9aa1b0;
-  --brand: #ea6408;
+  --subtle: #555d6e;
+  --faint: #646b7c;
+  --brand: #c2410c; /* deep enough for white text (5.2:1) */
+  --brand-ink: #c2410c;
   --on-brand: #ffffff;
   --win: #11141a;
   --scrim: rgba(10, 12, 16, 0.45);
+  --tag-brand-ink: #a8380a;
+  --tag-deni-ink: #c0262d;
+  --tag-close-ink: #1c6bb0;
+  --tag-upset-ink: #7440c4;
+  --tag-playoffs-ink: #8a5f00;
   color-scheme: light;
 }
 
@@ -46,12 +53,18 @@
     --line: #232a37;
     --ink: #eef1f6;
     --body: #cfd5e0;
-    --subtle: #8a93a6;
-    --faint: #5d6576;
+    --subtle: #a3abbc;
+    --faint: #838b9d;
     --brand: #ff7a1a;
+    --brand-ink: #ff7a1a;
     --on-brand: #1a0b00;
     --win: #ffffff;
     --scrim: rgba(0, 0, 0, 0.6);
+    --tag-brand-ink: #ff8a33;
+    --tag-deni-ink: #f0686c;
+    --tag-close-ink: #5aa9ef;
+    --tag-upset-ink: #b08cf0;
+    --tag-playoffs-ink: #e0a82a;
     color-scheme: dark;
   }
 }
@@ -63,12 +76,18 @@
   --line: #232a37;
   --ink: #eef1f6;
   --body: #cfd5e0;
-  --subtle: #8a93a6;
-  --faint: #5d6576;
+  --subtle: #a3abbc;
+  --faint: #838b9d;
   --brand: #ff7a1a;
+  --brand-ink: #ff7a1a;
   --on-brand: #1a0b00;
   --win: #ffffff;
   --scrim: rgba(0, 0, 0, 0.6);
+  --tag-brand-ink: #ff8a33;
+  --tag-deni-ink: #f0686c;
+  --tag-close-ink: #5aa9ef;
+  --tag-upset-ink: #b08cf0;
+  --tag-playoffs-ink: #e0a82a;
   color-scheme: dark;
 }
 
@@ -88,16 +107,17 @@
 }
 
 @layer components {
-  /* "Why read this" tags on game cards */
+  /* "Why read this" tags on game cards. Text colors are per theme so they
+     keep AA contrast on their tinted backgrounds. */
   .tag {
     @apply inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold whitespace-nowrap;
-    background: color-mix(in srgb, var(--brand) 14%, transparent);
-    color: var(--brand);
+    background: color-mix(in srgb, var(--tag, var(--brand)) 15%, transparent);
+    color: var(--tag-ink, var(--tag-brand-ink));
   }
-  .tag-deni { background: rgba(224, 58, 62, 0.14); color: #e5484d; }
-  .tag-close, .tag-ot { background: rgba(40, 140, 230, 0.13); color: #2f8fe0; }
-  .tag-upset { background: rgba(150, 90, 230, 0.14); color: #9a62e8; }
-  .tag-playoffs { background: rgba(230, 170, 20, 0.16); color: #c98d00; }
+  .tag-deni { --tag: #e03a3e; --tag-ink: var(--tag-deni-ink); }
+  .tag-close { --tag: #288ce6; --tag-ink: var(--tag-close-ink); }
+  .tag-upset { --tag: #965ae6; --tag-ink: var(--tag-upset-ink); }
+  .tag-playoffs { --tag: #e6aa14; --tag-ink: var(--tag-playoffs-ink); }
 
   .no-scrollbar { scrollbar-width: none; }
 

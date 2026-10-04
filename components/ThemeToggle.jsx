@@ -1,38 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { Contrast, Moon, Sun } from "lucide-react";
 import { toast } from "@/components/ui/Toast";
+import { THEMES, applyTheme, readTheme, saveTheme, subscribeTheme } from "@/lib/theme";
 
 // Cycles: follow the device → light → dark. The choice is kept per device and
 // applied before paint by the script in app/layout.js.
-const THEMES = ["auto", "light", "dark"];
 const LABELS = { auto: "לפי המכשיר", light: "בהיר", dark: "כהה" };
 const ICONS = { auto: Contrast, light: Sun, dark: Moon };
 
-function readTheme() {
-  try {
-    const saved = localStorage.getItem("theme");
-    return THEMES.includes(saved) ? saved : "auto";
-  } catch {
-    return "auto";
-  }
-}
-
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState("auto");
-
-  useEffect(() => setTheme(readTheme()), []);
+  // The saved choice lives in localStorage; the server renders "auto".
+  const theme = useSyncExternalStore(subscribeTheme, readTheme, () => "auto");
 
   const cycle = () => {
     const next = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
-    setTheme(next);
-    if (next === "auto") delete document.documentElement.dataset.theme;
-    else document.documentElement.dataset.theme = next;
-    try {
-      if (next === "auto") localStorage.removeItem("theme");
-      else localStorage.setItem("theme", next);
-    } catch {}
+    applyTheme(next);
+    saveTheme(next);
     toast(`ערכת צבעים: ${LABELS[next]}`);
   };
 

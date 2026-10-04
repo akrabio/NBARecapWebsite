@@ -67,3 +67,6 @@ export const nbaShortHe = {
   "Utah Jazz": "ג'אז",
   "Washington Wizards": "ויזארדס"
 };
+
+// Mostly-black logos that disappear on dark backgrounds (see .logo-on-dark)
+export const DARK_LOGOS = new Set(["Brooklyn Nets", "San Antonio Spurs"]);

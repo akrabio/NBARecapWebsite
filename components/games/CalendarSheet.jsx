@@ -14,9 +14,12 @@ export default function CalendarSheet({ open, onOpenChange, date, today }) {
   const [month, setMonth] = useState(() => startOfMonth(parseDateKey(date)));
   const [counts, setCounts] = useState({});
 
-  useEffect(() => {
+  // Each time it opens, start from the selected date's month
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
     if (open) setMonth(startOfMonth(parseDateKey(date)));
-  }, [open, date]);
+  }
 
   const gridStart = addDays(month, -month.getDay());
   const cells = Array.from({ length: 42 }, (_, i) => addDays(gridStart, i));

@@ -5,8 +5,8 @@ import { nbaEnToHe, nbaHeAltNames } from "./consts";
  * @param {string} str - String to normalize
  * @returns {string} - Normalized string
  */
-function normalizeApostrophes(str) {
-  return str.replace(/[׳''']/g, "'");
+export function normalizeApostrophes(str) {
+  return str.replace(/[\u05F3\u2018\u2019\u02BC\u00B4`]/g, "'"); // ׳ ‘ ’ ʼ ´ `
 }
 
 /**
@@ -159,4 +159,29 @@ export function getTeamInitials(teamName) {
     .join('')
     .substring(0, 2)
     .toUpperCase();
+}
+
+/**
+ * The winning side, or null when a score is missing (or tied)
+ * @param {object} game - Game with home_score / away_score (numbers or null)
+ * @returns {"home"|"away"|null}
+ */
+export function getWinner(game) {
+  const { home_score: home, away_score: away } = game;
+  if (home == null || away == null || home === away) return null;
+  return home > away ? "home" : "away";
+}
+
+/** A score for display: "–" when it's missing */
+export const formatScore = (score) => (score == null ? "–" : score);
+
+/**
+ * "ניקס 105–98 ספרס", or "ניקס נגד ספרס" when the scores are missing
+ * @param {object} game - Game object
+ * @param {(team: string) => string} name - Team name formatter
+ */
+export function matchupText(game, name) {
+  return game.home_score != null && game.away_score != null
+    ? `${name(game.away_team)} ${game.away_score}–${game.home_score} ${name(game.home_team)}`
+    : `${name(game.away_team)} נגד ${name(game.home_team)}`;
 }

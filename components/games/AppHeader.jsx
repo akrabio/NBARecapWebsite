@@ -24,7 +24,7 @@ function BrandMark() {
 
 // Sticky header: brand, theme, team search, and either the date strip or the
 // selected-team bar. Slides away while scrolling down on phones.
-export default function AppHeader({ date, today, counts, team }) {
+export default function AppHeader({ date, today, counts, team, teamGameCount = 0 }) {
   const { navigate } = useNavigation();
   const { openPicker, favorite, setFavorite } = useTeamPicker();
   const [hidden, setHidden] = useState(false);
@@ -79,13 +79,15 @@ export default function AppHeader({ date, today, counts, team }) {
             <TeamLogo teamName={team} hebrewName={nbaEnToHe[team]} size="md" className="!h-9 !w-9" />
             <div>
               <b className="block text-[17px]">{nbaEnToHe[team]}</b>
-              <small className="text-[13px] text-subtle">5 המשחקים האחרונים</small>
+              <small className="text-[13px] text-subtle">
+                {teamGameCount === 1 ? "המשחק האחרון" : `${teamGameCount} המשחקים האחרונים`}
+              </small>
             </div>
             <button
               onClick={() => setFavorite(favorite === team ? null : team)}
               aria-pressed={favorite === team}
               className={`ms-auto flex h-9 items-center gap-1 rounded-full border px-3 text-[13px] ${
-                favorite === team ? "border-brand font-bold text-brand" : "text-subtle"
+                favorite === team ? "border-brand font-bold text-brand-ink" : "text-subtle"
               }`}
             >
               <Star className={`h-3.5 w-3.5 ${favorite === team ? "fill-brand" : ""}`} />

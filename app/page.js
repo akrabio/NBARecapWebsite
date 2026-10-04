@@ -1,12 +1,13 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { userAgent } from "next/server";
 import BrowseColumn from "@/components/games/BrowseColumn";
 import { TeamPickerProvider } from "@/components/games/TeamPicker";
 import GameView from "@/components/game/GameView";
-import DesktopOnly from "@/components/DesktopOnly";
 import { NavigationProvider } from "@/components/NavigationProvider";
 import { getBrowseData, toSiblings } from "@/lib/browse";
 import { readFavorite } from "@/lib/favorite-server";
-import { getGameById } from "@/lib/games";
+import { getGameById, getGameMedia, warmGames } from "@/lib/games";
 import { todayKey } from "@/lib/dates";
 import { nbaEnToHe } from "@/utils/consts";
 
@@ -21,8 +22,15 @@ export default async function Home({ searchParams }) {
   const { favorite, showPrompt } = await readFavorite();
   const data = await getBrowseData({ date: params.date, team, favorite, today });
 
-  // Desktop shows the top game beside the list, so the right pane is never empty.
-  const preview = data.ordered[0] ? await getGameById(data.ordered[0].id) : null;
+  // Desktop shows the top game beside the list, so the right pane is never
+  // empty. It's rendered on the server (no pop-in after load) and skipped
+  // for phones, which never show it.
+  const isPhone = userAgent({ headers: await headers() }).device.type === "mobile";
+  const preview = !isPhone && data.ordered[0] ? await getGameById(data.ordered[0].id) : null;
+  const previewMedia = preview ? await getGameMedia(preview) : null;
+
+  // Readers pick a game from this list next; get each one ready meanwhile.
+  warmGames(data.ordered.filter((game) => game.id !== preview?.id));
 
   return (
     <NavigationProvider>
@@ -36,9 +44,9 @@ export default async function Home({ searchParams }) {
             selectedId={preview?.id}
           />
           {preview && (
-            <DesktopOnly>
-              <GameView key={preview.id} game={preview} siblings={toSiblings(data.ordered)} />
-            </DesktopOnly>
+            <div className="hidden lg:block">
+              <GameView key={preview.id} game={preview} media={previewMedia} siblings={toSiblings(data.ordered)} />
+            </div>
           )}
         </div>
       </TeamPickerProvider>
