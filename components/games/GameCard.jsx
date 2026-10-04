@@ -5,7 +5,6 @@ import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
 import { extractRecord, extractSeriesRecord, formatScore, getWinner } from "@/utils/gameUtils";
 import { getGameReason } from "@/utils/gameScoring";
 import { getTeamColors } from "@/utils/teamColors";
-import { getSnippet } from "@/lib/recap";
 import { formatShortDate } from "@/lib/dates";
 
 function TeamLine({ game, side, compact }) {
@@ -45,11 +44,10 @@ function Teams({ game, compact }) {
   );
 }
 
-// Featured game: both teams, why it's worth reading, and a snippet.
+// Featured game: both teams and why it's worth reading.
 export function GameCard({ game, showDate = false, selected = false }) {
   const reason = getGameReason(game);
   const series = extractSeriesRecord(game.content);
-  const snippet = getSnippet(game.content);
   const status = [showDate && formatShortDate(game.date), series ? `סדרה ${series}` : "סיום"]
     .filter(Boolean)
     .join(" · ");
@@ -72,9 +70,6 @@ export function GameCard({ game, showDate = false, selected = false }) {
         {reason && <span className={`tag tag-${reason.key}`}>{reason.label}</span>}
       </div>
       <Teams game={game} />
-      {snippet && (
-        <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-body">{snippet}</p>
-      )}
     </GameLink>
   );
 }
