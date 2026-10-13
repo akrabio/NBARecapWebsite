@@ -3,7 +3,7 @@ import GameLink from "./GameLink";
 import SinceLastVisit from "./SinceLastVisit";
 import TeamLogo from "@/components/ui/TeamLogo";
 import WinProbStrip from "@/components/ui/WinProbStrip";
-import { extractRecord, getWinner } from "@/utils/gameUtils";
+import { formatRecord, getWinner } from "@/utils/gameUtils";
 import { getTeamColors } from "@/utils/teamColors";
 import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
 
@@ -54,7 +54,7 @@ function formatTipOff(iso) {
 // is undefined when it wasn't looked up (an old night).
 export default function FavoriteCard({ team, game, recent, standing, nextGame, date, selectedId }) {
   const latest = game || recent[0];
-  const record = standing ? `${standing.w}-${standing.l}` : latest && extractRecord(latest.title, team);
+  const record = standing ? `${standing.w}-${standing.l}` : latest && formatRecord(latest.title, team);
   const move = standing?.prevRank ? standing.prevRank - standing.rank : 0;
   // The latest game's own streak is never older than the standings snapshot
   const streak = streakText(latest?.streaks?.[latest.home_team === team ? "home" : "away"] || standing?.streak);

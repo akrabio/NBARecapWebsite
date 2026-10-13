@@ -39,8 +39,9 @@ export function getGameFacts(game) {
 
 const isComeback = (f) => f.deficit >= 10 && f.winnerMinWp != null && f.winnerMinWp <= 0.15;
 
-// Up to two { key, label } tags, most interesting first.
-export function getTags(game) {
+// Up to two { key, label } tags, most interesting first. `omit` skips tags
+// the surrounding UI already shows (e.g. "playoffs" next to the series score).
+export function getTags(game, { omit = [] } = {}) {
   const f = getGameFacts(game);
   const pts = f.topScorer?.pts || 0;
   const rules = [
@@ -58,7 +59,10 @@ export function getTags(game) {
     [Boolean(f.matchup && f.matchup.awayPct >= 0.5 && f.matchup.homePct >= 0.5), "top", "קרב צמרת"],
     [f.margin >= 25, "blowout", `הפרש ${f.margin}`],
   ];
-  return rules.filter(([when]) => when).slice(0, MAX_TAGS).map(([, key, label]) => ({ key, label }));
+  return rules
+    .filter(([when, key]) => when && !omit.includes(key))
+    .slice(0, MAX_TAGS)
+    .map(([, key, label]) => ({ key, label }));
 }
 
 // How much of a story the game was: the base priority (Portland, popular

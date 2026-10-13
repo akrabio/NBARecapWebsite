@@ -49,6 +49,14 @@ describe("getTags", () => {
     expect(getTags(recap("Utah Jazz", "Charlotte Hornets", null, null))).toEqual([]);
   });
 
+  it("skips tags the page already shows", () => {
+    // The freed slot goes to the next tag
+    expect(getTags(playoffGame, { omit: ["playoffs"] })).toEqual([
+      { key: "close", label: "צמוד עד הסוף" },
+      { key: "top", label: "קרב צמרת" },
+    ]);
+  });
+
   it("keeps Portland near the top", () => {
     expect(getTags(recap("Portland Trail Blazers", "Utah Jazz", 100, 99))[0].key).toBe("deni");
   });

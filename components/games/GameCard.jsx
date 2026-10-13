@@ -2,7 +2,7 @@ import { ChevronLeft } from "lucide-react";
 import TeamLogo from "@/components/ui/TeamLogo";
 import GameLink from "./GameLink";
 import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
-import { extractRecord, extractSeriesRecord, formatScore, getWinner } from "@/utils/gameUtils";
+import { extractSeriesRecord, formatRecord, formatScore, getWinner } from "@/utils/gameUtils";
 import { getTags } from "@/utils/gameStory";
 import { getTeamColors } from "@/utils/teamColors";
 import { formatShortDate } from "@/lib/dates";
@@ -12,7 +12,7 @@ function TeamLine({ game, side, compact }) {
   const team = game[`${side}_team`];
   const score = game[`${side}_score`];
   const won = getWinner(game) === side;
-  const record = extractRecord(game.title, team);
+  const record = formatRecord(game.title, team);
   return (
     <div className="flex items-center gap-2.5 py-[3px]">
       <TeamLogo
@@ -63,8 +63,9 @@ function TopPlayer({ team, player }) {
 // A game as a story: tags, the score, how it went (win probability) and,
 // when the pipeline wrote one, a one-line takeaway.
 export function GameCard({ game, showDate = false, selected = false }) {
-  const tags = getTags(game);
   const series = extractSeriesRecord(game.content);
+  // The status line already shows the series
+  const tags = getTags(game, { omit: series ? ["playoffs"] : [] });
   const overtime = game.story?.periods > 4;
   const status = [
     showDate && formatShortDate(game.date),

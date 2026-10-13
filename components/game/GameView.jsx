@@ -15,7 +15,7 @@ import { parseRecap } from "@/lib/recap";
 import { formatLongDate } from "@/lib/dates";
 import { getBoxScore } from "@/utils/api";
 import { getTags } from "@/utils/gameStory";
-import { extractRecord, formatScore, getWinner, matchupText } from "@/utils/gameUtils";
+import { formatRecord, formatScore, getWinner, matchupText } from "@/utils/gameUtils";
 import { getTeamColors } from "@/utils/teamColors";
 import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
 
@@ -74,7 +74,7 @@ export default function GameView({ game, media, siblings }) {
   const router = useRouter();
   const recap = useMemo(() => parseRecap(game.content), [game.content]);
   // The series tag below already says "playoffs"
-  const tags = getTags(game).filter((tag) => !(tag.key === "playoffs" && recap.series));
+  const tags = getTags(game, { omit: recap.series ? ["playoffs"] : [] });
   const [tab, setTab] = useState("recap");
   const [summary, setSummary] = useState({ status: game.espn_game_id ? "loading" : "missing" });
   const [showLines, setShowLines] = useState(false);
@@ -223,9 +223,9 @@ export default function GameView({ game, media, siblings }) {
             {matchupText(game, (team) => nbaEnToHe[team] || team)}
           </h1>
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-            <HeroTeam team={game.away_team} record={extractRecord(game.title, game.away_team)} />
+            <HeroTeam team={game.away_team} record={formatRecord(game.title, game.away_team)} />
             <Score game={game} className="text-[32px] lg:text-[42px]" />
-            <HeroTeam team={game.home_team} record={extractRecord(game.title, game.home_team)} reverse />
+            <HeroTeam team={game.home_team} record={formatRecord(game.title, game.home_team)} reverse />
           </div>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[12.5px] text-subtle">
             <span>{formatLongDate(game.date)}</span>

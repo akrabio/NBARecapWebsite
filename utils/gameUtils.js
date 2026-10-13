@@ -112,6 +112,18 @@ export function extractRecord(title, teamName) {
 }
 
 /**
+ * A team's record for display: null when there's none, or it's 0-0 (the
+ * start of a season, or a playoff recap that doesn't track records)
+ * @param {string} title - Game title containing team records
+ * @param {string} teamName - English team name
+ * @returns {string|null}
+ */
+export function formatRecord(title, teamName) {
+  const record = extractRecord(title, teamName);
+  return record && !/^0\D0$/.test(record) ? record : null;
+}
+
+/**
  * Extract playoff series record from game title
  * Supports format: "| סדרה: 3-1" or "סדרה: 1-0"
  * @param {string} title - Game title
