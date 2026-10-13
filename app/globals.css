@@ -16,6 +16,8 @@
   --color-brand-ink: var(--brand-ink);
   --color-on-brand: var(--on-brand);
   --color-win: var(--win);
+  --color-good: var(--good);
+  --color-bad: var(--bad);
 }
 
 :root {
@@ -31,6 +33,8 @@
   --brand-ink: #c2410c;
   --on-brand: #ffffff;
   --win: #11141a;
+  --good: #137a43; /* wins and moving up (AA on surfaces) */
+  --bad: #c22b2b;
   --scrim: rgba(10, 12, 16, 0.45);
   --tag-brand-ink: #a8380a;
   --tag-deni-ink: #c0262d;
@@ -59,6 +63,8 @@
     --brand-ink: #ff7a1a;
     --on-brand: #1a0b00;
     --win: #ffffff;
+    --good: #4ccb85;
+    --bad: #ff6f6f;
     --scrim: rgba(0, 0, 0, 0.6);
     --tag-brand-ink: #ff8a33;
     --tag-deni-ink: #f0686c;
@@ -82,6 +88,8 @@
   --brand-ink: #ff7a1a;
   --on-brand: #1a0b00;
   --win: #ffffff;
+  --good: #4ccb85;
+  --bad: #ff6f6f;
   --scrim: rgba(0, 0, 0, 0.6);
   --tag-brand-ink: #ff8a33;
   --tag-deni-ink: #f0686c;
@@ -118,6 +126,10 @@
   .tag-close { --tag: #288ce6; --tag-ink: var(--tag-close-ink); }
   .tag-upset { --tag: #965ae6; --tag-ink: var(--tag-upset-ink); }
   .tag-playoffs { --tag: #e6aa14; --tag-ink: var(--tag-playoffs-ink); }
+  .tag-perf { --tag: #e6aa14; --tag-ink: var(--tag-playoffs-ink); }
+  .tag-comeback { --tag: #965ae6; --tag-ink: var(--tag-upset-ink); }
+  .tag-ot, .tag-seesaw { --tag: #288ce6; --tag-ink: var(--tag-close-ink); }
+  .tag-streak, .tag-blowout { --tag: var(--faint); --tag-ink: var(--subtle); }
 
   .no-scrollbar { scrollbar-width: none; }
 

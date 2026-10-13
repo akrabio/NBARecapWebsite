@@ -7,7 +7,7 @@ import { getGameById } from "@/lib/games";
 import { loadHeebo, oklchToHex, visualRtl } from "@/lib/og";
 import { DARK_LOGOS, nbaEnToHe, nbaShortHe } from "@/utils/consts";
 import { extractSeriesRecord, formatScore, getTeamLogoUrl, getWinner } from "@/utils/gameUtils";
-import { getGameReason } from "@/utils/gameScoring";
+import { getTags } from "@/utils/gameStory";
 import { getTeamColors } from "@/utils/teamColors";
 
 export const alt = "תוצאת המשחק";
@@ -72,8 +72,7 @@ export default async function Image({ params }) {
 
   const winner = getWinner(game);
   const series = extractSeriesRecord(game.content);
-  const reason = getGameReason(game);
-  const tag = series ? `סדרה ${series}` : reason?.label;
+  const tag = series ? `סדרה ${series}` : getTags(game)[0]?.label;
   const [y, m, d] = game.date.split("-").map(Number);
   const date = `${d}.${m}.${y}`;
   const brand = visualRtl("סיכומי NBA");
