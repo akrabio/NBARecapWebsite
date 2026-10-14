@@ -2,12 +2,21 @@ import { describe, expect, it } from "vitest";
 import {
   extractRecord,
   extractSeriesRecord,
+  formatRecord,
   formatScore,
   getWinner,
   matchupText,
   normalizeApostrophes,
 } from "@/utils/gameUtils";
 import { game } from "./fixtures";
+
+describe("formatRecord", () => {
+  it("hides a 0-0 record", () => {
+    expect(formatRecord("אטלנטה הוקס (0-0) 109 – 108 ניו יורק ניקס (0-0)", "Atlanta Hawks")).toBeNull();
+    expect(formatRecord(game.title, "San Antonio Spurs")).toBe("62-20");
+    expect(formatRecord("", "San Antonio Spurs")).toBeNull();
+  });
+});
 
 describe("extractRecord", () => {
   it("finds each team's record by its Hebrew name, not by position", () => {

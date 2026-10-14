@@ -1,4 +1,4 @@
-import { extractRecord, extractSeriesRecord, getWinner } from "./gameUtils";
+import { extractRecord, getWinner } from "./gameUtils";
 
 // Records this short say little about team quality (1-0 vs 1-0 isn't a "top
 // matchup"), so they don't count until both teams have played this many games.
@@ -43,11 +43,11 @@ const hasPopularTeam = (game) => {
   );
 };
 
-const isPortlandGame = (game) =>
+export const isPortlandGame = (game) =>
   [game.home_team, game.away_team].some((t) => /trail blazers|portland/i.test(t || ""));
 
 // Win percentages and whether the underdog won
-const getMatchup = (game) => {
+export const getMatchup = (game) => {
   const records = getTeamRecords(game);
   if (!records) return null;
   const awayPct = getWinPercentage(records.away);
@@ -98,21 +98,4 @@ export const scoreGame = (game) => {
   }
 
   return score;
-};
-
-// Splits a day's games into featured and the rest, both sorted by score.
-export const orderGames = (games, featuredCount = 3) => {
-  const sorted = [...games].sort((a, b) => scoreGame(b) - scoreGame(a));
-  return { featured: sorted.slice(0, featuredCount), rest: sorted.slice(featuredCount) };
-};
-
-// A short label explaining why a game is worth reading, or null.
-export const getGameReason = (game) => {
-  if (isPortlandGame(game)) return { key: "deni", label: "דני אבדיה" };
-  if (extractSeriesRecord(game.content)) return { key: "playoffs", label: "פלייאוף" };
-  const matchup = getMatchup(game);
-  if (matchup?.isUpset) return { key: "upset", label: "הפתעה" };
-  if (getWinner(game) && Math.abs(game.home_score - game.away_score) <= 5) return { key: "close", label: "צמוד עד הסוף" };
-  if (matchup && matchup.awayPct >= 0.5 && matchup.homePct >= 0.5) return { key: "top", label: "קרב צמרת" };
-  return null;
 };

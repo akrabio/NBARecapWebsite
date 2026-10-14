@@ -1,8 +1,9 @@
 import { GameCard, GameRow } from "./GameCard";
 import EmptyDay from "./EmptyDay";
 import { FavoritePrompt, FavoriteTitle } from "./FavoriteTeam";
+import FavoriteCard from "./FavoriteCard";
+import NightBrief from "./NightBrief";
 import { formatLongDate } from "@/lib/dates";
-import { nbaShortHe } from "@/utils/consts";
 
 function SectionTitle({ title, aside }) {
   return (
@@ -31,33 +32,27 @@ export default function GamesList({ data, favorite, showPrompt, selectedId }) {
 
   if (data.ordered.length === 0) return <EmptyDay date={data.date} previousDate={data.previousDate} />;
 
-  const { favoriteGame, lastFavoriteGame, featured, rest } = data;
+  const { favoriteGame, favoriteRecent, favoriteStanding, nextGame, summary, others } = data;
   return (
     <>
       {favorite && (
         <section>
           <FavoriteTitle />
-          {favoriteGame ? (
-            card(favoriteGame)
-          ) : (
-            <div className="mb-2.5">
-              <p className="mb-2 text-sm text-subtle">
-                ה{nbaShortHe[favorite]} לא שיחקו ביום הזה{lastFavoriteGame ? ". המשחק האחרון שלהם:" : "."}
-              </p>
-              {lastFavoriteGame && row(lastFavoriteGame, { showDate: true })}
-            </div>
-          )}
+          <FavoriteCard
+            team={favorite}
+            game={favoriteGame}
+            recent={favoriteRecent}
+            standing={favoriteStanding}
+            nextGame={nextGame}
+            date={data.date}
+            selectedId={selectedId}
+          />
         </section>
       )}
+      {summary.show && <NightBrief summary={summary} />}
       {showPrompt && <FavoritePrompt />}
-      {featured.length > 0 && <SectionTitle title="שווה לקרוא" aside={formatLongDate(data.date)} />}
-      {featured.map((game) => card(game))}
-      {rest.length > 0 && (
-        <>
-          <SectionTitle title="כל התוצאות" aside={`${rest.length} משחקים`} />
-          <div className="grid gap-2">{rest.map((game) => row(game))}</div>
-        </>
-      )}
+      {others.length > 0 && <SectionTitle title={favorite ? "שאר המשחקים" : "כל המשחקים"} aside={formatLongDate(data.date)} />}
+      {others.map((game) => card(game))}
     </>
   );
 }

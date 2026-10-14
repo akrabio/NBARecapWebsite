@@ -9,12 +9,13 @@ import { toast } from "@/components/ui/Toast";
 import RecapBody from "./RecapBody";
 import BoxScore from "./BoxScore";
 import LineScore from "./LineScore";
+import GameFlow from "./GameFlow";
 import { navState } from "@/lib/navState";
 import { parseRecap } from "@/lib/recap";
 import { formatLongDate } from "@/lib/dates";
 import { getBoxScore } from "@/utils/api";
-import { getGameReason } from "@/utils/gameScoring";
-import { extractRecord, formatScore, getWinner, matchupText } from "@/utils/gameUtils";
+import { getTags } from "@/utils/gameStory";
+import { formatRecord, formatScore, getWinner, matchupText } from "@/utils/gameUtils";
 import { getTeamColors } from "@/utils/teamColors";
 import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
 
@@ -72,7 +73,8 @@ function PagerLink({ game, label, align }) {
 export default function GameView({ game, media, siblings }) {
   const router = useRouter();
   const recap = useMemo(() => parseRecap(game.content), [game.content]);
-  const reason = getGameReason(game);
+  // The series tag below already says "playoffs"
+  const tags = getTags(game, { omit: recap.series ? ["playoffs"] : [] });
   const [tab, setTab] = useState("recap");
   const [summary, setSummary] = useState({ status: game.espn_game_id ? "loading" : "missing" });
   const [showLines, setShowLines] = useState(false);
@@ -221,16 +223,17 @@ export default function GameView({ game, media, siblings }) {
             {matchupText(game, (team) => nbaEnToHe[team] || team)}
           </h1>
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-            <HeroTeam team={game.away_team} record={extractRecord(game.title, game.away_team)} />
+            <HeroTeam team={game.away_team} record={formatRecord(game.title, game.away_team)} />
             <Score game={game} className="text-[32px] lg:text-[42px]" />
-            <HeroTeam team={game.home_team} record={extractRecord(game.title, game.home_team)} reverse />
+            <HeroTeam team={game.home_team} record={formatRecord(game.title, game.home_team)} reverse />
           </div>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[12.5px] text-subtle">
             <span>{formatLongDate(game.date)}</span>
-            {/* The series tag already says "playoffs" */}
-            {reason && !(reason.key === "playoffs" && recap.series) && (
-              <span className={`tag tag-${reason.key}`}>{reason.label}</span>
-            )}
+            {tags.map((tag) => (
+              <span key={tag.key + tag.label} className={`tag tag-${tag.key}`}>
+                {tag.label}
+              </span>
+            ))}
             {recap.series && <span className="tag tag-playoffs">סדרה {recap.series}</span>}
             {hasLines && (
               <button
@@ -276,7 +279,10 @@ export default function GameView({ game, media, siblings }) {
       >
         {tab === "recap" ? (
           <>
+            {game.headline && <h2 className="text-[22px] leading-snug font-black lg:text-[26px]">{game.headline}</h2>}
+            {game.one_liner && <p className="mt-2 mb-5 text-[17px] leading-relaxed text-body">{game.one_liner}</p>}
             <RecapBody game={game} recap={recap} media={media} />
+            <GameFlow game={game} />
             {siblings.length > 1 && (
               <nav className="mt-7 grid grid-cols-2 gap-2 lg:hidden" aria-label="משחקים נוספים מאותו יום">
                 <PagerLink game={siblings[index - 1]} label="› הקודם" />
