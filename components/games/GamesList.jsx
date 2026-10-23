@@ -3,6 +3,7 @@ import EmptyDay from "./EmptyDay";
 import { FavoritePrompt, FavoriteTitle } from "./FavoriteTeam";
 import FavoriteCard from "./FavoriteCard";
 import NightBrief from "./NightBrief";
+import StandingsSheet from "./StandingsSheet";
 import { formatLongDate } from "@/lib/dates";
 
 function SectionTitle({ title, aside }) {
@@ -32,7 +33,7 @@ export default function GamesList({ data, favorite, showPrompt, selectedId }) {
 
   if (data.ordered.length === 0) return <EmptyDay date={data.date} previousDate={data.previousDate} />;
 
-  const { favoriteGame, favoriteRecent, favoriteStanding, nextGame, summary, others } = data;
+  const { favoriteGame, favoriteRecent, favoriteStanding, standings, nextGame, summary, others } = data;
   return (
     <>
       {favorite && (
@@ -50,6 +51,7 @@ export default function GamesList({ data, favorite, showPrompt, selectedId }) {
         </section>
       )}
       {summary.show && <NightBrief summary={summary} />}
+      {standings && <StandingsSheet standings={standings} favorite={favorite} />}
       {showPrompt && <FavoritePrompt />}
       {others.length > 0 && <SectionTitle title={favorite ? "שאר המשחקים" : "כל המשחקים"} aside={formatLongDate(data.date)} />}
       {others.map((game) => card(game))}

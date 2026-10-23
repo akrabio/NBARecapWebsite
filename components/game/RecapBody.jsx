@@ -1,12 +1,14 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import VideoEmbed from "./VideoEmbed";
 import StatsSummary from "./StatsSummary";
+import ScoreRail from "./ScoreRail";
 import { getReadingMinutes, matchTablesToTeams } from "@/lib/recap";
-import { getTeamColors } from "@/utils/teamColors";
+import { matchupColors } from "@/utils/teamColors";
+import { railMarks } from "@/utils/scoreRail";
 
 const markdownComponents = {
   p: ({ children }) => <p className="mb-[18px] text-[17px] leading-[1.8] text-body">{children}</p>,
@@ -22,6 +24,17 @@ const markdownComponents = {
   td: ({ children }) => <td className="border-b px-3 py-2 text-left">{children}</td>,
 };
 
+// Paragraph `n` of the text, tagged so the score rail can find it, and kept
+// clear of the rail when there is one
+const paragraphComponents = (n, rail) => ({
+  ...markdownComponents,
+  p: ({ children }) => (
+    <p data-para={n} className={`mb-[18px] text-[17px] leading-[1.8] text-body ${rail ? "pe-12" : ""}`}>
+      {children}
+    </p>
+  ),
+});
+
 // Where game photos go: spread across the first two thirds of the text.
 function imageSlots(paragraphCount, imageCount) {
   if (paragraphCount <= 2 || imageCount === 0) return [];
@@ -32,7 +45,7 @@ function imageSlots(paragraphCount, imageCount) {
 
 function GameImage({ image }) {
   return (
-    <figure className="-mx-4 my-6 lg:mx-0">
+    <figure className="relative z-[1] -mx-4 my-6 bg-app lg:mx-0">
       <img src={image.url} alt={image.caption || ""} loading="lazy" className="aspect-video w-full bg-surface-2 object-cover lg:rounded-2xl" />
       {(image.caption || image.credit) && (
         <figcaption className="px-4 pt-1.5 text-xs text-faint lg:px-0">
@@ -56,10 +69,15 @@ export default function RecapBody({ game, recap, media }) {
   const slots = imageSlots(count + 1, images.length);
   // Matched tables are shown once, as a summary, where the first table was
   const summaryAt = tables ? recap.blocks.findIndex((b) => b.type === "table") : -1;
-  const colors = { away: getTeamColors(game.away_team).primary, home: getTeamColors(game.home_team).primary };
+  const colors = matchupColors(game.away_team, game.home_team);
+  const marks = useMemo(
+    () => railMarks(recap.blocks.filter((b) => b.type === "text").map((b) => b.text), game.story),
+    [recap.blocks, game.story]
+  );
+  const rail = marks.length > 0;
 
   return (
-    <article className="[&>p:first-of-type]:text-lg [&>p:first-of-type]:font-medium [&>p:first-of-type]:text-ink">
+    <article className="relative [&>p:first-of-type]:text-lg [&>p:first-of-type]:font-medium [&>p:first-of-type]:text-ink">
       <div className="mb-2.5 text-[12.5px] text-faint">{getReadingMinutes(game.content)} דק׳ קריאה</div>
       {recap.blocks.map((block, i) => {
         if (block.type === "table") {
@@ -78,7 +96,7 @@ export default function RecapBody({ game, recap, media }) {
         const imageIndex = slots.indexOf(paragraph);
         return (
           <Fragment key={i}>
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={paragraphComponents(paragraph, rail)}>
               {block.text}
             </ReactMarkdown>
             {paragraph === 0 && <VideoEmbed game={game} videoId={media?.videoId} colors={colors} />}
@@ -86,6 +104,7 @@ export default function RecapBody({ game, recap, media }) {
           </Fragment>
         );
       })}
+      {rail && <ScoreRail marks={marks} colors={colors} />}
     </article>
   );
 }

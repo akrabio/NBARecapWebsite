@@ -5,6 +5,7 @@ import TeamLogo from "@/components/ui/TeamLogo";
 import WinProbStrip from "@/components/ui/WinProbStrip";
 import { formatRecord, getWinner } from "@/utils/gameUtils";
 import { getTeamColors } from "@/utils/teamColors";
+import { rankMove } from "@/lib/standings";
 import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
 
 const short = (team) => nbaShortHe[team] || nbaEnToHe[team] || team;
@@ -55,7 +56,7 @@ function formatTipOff(iso) {
 export default function FavoriteCard({ team, game, recent, standing, nextGame, date, selectedId }) {
   const latest = game || recent[0];
   const record = standing ? `${standing.w}-${standing.l}` : latest && formatRecord(latest.title, team);
-  const move = standing?.prevRank ? standing.prevRank - standing.rank : 0;
+  const move = rankMove(standing);
   // The latest game's own streak is never older than the standings snapshot
   const streak = streakText(latest?.streaks?.[latest.home_team === team ? "home" : "away"] || standing?.streak);
   const form = [...recent].reverse(); // oldest first, so the newest ends the row

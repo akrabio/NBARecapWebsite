@@ -37,6 +37,17 @@ describe("extractRecord", () => {
     expect(extractRecord("פילדלפיה סיקסרס (24-58) 99 – 120 בוסטון סלטיקס (61-21)", "Philadelphia 76ers")).toBe("24-58");
   });
 
+  it("knows the 76ers as סבנטי סיקסרס", () => {
+    const title = "**פילדלפיה סבנטי סיקסרס (2-0) 114 – 106 קליבלנד קאבלירס (0-1)**";
+    expect(extractRecord(title, "Philadelphia 76ers")).toBe("2-0");
+    expect(extractRecord(title, "Cleveland Cavaliers")).toBe("0-1");
+  });
+
+  it("gives an unknown spelling the record no other team claims", () => {
+    const title = "פילי (5-3) 100 – 90 בוסטון סלטיקס (4-4)";
+    expect(extractRecord(title, "Philadelphia 76ers")).toBe("5-3");
+  });
+
   it("returns null when the team isn't there", () => {
     expect(extractRecord(game.title, "Utah Jazz")).toBeNull();
     expect(extractRecord("", "Utah Jazz")).toBeNull();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildStandingsSnapshot, standingsByTeam, standingsMoves } from "@/lib/standings";
+import { buildStandingsSnapshot, conferenceTable, rankMove, standingsByTeam } from "@/lib/standings";
 import espnStandings from "./fixtures/espn-standings.json";
 
 const snapshot = (date, east, west) => ({
@@ -24,7 +24,7 @@ describe("buildStandingsSnapshot", () => {
   });
 });
 
-describe("standingsByTeam / standingsMoves", () => {
+describe("standingsByTeam", () => {
   const before = snapshot("2026-03-09", ["Detroit Pistons", "Boston Celtics"], ["Minnesota Timberwolves", "Los Angeles Lakers", "Houston Rockets"]);
   const after = snapshot("2026-03-10", ["Detroit Pistons", "Boston Celtics"], ["Houston Rockets", "Los Angeles Lakers", "Minnesota Timberwolves"]);
 
@@ -34,18 +34,37 @@ describe("standingsByTeam / standingsMoves", () => {
     expect(byTeam["Boston Celtics"]).toMatchObject({ conf: "E", rank: 2, prevRank: 2 });
   });
 
-  it("lists only teams that moved, best first", () => {
-    const moves = standingsMoves(standingsByTeam(after, before));
-    expect(moves.east).toEqual([]);
-    expect(moves.west.map((m) => [m.team, m.prevRank, m.rank])).toEqual([
-      ["Houston Rockets", 3, 1],
-      ["Minnesota Timberwolves", 1, 3],
-    ]);
+  it("has no previous rank without a previous night", () => {
+    expect(standingsByTeam(after, null)["Houston Rockets"].prevRank).toBeNull();
+    expect(standingsByTeam(null, null)).toEqual({});
+  });
+});
+
+describe("rankMove", () => {
+  it("counts places gained and lost", () => {
+    expect(rankMove({ rank: 4, prevRank: 6, w: 10, l: 5 })).toBe(2);
+    expect(rankMove({ rank: 6, prevRank: 4, w: 10, l: 5 })).toBe(-2);
   });
 
-  it("has no moves without a previous night", () => {
-    const moves = standingsMoves(standingsByTeam(after, null));
-    expect(moves.west).toEqual([]);
-    expect(standingsByTeam(null, null)).toEqual({});
+  it("ignores moves early in the season or without a previous night", () => {
+    expect(rankMove({ rank: 1, prevRank: 3, w: 2, l: 0 })).toBe(0);
+    expect(rankMove({ rank: 1, prevRank: null, w: 20, l: 5 })).toBe(0);
+  });
+});
+
+describe("conferenceTable", () => {
+  const byTeam = {
+    "Boston Celtics": { conf: "E", rank: 2, prevRank: 1, w: 18, l: 7, streak: "L1" },
+    "Detroit Pistons": { conf: "E", rank: 1, prevRank: 2, w: 20, l: 6, streak: "W3" },
+    "New York Knicks": { conf: "E", rank: 3, prevRank: 3, w: 15, l: 11, streak: "W1" },
+    "Houston Rockets": { conf: "W", rank: 1, prevRank: 1, w: 21, l: 4, streak: "W5" },
+  };
+
+  it("orders one conference with games behind and moves", () => {
+    expect(conferenceTable(byTeam, "E").map((r) => [r.team, r.gb, r.move])).toEqual([
+      ["Detroit Pistons", 0, 1],
+      ["Boston Celtics", 1.5, -1],
+      ["New York Knicks", 5, 0],
+    ]);
   });
 });

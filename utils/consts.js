@@ -32,7 +32,7 @@ export const nbaEnToHe = {
 };
 
 export const nbaHeAltNames = {
-  "Philadelphia 76ers": ["פילדלפיה סיקסרס", "פילדלפיה 76'רס"],
+  "Philadelphia 76ers": ["פילדלפיה סיקסרס", "פילדלפיה 76'רס", "פילדלפיה סבנטי סיקסרס"],
 };
 // Short Hebrew team nicknames, for compact score rows
 export const nbaShortHe = {

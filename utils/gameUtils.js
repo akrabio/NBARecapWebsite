@@ -108,7 +108,33 @@ export function extractRecord(title, teamName) {
     if (fuzzyResult) return fuzzyResult;
   }
 
-  return null;
+  return leftoverRecord(normalizedTitle, teamName);
+}
+
+/**
+ * A title names two teams, each with a record. When `teamName` is spelled in a
+ * way we don't know, its record is the one whose name matches no other team.
+ * @param {string} title - Normalized title string
+ * @param {string} teamName - English team name
+ * @returns {string|null}
+ */
+function leftoverRecord(title, teamName) {
+  const segments = [...title.matchAll(/([^()]*?)\s*\((\d+[:\-\u2010-\u2015]\d+)\)/g)].map((m) => ({
+    name: m[1].replace(/^[^\p{L}]+/u, "").trim(),
+    record: m[2],
+  }));
+  if (segments.length !== 2) return null;
+  const isOtherTeam = (name) =>
+    Object.keys(nbaEnToHe).some(
+      (team) =>
+        team !== teamName &&
+        [team, nbaEnToHe[team], ...(nbaHeAltNames[team] || [])].some((n) => {
+          const known = normalizeApostrophes(n);
+          return name.includes(known) || levenshtein(normalizeApostrophes(name), known) <= 3;
+        })
+    );
+  const unclaimed = segments.filter((s) => !isOtherTeam(s.name));
+  return unclaimed.length === 1 ? unclaimed[0].record : null;
 }
 
 /**
