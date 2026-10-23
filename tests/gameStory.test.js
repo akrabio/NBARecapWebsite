@@ -98,7 +98,8 @@ describe("getNightSummary", () => {
   });
 
   it("stays hidden on small nights or with nothing to say", () => {
-    expect(getNightSummary(night.slice(0, 2)).show).toBe(false);
+    expect(getNightSummary(night.slice(0, 1)).show).toBe(false);
+    expect(getNightSummary(night.slice(0, 2)).show).toBe(true);
     expect(getNightSummary([bullsOt, plain("Utah Jazz", "Charlotte Hornets"), plain("Detroit Pistons", "Brooklyn Nets")]).show).toBe(false);
   });
 });

@@ -4,7 +4,7 @@ import GameLink from "./GameLink";
 import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
 import { extractSeriesRecord, formatRecord, formatScore, getWinner } from "@/utils/gameUtils";
 import { getTags } from "@/utils/gameStory";
-import { getTeamColors } from "@/utils/teamColors";
+import { matchupColors } from "@/utils/teamColors";
 import { formatShortDate } from "@/lib/dates";
 import WinProbStrip from "@/components/ui/WinProbStrip";
 
@@ -78,6 +78,7 @@ export function GameCard({ game, showDate = false, selected = false }) {
     top.away?.[0] && { team: game.away_team, player: top.away[0] },
     top.home?.[0] && { team: game.home_team, player: top.home[0] },
   ].filter(Boolean);
+  const colors = matchupColors(game.away_team, game.home_team);
 
   return (
     <GameLink
@@ -87,8 +88,8 @@ export function GameCard({ game, showDate = false, selected = false }) {
         selected ? "lg:border-brand" : ""
       }`}
       style={{
-        "--ca": getTeamColors(game.away_team).primary,
-        "--ch": getTeamColors(game.home_team).primary,
+        "--ca": colors.away,
+        "--ch": colors.home,
       }}
     >
       <span className="absolute inset-x-0 top-0 h-[3px] bg-[linear-gradient(90deg,var(--ca),var(--ch))]" />

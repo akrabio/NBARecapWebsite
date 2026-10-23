@@ -3,7 +3,6 @@
 import { extractSeriesRecord, getWinner } from "./gameUtils";
 import { getMatchup, isPortlandGame, scoreGame } from "./gameScoring";
 import { nbaShortHe } from "./consts";
-import { standingsMoves } from "@/lib/standings";
 
 const MAX_TAGS = 2;
 
@@ -85,10 +84,10 @@ export const orderByStory = (games) => [...games].sort((a, b) => storyScore(b) -
 
 const involves = (game, team) => Boolean(team) && (game.home_team === team || game.away_team === team);
 
-// "The night in 30 seconds": the lead item, three more headlines, who moved
-// in the standings and a count of the night. The favorite team's game is left
-// out (it has its own card). `show` is false when there's too little to say.
-export function getNightSummary(games, { standings = {}, favorite = null } = {}) {
+// "The night in 30 seconds": the lead item, three more headlines and a count
+// of the night. The favorite team's game is left out (it has its own card).
+// `show` is false when there's too little to say.
+export function getNightSummary(games, { favorite = null } = {}) {
   const pool = orderByStory(games.filter((game) => !involves(game, favorite)));
 
   // A 50-point night leads; otherwise the top game that has a headline
@@ -102,7 +101,6 @@ export function getNightSummary(games, { standings = {}, favorite = null } = {})
     if (game) lead = { type: "headline", game };
   }
   const stories = pool.filter((g) => g.headline && g !== lead?.game).slice(0, 3);
-  const moves = standingsMoves(standings);
 
   const facts = games.map(getGameFacts);
   const count = (test) => facts.filter(test).length;
@@ -114,8 +112,7 @@ export function getNightSummary(games, { standings = {}, favorite = null } = {})
     blowouts: count((f) => f.margin >= 20),
   };
 
-  const hasMoves = moves.east.length + moves.west.length > 0;
-  return { show: games.length >= 3 && Boolean(lead || stories.length || hasMoves), lead, stories, moves, counts };
+  return { show: games.length >= 2 && Boolean(lead || stories.length), lead, stories, counts };
 }
 
 const PERIOD_NAMES = ["", "ברבע הראשון", "ברבע השני", "ברבע השלישי", "ברבע הרביעי", "בהארכה", "בהארכה השנייה", "בהארכה השלישית"];

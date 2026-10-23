@@ -1,12 +1,12 @@
 import { gameLength, STORY_STEP } from "@/lib/story";
-import { getTeamColors } from "@/utils/teamColors";
+import { matchupColors } from "@/utils/teamColors";
 
 const W = 300;
 const HEIGHT = { sm: 32, lg: 120 };
 
 const periodStart = (k) => (k <= 4 ? k * 720 : gameLength(k));
 const periodLabel = (k) => (k <= 4 ? `ר${k}` : k === 5 ? "הארכה" : `הארכה ${k - 4}`);
-const fill = (team) => `color-mix(in oklch, ${getTeamColors(team).primary} 75%, var(--ink))`;
+const fill = (color) => `color-mix(in oklch, ${color} 75%, var(--ink))`;
 
 // How the game went, as a line over time: win probability, or the score
 // margin when ESPN has none. Time runs right to left. Above the dashed
@@ -26,6 +26,7 @@ export default function WinProbStrip({ game, size = "sm", className = "" }) {
   const points = series.map((v, i) => [x(i * STORY_STEP), y(v)]);
   const line = (clamp) => "M" + points.map(([px, py]) => `${px.toFixed(1)},${clamp(py).toFixed(1)}`).join("L");
   const area = (clamp) => `${line(clamp)}L${points.at(-1)[0].toFixed(1)},${mid}L${points[0][0].toFixed(1)},${mid}Z`;
+  const colors = matchupColors(game.away_team, game.home_team);
   const periods = Array.from({ length: story.periods }, (_, i) => i + 1);
 
   // The winner's lowest point, marked on the big chart
@@ -45,8 +46,8 @@ export default function WinProbStrip({ game, size = "sm", className = "" }) {
           {periods.slice(0, -1).map((k) => (
             <line key={k} x1={x(periodStart(k))} x2={x(periodStart(k))} y1="0" y2={h} stroke="var(--line)" vectorEffect="non-scaling-stroke" />
           ))}
-          <path d={area((py) => Math.min(py, mid))} style={{ fill: fill(game.away_team) }} opacity="0.5" />
-          <path d={area((py) => Math.max(py, mid))} style={{ fill: fill(game.home_team) }} opacity="0.5" />
+          <path d={area((py) => Math.min(py, mid))} style={{ fill: fill(colors.away) }} opacity="0.5" />
+          <path d={area((py) => Math.max(py, mid))} style={{ fill: fill(colors.home) }} opacity="0.5" />
           <line x1="0" x2={W} y1={mid} y2={mid} stroke="var(--faint)" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />
           <path
             d={line((py) => py)}

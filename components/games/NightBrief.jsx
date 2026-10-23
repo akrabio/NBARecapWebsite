@@ -57,27 +57,6 @@ function Lead({ lead }) {
   );
 }
 
-function Moves({ label, moves }) {
-  if (!moves.length) return null;
-  return (
-    <div className="flex flex-wrap items-center gap-1.5 text-[12.5px]">
-      <span className="w-[38px] text-subtle">{label}</span>
-      {moves.map((m) => {
-        const up = m.rank < m.prevRank;
-        return (
-          <span key={m.team} className="inline-flex items-center gap-1 rounded-full bg-surface-2 py-0.5 ps-1.5 pe-2 font-semibold">
-            <span className={up ? "text-good" : "text-bad"} aria-label={up ? "עלתה" : "ירדה"}>
-              {up ? "▲" : "▼"}
-            </span>
-            <TeamLogo teamName={m.team} size="xs" className="!h-4 !w-4" />
-            {short(m.team)} {m.rank}
-          </span>
-        );
-      })}
-    </div>
-  );
-}
-
 // "11 משחקים · הארכה אחת · 4 מהפכים · …"
 function countsLine({ games, overtimes, comebacks, close, blowouts }) {
   const n = (count, one, many) => (count === 1 ? one : `${count} ${many}`);
@@ -94,8 +73,7 @@ function countsLine({ games, overtimes, comebacks, close, blowouts }) {
 
 // "The night in 30 seconds" (see getNightSummary)
 export default function NightBrief({ summary }) {
-  const { lead, stories, moves, counts } = summary;
-  const hasMoves = moves.east.length + moves.west.length > 0;
+  const { lead, stories, counts } = summary;
   return (
     <section aria-labelledby="night-brief">
       <h2 id="night-brief" className="mt-0.5 mb-2 text-sm font-extrabold text-subtle">
@@ -119,13 +97,6 @@ export default function NightBrief({ summary }) {
                 <ChevronLeft className="ms-auto h-[18px] w-[18px] shrink-0 text-faint" />
               </GameLink>
             ))}
-          </div>
-        )}
-        {hasMoves && (
-          <div className="grid gap-1.5 border-t px-3.5 pt-2.5 pb-3">
-            <h3 className="text-[11.5px] font-bold text-faint">תזוזות בטבלה</h3>
-            <Moves label="מערב" moves={moves.west} />
-            <Moves label="מזרח" moves={moves.east} />
           </div>
         )}
         <p className="border-t px-3.5 py-2.5 text-[12.5px] text-subtle">{countsLine(counts)}</p>

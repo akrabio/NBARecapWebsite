@@ -16,7 +16,7 @@ import { formatLongDate } from "@/lib/dates";
 import { getBoxScore } from "@/utils/api";
 import { getTags } from "@/utils/gameStory";
 import { formatRecord, formatScore, getWinner, matchupText } from "@/utils/gameUtils";
-import { getTeamColors } from "@/utils/teamColors";
+import { matchupColors } from "@/utils/teamColors";
 import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
 
 const TABS = [
@@ -185,8 +185,7 @@ export default function GameView({ game, media, siblings }) {
   };
 
   const index = siblings.findIndex((g) => g.id === game.id);
-  const awayColor = getTeamColors(game.away_team).primary;
-  const homeColor = getTeamColors(game.home_team).primary;
+  const { away: awayColor, home: homeColor } = matchupColors(game.away_team, game.home_team);
   const hasLines = summary.status === "ready" && summary.linescores?.length === 2;
 
   return (

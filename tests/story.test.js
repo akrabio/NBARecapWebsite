@@ -30,6 +30,9 @@ describe("buildStory", () => {
     expect(story.wp).toHaveLength(3180 / 30 + 1);
     expect(story.margin).toHaveLength(3180 / 30 + 1);
     expect(story.margin.at(-1)).toBe(124 - 130); // home minus away
+    expect(story.score).toHaveLength(3180 / 30 + 1);
+    expect(story.score[0]).toEqual([0, 0]);
+    expect(story.score.at(-1)).toEqual([130, 124]); // away, home
     expect(story.wp.at(-1)).toBe(0); // the away team won
   });
 
@@ -62,7 +65,7 @@ describe("buildStory", () => {
 
   it("works from the box score alone", () => {
     const story = buildStory({ ...memAtPhi, plays: [], winprobability: [] });
-    expect(story).toMatchObject({ periods: 4, wp: null, margin: null, max_lead: null });
+    expect(story).toMatchObject({ periods: 4, wp: null, margin: null, score: null, max_lead: null });
     expect(story.top_players.home[0].name).toBe("Cameron Payne");
   });
 

@@ -8,7 +8,7 @@ import { loadHeebo, oklchToHex, visualRtl } from "@/lib/og";
 import { DARK_LOGOS, nbaEnToHe, nbaShortHe } from "@/utils/consts";
 import { extractSeriesRecord, formatScore, getTeamLogoUrl, getWinner } from "@/utils/gameUtils";
 import { getTags } from "@/utils/gameStory";
-import { getTeamColors } from "@/utils/teamColors";
+import { matchupColors } from "@/utils/teamColors";
 
 export const alt = "תוצאת המשחק";
 export const size = { width: 1200, height: 630 };
@@ -77,8 +77,9 @@ export default async function Image({ params }) {
   const date = `${d}.${m}.${y}`;
   const brand = visualRtl("סיכומי NBA");
   const tagText = tag ? visualRtl(tag) : null;
-  const awayColor = oklchToHex(getTeamColors(game.away_team).primary);
-  const homeColor = oklchToHex(getTeamColors(game.home_team).primary);
+  const colors = matchupColors(game.away_team, game.home_team);
+  const awayColor = oklchToHex(colors.away);
+  const homeColor = oklchToHex(colors.home);
 
   const [awayLogo, homeLogo, font] = await Promise.all([
     logoDataUrl(game.away_team),

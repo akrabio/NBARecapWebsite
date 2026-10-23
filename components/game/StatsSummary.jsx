@@ -1,6 +1,6 @@
 import TeamLogo from "@/components/ui/TeamLogo";
 import { tableCell, tablePlayers, tableValue } from "@/lib/recap";
-import { getTeamColors } from "@/utils/teamColors";
+import { matchupColors } from "@/utils/teamColors";
 import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
 
 // [label, table row, column, higher is better]
@@ -16,8 +16,9 @@ const LINES = [
 // Replaces the recap's two unlabeled markdown tables with a labeled team
 // comparison and the key players.
 export default function StatsSummary({ game, tables }) {
-  const away = { team: game.away_team, table: tables.away, color: getTeamColors(game.away_team).primary };
-  const home = { team: game.home_team, table: tables.home, color: getTeamColors(game.home_team).primary };
+  const colors = matchupColors(game.away_team, game.home_team);
+  const away = { team: game.away_team, table: tables.away, color: colors.away };
+  const home = { team: game.home_team, table: tables.home, color: colors.home };
 
   return (
     <section className="mt-7 border-t pt-5">
