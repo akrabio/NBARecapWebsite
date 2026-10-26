@@ -43,9 +43,9 @@ function imageSlots(paragraphCount, imageCount) {
   return [Math.max(1, Math.floor(range / 3)), Math.max(2, Math.floor((range * 2) / 3))];
 }
 
-function GameImage({ image }) {
+function GameImage({ image, rail }) {
   return (
-    <figure className="relative z-[1] -mx-4 my-6 bg-app lg:mx-0">
+    <figure className={`relative z-[1] my-6 bg-app ${rail ? "-ms-4 me-12 lg:ms-0" : "-mx-4 lg:mx-0"}`}>
       <img src={image.url} alt={image.caption || ""} loading="lazy" className="aspect-video w-full bg-surface-2 object-cover lg:rounded-2xl" />
       {(image.caption || image.credit) && (
         <figcaption className="px-4 pt-1.5 text-xs text-faint lg:px-0">
@@ -100,7 +100,7 @@ export default function RecapBody({ game, recap, media }) {
               {block.text}
             </ReactMarkdown>
             {paragraph === 0 && <VideoEmbed game={game} videoId={media?.videoId} colors={colors} />}
-            {imageIndex >= 0 && images[imageIndex] && <GameImage image={images[imageIndex]} />}
+            {imageIndex >= 0 && images[imageIndex] && <GameImage image={images[imageIndex]} rail={rail} />}
           </Fragment>
         );
       })}
