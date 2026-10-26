@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { parseRecap } from "@/lib/recap";
 import { railLabel, railMarks, scoreAt } from "@/utils/scoreRail";
 
 // A regulation game where the away team scores a point every 30 seconds and
@@ -91,6 +92,20 @@ describe("railMarks", () => {
   it("skips the summary paragraph and mentions that look back", () => {
     const marks = railMarks(paragraphs, story);
     expect(marks.some((m) => m.para === 0 || m.para === 3)).toBe(false);
+  });
+
+  it("skips every chunk of a long intro before placing later period scores", () => {
+    const intro = `${Array(45).fill("לוקה").join(" ")}. ברבע האחרון ${Array(18).fill("נקודות").join(" ")}.`;
+    const content = [
+      intro,
+      "יוטה פותחת ברבע הראשון. ברבע השני הלייקרס חוזרים. לפני ההפסקה הם מובילים.",
+      "אחרי ההפסקה המשחק צמוד. דונצ'יץ' חותם את הרבע השלישי. ברבע האחרון הלייקרס מנצחים. יוטה לא חוזרת.",
+    ].join("\n\n");
+    const textBlocks = parseRecap(content).blocks.filter((block) => block.type === "text");
+    expect(textBlocks.map((block) => block.intro)).toEqual([true, true, false, false]);
+
+    const marks = railMarks(textBlocks.map((block) => block.text), story, textBlocks.filter((block) => block.intro).length);
+    expect(marks.map((mark) => mark.para)).toEqual([2, 2, 3, 3]);
   });
 
   it("spreads the period ends over the text when it names no period", () => {

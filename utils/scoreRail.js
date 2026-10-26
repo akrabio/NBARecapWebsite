@@ -93,12 +93,12 @@ function periodAnchors(sentences, periods) {
 // last period. Period ends the text doesn't mark are spread between their
 // neighbors. Without any mentions, the paragraphs after the summary are
 // spread evenly over the game.
-export function railMarks(paragraphs, story) {
+export function railMarks(paragraphs, story, introParagraphs = 1) {
   if (!story?.score?.length || paragraphs.length < 3) return [];
   const { periods } = story;
 
-  // Every sentence after the summary paragraph
-  const sentences = paragraphs.flatMap((text, para) => (para === 0 ? [] : sentencesOf(text).map((s) => ({ para, text: s }))));
+  // Every sentence after all chunks of the opening summary paragraph
+  const sentences = paragraphs.flatMap((text, para) => (para < introParagraphs ? [] : sentencesOf(text).map((s) => ({ para, text: s }))));
   if (!sentences.length) return [];
   const lastOf = (para) => sentences.findLastIndex((s) => s.para === para);
 

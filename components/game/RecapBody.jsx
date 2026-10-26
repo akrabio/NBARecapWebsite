@@ -71,7 +71,10 @@ export default function RecapBody({ game, recap, media }) {
   const summaryAt = tables ? recap.blocks.findIndex((b) => b.type === "table") : -1;
   const colors = matchupColors(game.away_team, game.home_team);
   const marks = useMemo(
-    () => railMarks(recap.blocks.filter((b) => b.type === "text").map((b) => b.text), game.story),
+    () => {
+      const textBlocks = recap.blocks.filter((b) => b.type === "text");
+      return railMarks(textBlocks.map((b) => b.text), game.story, textBlocks.filter((b) => b.intro).length);
+    },
     [recap.blocks, game.story]
   );
   const rail = marks.length > 0;
