@@ -55,7 +55,13 @@ export default function VideoEmbed({ game, videoId, colors }) {
       style={{ background: `radial-gradient(circle at 30% 40%, color-mix(in srgb, ${colors.away} 70%, #000), #000 75%)` }}
     >
       <img
-        src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+        // maxresdefault is 1280×720 16:9; it 404s for some videos, so fall
+        // back to hqdefault (480×360, letterboxed 4:3).
+        src={`https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`}
+        onError={(e) => {
+          const fallback = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+          if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
+        }}
         alt=""
         className="absolute inset-0 h-full w-full object-cover opacity-80"
         loading="lazy"
