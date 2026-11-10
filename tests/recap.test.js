@@ -71,6 +71,27 @@ describe("stat tables", () => {
     expect(tables.away).toBe(sas);
   });
 
+  it("splits a combined Team/Row table into the two team summaries", () => {
+    const content = `| Team | Row | PTS | AST | REB | TO | FG% |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| PHX | Starters | 68 | 20 | 25 | 12 | — |
+| PHX | Bench | 34 | 9 | 19 | 3 | — |
+| PHX | Team | 102 | 29 | 44 | 15 | 48% |
+| PHX | Devin Booker | 24 | 3 | 2 | 4 | 42% |
+| HOU | Starters | 84 | 14 | 36 | 8 | — |
+| HOU | Bench | 15 | 4 | 10 | 6 | — |
+| HOU | Team | 99 | 16 | 46 | 14 | 38% |
+| HOU | Kevin Durant | 21 | 3 | 10 | 2 | 36% |`;
+    const recap = parseRecap(content);
+    const tables = matchTablesToTeams({ home_score: 102, away_score: 99 }, recap.tables);
+
+    expect(recap.tables).toHaveLength(1);
+    expect(tableValue(tables.home, "Team", "PTS")).toBe(102);
+    expect(tableValue(tables.away, "Bench", "PTS")).toBe(15);
+    expect(tablePlayers(tables.home).map((row) => row[0])).toEqual(["Devin Booker"]);
+    expect(tablePlayers(tables.away).map((row) => row[0])).toEqual(["Kevin Durant"]);
+  });
+
   it("gives up when the points don't match the score", () => {
     expect(matchTablesToTeams({ ...game, home_score: 100 }, [nyk, sas])).toBeNull();
     expect(matchTablesToTeams({ ...game, home_score: null, away_score: null }, [nyk, sas])).toBeNull();
