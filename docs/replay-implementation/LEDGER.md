@@ -33,7 +33,7 @@ Single source of truth for progress. Maintained by the orchestrator; sub-agents 
 | W20 | R41–R43 E2E, pacing trials, regressions | | done | W20 | E2E PASS on 5 fixtures (live endpoint = fixtures), regressions PASS at all widths (1 fix: sticky period label wrap). Pacing simulated in node (real 1× trials pending user). Reports: `e2e-report.md`, `pacing-trials.md`, `regression-check.md`. Found: 8/60 recent games unavailable (score_regression) → W20b. |
 | W20b | Score-snapshot anomaly adapter (late-recorded plays) | | done | W20b | Validator PASS (model reproduced on 13 fixtures; masking variants still unavailable). 7/8 rescued; 401909293 genuinely unavailable (turnover play carries +2). Builder v2. 566 tests. |
 | W20c | Parser gaps: flagrant FTs, extra turnover/foul/violation types | | done | W20c | Validator PASS. All unknown types mapped & box-checked; remaining limits are source issues. Builder v3. 590 tests. | | |
-| W21 | R44–R46 perf, final checks, handoff | E | in progress | | |
+| W21 | R44–R46 perf, final checks, handoff | E | done (conditional) | W21 | Validator PASS. Gate E ready for review; R42 real 1× viewing trials pending user. 590 tests, lint clean, build OK. See `HANDOFF.md`, `performance.md`. |
 
 ## Baseline (R01)
 
@@ -74,6 +74,12 @@ _Record source-capability findings, contract changes, deviations from the plan (
 - **W17** `lib/replay/tables.js` (browser-safe; `familyAvailable` mirrors `capabilityFor` client-side): `teamRows` (on-court slot order, then roster in payload order; roster fallback when lineup invalid/unavailable; never reads `dnp`), `cellValue` ("5/9", "—"+unavailable flag, supported 0), `changedCells`/`activityTeams` (forward step 1–12 events while playing), `enteredPlayers`, `rtlTabIndex`. `ReplayTeamTable.jsx` semantic table, sticky name+PTS, bench toggle "ספסל (n)", "חילוף" badge on pendingSubs. `ReplayTeamTables.jsx` prop `layout:'tabs'|'both'` (default tabs); team tablist `aria-label="קבוצה"`, RTL arrows (ArrowLeft=next), Home/End, key events stopped from reaching GameView; activity dot on unselected tab. `ReplayView` passes `tableLayout` prop (W18 to set by container width).
 - **W18** replay panel up to 1100px (recap/stats stay 680). `lib/replay/layout.js`: 'both' iff replay container ≥960px (one table ≈514px); 1440+sidebar → both, ≤1280+sidebar → tabs. Compact sticky bar (score/clock/play) at top 96px (below 52px top bar + 44px tabs) once panel scrolls away; hidden when viewport <520px tall. `lib/replay/keyboard.js`: Space/K play-pause, ← next / → previous moment (RTL), only with focus inside replay; native keys win on controls. GameView sibling Up/Down ignores replay panel, form controls, defaultPrevented, modifiers. Seek/restart bump `jumpGen` → flashes/pulses only on natural ticks. Fixed W15 tab re-pin (zero-height marker). Hidden preview/visibilitychange/game switch all pause/clean up (live-verified).
 - **W19 / Gate D** `lib/replay/messages.js`: Hebrew message per REASON_CODE/CLIENT_REASON (+ generic fallback, first known code wins), temporary-failure messages, capability-gap list, reached-moments list, announcement rate limit (≤1/4 s). Loading → "הטעינה נמשכת יותר מהרגיל" after 12 s; errors retry + recap/stats; "שחזור חלקי" banner; per-team unavailable notes. Tables: caption, scope, SR stat names; aria-hidden sticky header copy below sticky bar; "רגעי מפתח עד כה" list (reached only, seekable); reduced motion catch-all `.replayRoot *`.
+
+## Final status (2026-11-12)
+
+All work units W01–W21 (+W20b/W20c) done and validated. Gates A–D PASS; Gate E ready for review with one condition: real-time 1× viewing trials (R42) by the user. Entry point for the next developer: `HANDOFF.md`.
+
+Incident: during W21 an agent killed a process holding port 3121 after `next start` stopped; it was the Claude app's Chromium network-service helper (PID 3195), not the server. Chromium normally respawns it.
 
 ## Open issues / escalations
 

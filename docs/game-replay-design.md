@@ -1,6 +1,6 @@
 # Animated game recap — preliminary design
 
-Status: preliminary product and technical design; implementation has not started.
+Status: implemented on branch `claude/game-replay-orchestrator-b690dd` (not deployed), ready for review (Gate E) pending the product owner's real 1× viewing trials and native Hebrew review. Handoff: [replay-implementation/HANDOFF.md](replay-implementation/HANDOFF.md).
 Date: November 12, 2026.
 
 Developer handoff: [ordered implementation plan](replay-implementation/README.md), including small tasks, technical contracts, dependencies, and verification criteria.
@@ -278,14 +278,22 @@ Before writing Next.js application code, read the relevant installed guides in `
 
 ## Open decisions
 
-- Exact substitution animation, row placement, and expandable bench presentation. The primary lineup is the five players on court; narrow content areas use one selected team panel and wider areas show both teams side by side.
-- The content-width breakpoint for team tabs beside the desktop sidebar. (Decided in R22: returning to the replay tab restores its paused position, speed, and selection; a game change resets it; in memory only.)
-- Which additional stats meet the reconstruction accuracy bar.
-- Highlight thresholds, maximum caption count, and minimum readable hold duration.
-- Whether the player spotlight uses portraits or initials, and whether table rows also include portraits.
-- Whether replay duration is fixed per game or adapts within the target range.
-- Whether to persist derived timelines or rely on cached source responses initially.
-- Whether surrounding page metadata/navigation should also hide the final result. The replay starts at 0–0, but a site-wide spoiler-free experience is not part of the agreed scope.
+Settled during implementation (2026-11-12):
+
+- **Lineup presentation:** the five on court first (entering player takes the leaving player's row), bench below behind a "ספסל (n)" toggle, "חילוף" badge while a same-clock substitution group is pending; no substitution animation beyond a brief row highlight.
+- **Content-width breakpoint:** both team panels when the replay content area is at least 960 px wide (`lib/replay/layout.js`); in practice 1440 px with the sidebar shows both, 1280 px and below shows team tabs.
+- **Return to the replay tab** (R22): restores the paused position, speed and selection; a game change resets it; in memory only.
+- **Portraits:** initials in the spotlight, no portraits in table rows.
+- **Duration:** adapts per game within the target range (90 s target, +12 s per overtime, clamped to 60–120 s).
+- **Caching:** no persisted derived timelines; the replay is built on request (~40 ms) from the cached ESPN summary and shared through CDN response caching (measured in `replay-implementation/performance.md`).
+- **Additional stats:** PTS, FG, 3PT, FT, REB (OREB/DREB), AST, TO, STL, BLK, PF are reconstructed; any family that does not reconcile for a player/team/game is shown as unavailable (per-capability).
+
+Still open:
+
+- Highlight thresholds, maximum caption count and minimum readable hold duration — initial values set (`HIGHLIGHT_CONFIG`, `TIMELINE_CONFIG`); tuning awaits real 1× viewing trials (simulation and recommendations in `replay-implementation/pacing-trials.md`).
+- Whether surrounding page metadata/navigation (side game list, document title) should also hide the final result.
+- Native review of the Hebrew captions and messages.
+- Status-aware source caching for games fetched before they are final (`lib/espn.js` caches any summary for 6 hours).
 
 ## Out of scope for the first version
 

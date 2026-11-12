@@ -82,9 +82,11 @@ Continue after Gate D in [04-interface](04-interface.md). Do not equate passing 
 
 ## Completion checklist
 
-- [ ] Gates A–E have recorded evidence.
-- [ ] All R01–R46 completion checks are accounted for.
-- [ ] Third-tab design, active-five behavior, and timing direction match the product document.
-- [ ] Source limitations, fallback behavior, and remaining decisions are explicit.
-- [ ] No synthetic mockup progression is shipped as real game history.
-- [ ] Another developer has enough instructions and artifacts to continue independently.
+Filled in 2026-11-12 (W21). Details: [HANDOFF.md](HANDOFF.md) "Gate E record", [LEDGER.md](LEDGER.md).
+
+- [x] Gates A–E have recorded evidence. A `source-findings.md`, B `reconciliation-report.md`, C `core-audit.md`, D `gate-d.md`, E `HANDOFF.md` + `performance.md`. *Gate E caveat:* the viewing-trial record (`pacing-trials.md`) is a simulation; real 1× trials are pending the product owner.
+- [ ] All R01–R46 completion checks are accounted for. All are recorded in the ledger except **R42**, whose "done when" (settings chosen from *viewing* notes) is not met: defaults are unchanged and only simulated notes exist. R44 phone measurements and continuous-playback jank were not measurable in this environment (`performance.md` "Not measured").
+- [x] Third-tab design, active-five behavior, and timing direction match the product document (third tab סיכום | נתונים | שחזור, no autoplay, five on court with labelled fallback, ~90 s target with 1.2–2.4 s holds; timing still tunable).
+- [x] Source limitations, fallback behavior, and remaining decisions are explicit (HANDOFF "Known gaps and limits", "Open decisions"; design doc "Open decisions").
+- [x] No synthetic mockup progression is shipped as real game history (mockups gitignored; replay data comes only from the ESPN summary via `buildReplay`).
+- [x] Another developer has enough instructions and artifacts to continue independently (`HANDOFF.md`: module map, contract, run/test/audit commands, tuning knobs, refresh procedure, example games). Native Hebrew review still needed before release.
