@@ -1,0 +1,434 @@
+/* Replay-scoped styles (R32–R34). Everything here is a local class; nothing
+   leaks into the rest of the site. Layout and type use Tailwind utilities in
+   the components; this file holds what utilities cannot express cleanly:
+   the broadcast panel palette, the score/spotlight emphasis keyframes, the
+   progress track decorations and the reduced-motion overrides. */
+
+/* The broadcast panel is a dark "TV" surface in both site themes (mockup 5).
+   It re-declares the site's dark-theme tokens locally, so the Tailwind token
+   utilities (text-ink, text-subtle, bg-surface-2, …) resolve to readable
+   dark-surface values inside it regardless of the page theme. */
+.broadcast {
+  --surface: #141821;
+  --surface-2: #252d3c;
+  --line: #283143;
+  --ink: #eef1f6;
+  --body: #cfd5e0;
+  --subtle: #a9b1c2;
+  --faint: #8a93a6;
+  --brand: #ff7a1a;
+  --brand-ink: #ff7a1a;
+  --on-brand: #1a0b00;
+  color-scheme: dark;
+  color: var(--ink);
+  border: 1px solid #283143;
+  background:
+    radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--away-c) 26%, transparent), transparent 55%),
+    radial-gradient(ellipse at 0% 0%, color-mix(in srgb, var(--home-c) 26%, transparent), transparent 55%),
+    #10151f;
+}
+
+.broadcast :focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Black logos (Nets, Spurs …) get a light backing on the dark panel. */
+.broadcast :global(.logo-on-dark) {
+  background: #e9ecf1;
+  border-radius: 9999px;
+  padding: 2px;
+}
+
+/* Brief emphasis of a score that just changed during forward playback. */
+@keyframes score-flash {
+  from {
+    background: color-mix(in srgb, var(--flash-c, var(--brand)) 45%, transparent);
+  }
+  to {
+    background: transparent;
+  }
+}
+.scoreFlash {
+  animation: score-flash 1.1s ease-out;
+  border-radius: 10px;
+}
+
+/* New spotlight moment */
+@keyframes spotlight-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0.5;
+  }
+}
+.spotlightIn {
+  animation: spotlight-in 0.4s ease-out;
+}
+
+.spotlight {
+  border-inline-start: 3px solid var(--mc, #465065);
+  background: linear-gradient(270deg, color-mix(in srgb, var(--mc, #465065) 16%, transparent), #ffffff03);
+}
+
+.avatar {
+  background: color-mix(in srgb, var(--mc, #465065) 45%, #17202e);
+}
+
+/* Probability bar segments */
+.probSeg {
+  transition: width 0.25s;
+}
+
+/* Progress track: native range input stretched (transparent) over a drawn track. */
+.track {
+  position: relative;
+  height: 44px;
+  min-width: 80px;
+  flex: 1;
+}
+.track::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 99px;
+  background: var(--surface-2);
+}
+.track:focus-within::before {
+  outline: 2px solid var(--brand);
+  outline-offset: 4px;
+}
+.fill {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 99px;
+  background: var(--brand);
+  pointer-events: none;
+}
+.tick {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 14px;
+  margin-top: -7px;
+  margin-inline-start: -1px;
+  border-radius: 1px;
+  background: #10151f;
+  pointer-events: none;
+}
+.mark {
+  position: absolute;
+  top: 5px;
+  width: 6px;
+  height: 6px;
+  margin-inline-start: -3px;
+  border-radius: 99px;
+  background: var(--faint);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.markOn {
+  opacity: 1;
+  background: var(--mark-c, var(--brand));
+  transform: scale(1.25);
+  box-shadow: 0 0 0 1.5px #10151f;
+}
+.range {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+
+/* ---- Team tables (R35) ------------------------------------------------
+   Dense aligned table on the site surface (outside the broadcast panel).
+   Name + PTS are sticky at the inline-start edge of the scroll container;
+   the remaining columns scroll horizontally inside it. */
+.statScroll {
+  /* Positioned so visually hidden (absolute) labels inside cells are clipped
+     by this scroller instead of widening the page. */
+  position: relative;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.statScroll:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+.statTable {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  min-width: calc(var(--name-w) + 9 * 44px);
+  table-layout: fixed;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  --name-w: 118px;
+}
+.nameCol {
+  width: var(--name-w);
+}
+.statCol {
+  width: 44px;
+}
+.statTable th,
+.statTable td {
+  height: 42px;
+  padding: 0 4px;
+  text-align: center;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--line);
+}
+.statTable thead th {
+  height: 32px;
+  color: var(--subtle);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.statTable tbody:last-child tr:last-child > * {
+  border-bottom: 0;
+}
+.nameCell {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 2;
+  background: var(--surface);
+  padding-inline: 12px 4px !important;
+  text-align: start !important;
+}
+.ptsCell {
+  position: sticky;
+  inset-inline-start: var(--name-w);
+  z-index: 2;
+  background: var(--surface);
+  font-weight: 900;
+  font-size: 14px;
+  box-shadow: -5px 0 8px -6px #0005;
+}
+.statTable thead .ptsCell {
+  font-size: 10.5px;
+}
+.sectionRow > th {
+  height: auto !important;
+  background: var(--surface-2);
+}
+.sectionLabel {
+  position: sticky;
+  inset-inline-start: 0;
+  width: fit-content;
+  padding: 4px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--subtle);
+}
+.benchToggle {
+  min-height: 32px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Changed cell during forward playback: weight + outline (not color alone). */
+@keyframes cell-changed {
+  0%,
+  55% {
+    font-weight: 900;
+    outline-color: var(--brand);
+  }
+  100% {
+    font-weight: inherit;
+    outline-color: transparent;
+  }
+}
+.cellChanged {
+  display: inline-block;
+  min-width: 2.2em;
+  border-radius: 6px;
+  outline: 1.5px solid transparent;
+  outline-offset: 1px;
+  animation: cell-changed 1.2s ease-out;
+}
+
+/* Entering player (substitution applied): brief row transition. */
+@keyframes row-in {
+  from {
+    background: color-mix(in srgb, var(--brand) 16%, var(--surface));
+    transform: translateY(4px);
+  }
+}
+.rowEntered > * {
+  animation: row-in 0.6s ease-out;
+}
+
+/* ---- Team tabs (R36) ---- */
+.teamTabs {
+  background: var(--surface-2);
+}
+.teamTab {
+  color: var(--subtle);
+}
+.teamTab[aria-selected="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 4px #0000000c;
+}
+.teamTab:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+.activityDot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--c, var(--brand));
+  opacity: 0;
+}
+@keyframes tab-activity {
+  0%,
+  40% {
+    opacity: 1;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--c, var(--brand)) 22%, transparent);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.activityPulse {
+  animation: tab-activity 1s ease-out;
+}
+
+/* ---- Compact sticky score bar (R37) ----
+   Zero-height sticky anchor below the site top bar (52px) + game tabs (44px)
+   (top set inline from lib/replay/layout.js STICKY_TOP). The bar overlays
+   content instead of reserving space and is only visible once the broadcast
+   panel has scrolled away. No sticky bar on short viewports. */
+.stickyAnchor {
+  position: sticky;
+  z-index: 15;
+  height: 0;
+}
+.stickyBar {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  border-top: 0;
+  box-shadow: 0 8px 18px #00000026;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
+}
+.stickyShown {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+@media (max-height: 519px) {
+  .stickyAnchor {
+    display: none;
+  }
+}
+
+/* ---- Sticky team-table header copy (W19) ----
+   Zero-height sticky anchor inside the team card; the aria-hidden header copy
+   hangs below it and is visible only once the real <thead> has scrolled under
+   the compact score bar (JS toggles .headShown). top mirrors
+   lib/replay/layout.js stickyHeadTop: below the bar (96 + 44px), or directly
+   below the game tabs when the bar is hidden on short viewports. */
+.headAnchor {
+  position: sticky;
+  top: 140px;
+  z-index: 14;
+  height: 0;
+}
+.headClone {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  overflow: hidden;
+  visibility: hidden;
+  background: var(--surface);
+  box-shadow: 0 6px 12px -8px #0006;
+}
+.headShown {
+  visibility: visible;
+}
+.headClone .statTable thead th {
+  background: var(--surface);
+}
+@media (max-height: 519px) {
+  .headAnchor {
+    top: 96px;
+  }
+}
+
+/* ---- Replay-wide focus + state messages (R39–R40) ---- */
+.replayRoot :focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.replayRoot .statScroll:focus-visible {
+  outline-offset: -2px;
+}
+.replayRoot .teamTab:focus-visible {
+  outline-offset: 1px;
+}
+.skeleton {
+  background: var(--surface-2);
+  border-radius: 12px;
+}
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+.skeletonPulse .skeleton {
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+.momentList button[aria-current="true"] {
+  background: #ffffff0d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Catch-all (R40): no animation or transition anywhere in the replay —
+     discrete updates only. Static cues below replace the motion ones. */
+  .replayRoot *,
+  .replayRoot *::before,
+  .replayRoot *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .stickyBar {
+    transition: none;
+  }
+  .scoreFlash,
+  .spotlightIn,
+  .rowEntered > *,
+  .activityPulse {
+    animation: none;
+  }
+  /* Static cues instead of motion. */
+  .cellChanged {
+    animation: none;
+    font-weight: 900;
+    outline-color: var(--brand);
+  }
+  .activityDot[data-unseen="true"] {
+    opacity: 1;
+  }
+  .probSeg {
+    transition: none;
+  }
+}
