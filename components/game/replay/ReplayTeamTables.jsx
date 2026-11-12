@@ -28,6 +28,7 @@
 import { useId, useRef, useState } from "react";
 import TeamLogo from "@/components/ui/TeamLogo";
 import { activityTeams, changedCells, enteredPlayers, isNaturalStep, rtlTabIndex, teamRows } from "@/lib/replay/tables";
+import { teamGapNotes } from "@/lib/replay/messages";
 import ReplayTeamTable from "./ReplayTeamTable";
 import styles from "./replay.module.css";
 
@@ -117,6 +118,7 @@ export default function ReplayTeamTables({
   playing = false,
   jumpGen = 0,
   layout = "tabs",
+  gaps = null,
 }) {
   const prefix = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const order = [teams.away, teams.home];
@@ -158,6 +160,7 @@ export default function ReplayTeamTables({
       onToggleBench={onToggleBench}
       idPrefix={`${prefix}-${team.id}`}
       headingId={ids(team).headingId}
+      gapNotes={teamGapNotes(gaps, team.id)}
     />
   );
 

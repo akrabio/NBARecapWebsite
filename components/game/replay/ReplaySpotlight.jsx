@@ -11,10 +11,34 @@
 //   "באותו רגע".
 // - Team-only moments show the team badge; no player is invented.
 // - Stat families unavailable for the player are omitted, not shown as 0.
+// - Announcements (R40): the ONE polite live region carries only moment
+//   captions, rate-limited to one per ANNOUNCE_MIN_MS (lib/replay/messages.js):
+//   moments reached in quick succession (fast playback, scrubbing) collapse to
+//   the latest. Scores, clocks and stat cells are never announced.
+// - No portraits are loaded: players get an initials avatar (nothing to
+//   break); team-only moments use TeamLogo, which falls back to initials on a
+//   broken image.
 
+import { useEffect, useRef, useState } from "react";
 import TeamLogo from "@/components/ui/TeamLogo";
 import { hePeriodLabel, initials, momentTeamId, MOMENT_TYPE_LABELS, spotlightStatLine } from "@/lib/replay/display";
+import { ANNOUNCE_MIN_MS, announceDelay } from "@/lib/replay/messages";
 import styles from "./replay.module.css";
+
+/** Latest `text`, released at most once per `minMs` (intermediate values dropped). */
+function useRateLimitedText(text, minMs = ANNOUNCE_MIN_MS) {
+  const [shown, setShown] = useState("");
+  const lastAt = useRef(0);
+  useEffect(() => {
+    if (text === shown) return undefined;
+    const timer = setTimeout(() => {
+      lastAt.current = text ? Date.now() : lastAt.current;
+      setShown(text);
+    }, text ? announceDelay(lastAt.current, Date.now(), minMs) : 0);
+    return () => clearTimeout(timer);
+  }, [text, shown, minMs]);
+  return shown;
+}
 
 export function CaptionText({ caption }) {
   if (!caption) return null;
@@ -45,13 +69,13 @@ function Empty() {
 
 export default function ReplaySpotlight(props) {
   const highlight = props.frame.spotlight?.highlight;
+  const announcement = useRateLimitedText(highlight?.caption?.text ?? "");
   return (
     <>
       {highlight ? <Moment {...props} /> : <Empty />}
-      {/* Persistent live region: one announcement per reached moment (its text
-          changes only when the moment does, never per frame). */}
+      {/* Persistent live region: moment captions only, rate-limited (never per frame). */}
       <p className="sr-only" aria-live="polite">
-        {highlight?.caption?.text ?? ""}
+        {announcement}
       </p>
     </>
   );

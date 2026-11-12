@@ -29,8 +29,8 @@ Single source of truth for progress. Maintained by the orchestrator; sub-agents 
 | W16 | R32–R34 scoreboard, probability, spotlight, controls | | done | W16 | Validator FAIL (neutral moments credited to away team) → fix → PASS. Live-checked 390/1280, light/dark. 507 tests. |
 | W17 | R35–R36 active-five tables + team tabs | | done | W17 | Validator PASS (live + scripts over all fixtures). 523 tests. |
 | W18 | R37–R38 layout fit + keyboard/lifecycle isolation | | done | W18 | Validator PASS (live at 320/390/1024/1280/1440 + `/`). 533 tests. |
-| W19 | R39–R40 states + accessibility/motion | D | in progress | | |
-| W20 | R41–R43 E2E, pacing trials, regressions | | todo | | |
+| W19 | R39–R40 states + accessibility/motion | D | done | W19 | Gate D PASS (validator re-ran failure states, a11y, regression sweep live). 549 tests. See `gate-d.md`. |
+| W20 | R41–R43 E2E, pacing trials, regressions | | in progress | | Real 1× viewing trials need the user (pane renders frames only on screenshot); agent prepares analysis + protocol. | | |
 | W21 | R44–R46 perf, final checks, handoff | E | todo | | |
 
 ## Baseline (R01)
@@ -71,6 +71,7 @@ _Record source-capability findings, contract changes, deviations from the plan (
 - **W16** dark broadcast panel (`components/game/replay/replay.module.css`), order scoreboard → probability → spotlight → controls → tables. `lib/replay/display.js` browser-safe helpers incl. `momentTeamId` (player team → single team → game_end winner → none) and `panelColor` (lightens dark team colors). Scoreboard: "לפני פתיחה" pre-tip, "סיום"/"סיום · אחרי הארכה"; flash only on small forward steps while playing. Probability: SVG step line RTL, reached samples only, "אין עדיין נתון", unavailable message. Spotlight: `<bdi>` parts, initials avatar, snapshot stat line ("עד כה" during hold / "באותו רגע" after), one polite live region. Controls: prev/next (disabled at ends), play/pause, restart, speed select 0.5–2×, range w/ aria-valuetext, quarter ticks + moment dots (colored only once reached), "זמן שחזור" vs "שעון המשחק".
 - **W17** `lib/replay/tables.js` (browser-safe; `familyAvailable` mirrors `capabilityFor` client-side): `teamRows` (on-court slot order, then roster in payload order; roster fallback when lineup invalid/unavailable; never reads `dnp`), `cellValue` ("5/9", "—"+unavailable flag, supported 0), `changedCells`/`activityTeams` (forward step 1–12 events while playing), `enteredPlayers`, `rtlTabIndex`. `ReplayTeamTable.jsx` semantic table, sticky name+PTS, bench toggle "ספסל (n)", "חילוף" badge on pendingSubs. `ReplayTeamTables.jsx` prop `layout:'tabs'|'both'` (default tabs); team tablist `aria-label="קבוצה"`, RTL arrows (ArrowLeft=next), Home/End, key events stopped from reaching GameView; activity dot on unselected tab. `ReplayView` passes `tableLayout` prop (W18 to set by container width).
 - **W18** replay panel up to 1100px (recap/stats stay 680). `lib/replay/layout.js`: 'both' iff replay container ≥960px (one table ≈514px); 1440+sidebar → both, ≤1280+sidebar → tabs. Compact sticky bar (score/clock/play) at top 96px (below 52px top bar + 44px tabs) once panel scrolls away; hidden when viewport <520px tall. `lib/replay/keyboard.js`: Space/K play-pause, ← next / → previous moment (RTL), only with focus inside replay; native keys win on controls. GameView sibling Up/Down ignores replay panel, form controls, defaultPrevented, modifiers. Seek/restart bump `jumpGen` → flashes/pulses only on natural ticks. Fixed W15 tab re-pin (zero-height marker). Hidden preview/visibilitychange/game switch all pause/clean up (live-verified).
+- **W19 / Gate D** `lib/replay/messages.js`: Hebrew message per REASON_CODE/CLIENT_REASON (+ generic fallback, first known code wins), temporary-failure messages, capability-gap list, reached-moments list, announcement rate limit (≤1/4 s). Loading → "הטעינה נמשכת יותר מהרגיל" after 12 s; errors retry + recap/stats; "שחזור חלקי" banner; per-team unavailable notes. Tables: caption, scope, SR stat names; aria-hidden sticky header copy below sticky bar; "רגעי מפתח עד כה" list (reached only, seekable); reduced motion catch-all `.replayRoot *`.
 
 ## Open issues / escalations
 
@@ -79,7 +80,7 @@ _Record source-capability findings, contract changes, deviations from the plan (
 - **(USER DECISION, pre-existing)** `lib/espn.js` `fetchEspnSummary` caches any 200 for 6 h regardless of game status. If a live game's summary is fetched first (direct `/api/replay/<id>`, `/api/boxscore/<id>`, legacy ESPN-id link), replay stays `unavailable` and box score stale for up to 6 h. Low–medium severity (game pages exist only post-recap). Suggested fix: tag the fetch and expire/short-revalidate when `status.type.completed` is not true. Not changed — shared code outside replay scope.
 - ~~(→W16) pre-tip-off label~~ done.
 - ~~(→W18) team-tab arrows / scrub pulses~~ done.
-- (→W19/W20) at 320px the sticky score bar covers the scrolled table and column headers are gone → consider sticky `thead` below the bar.
-- (out of scope per design open decisions) document title + desktop sidebar list still show final score.
+- ~~(→W19) sticky thead~~ done. Was: at 320px the sticky score bar covers the scrolled table and column headers are gone → consider sticky `thead` below the bar.
+- (out of scope per design open decisions; **design call for user**) document title + side game list still show final scores (incl. selected game) while replay plays from 0–0.
 - (→W20 pacing) optional: 062 decisive lead #147 is a technical FT (weak); 791 #442/#456 both turnovers (repetitive).
 - (→normalize, defensive) self-assist (assister = shooter) not guarded; not in corpus.

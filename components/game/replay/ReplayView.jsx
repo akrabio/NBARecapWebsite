@@ -50,26 +50,36 @@ import { gameClockStatus, momentTeamId, panelColor, probabilityAvailable } from 
 import { STICKY_TOP, tableLayoutFor } from "@/lib/replay/layout";
 import { keyTargetKind, replayShortcut } from "@/lib/replay/keyboard";
 import { replayStateAt } from "@/lib/replay/client-state";
+import { LOADING_SLOW_MS, capabilityGaps, errorMessage, reachedMoments, unavailableMessage } from "@/lib/replay/messages";
+import { CaptionText } from "./ReplaySpotlight";
 import styles from "./replay.module.css";
 
-const UNAVAILABLE_TEXT = {
-  no_espn_id: "לא נמצאו נתוני מהלכים למשחק הזה.",
-  unknown_event: "לא נמצאו נתוני מהלכים למשחק הזה.",
-  invalid_id: "מזהה המשחק אינו תקין.",
-  game_not_final: "השחזור יהיה זמין לאחר סיום המשחק.",
-};
-const DEFAULT_UNAVAILABLE = "אין מספיק נתונים אמינים לשחזור המשחק.";
-
-function Message({ children, actions }) {
+/** State message (loading fallback / failure / unavailable): title, explanation, actions. */
+function Message({ title, children, actions, reason, role = "status" }) {
   return (
-    <div className="py-10 text-center" role="status">
-      <p className="text-[15px] text-body">{children}</p>
-      {actions && <div className="mt-4 flex justify-center gap-2">{actions}</div>}
+    <div className={`${styles.replayRoot} py-10 text-center`} role={role} data-replay-state={reason ?? undefined}>
+      {title && <p className="text-[16px] font-extrabold text-ink">{title}</p>}
+      <p className="mx-auto mt-1 max-w-[440px] text-[14.5px] text-body">{children}</p>
+      {actions && <div className="mt-4 flex flex-wrap justify-center gap-2">{actions}</div>}
     </div>
   );
 }
 
-const buttonClass = "h-10 rounded-full border px-4 text-sm font-bold";
+/** Recap / stats buttons: an unavailable replay is never a dead end. */
+function OtherTabs({ onSelectTab }) {
+  return (
+    <>
+      <button type="button" onClick={() => onSelectTab?.("recap")} className={buttonClass}>
+        לסיכום המשחק
+      </button>
+      <button type="button" onClick={() => onSelectTab?.("box")} className={buttonClass}>
+        לנתוני המשחק
+      </button>
+    </>
+  );
+}
+
+const buttonClass = "min-h-10 rounded-full border px-4 text-sm font-bold";
 
 /** The single frame for this render: cheap time fields per tick, state memoized by event index. */
 function useReplayFrame(replay, positionSec) {
@@ -169,11 +179,84 @@ function StickyScore({ frame, teams, playing, ended, onToggle, regulationPeriods
   );
 }
 
+/**
+ * Limited-replay banner (R39): what this replay cannot show, from the
+ * payload's capabilities only (never from game.story). Text, not color.
+ */
+function ReplayLimits({ gaps, limited }) {
+  if (!gaps.any && !limited) return null;
+  return (
+    <aside className="mb-3 rounded-[14px] border bg-surface-2 px-3.5 py-2.5 text-[12.5px] text-body" aria-label="מגבלות הנתונים בשחזור">
+      <p className="font-extrabold text-ink">שחזור חלקי</p>
+      {gaps.any ? (
+        <ul className="mt-0.5 list-disc ps-4">
+          {gaps.items.map((item) => (
+            <li key={`${item.kind}-${item.family}-${item.scope}-${item.teamIds.join("-")}`}>{item.text}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-0.5">חלק מהנתונים במשחק הזה מוגבלים; ערכים שלא ניתן לאמת מסומנים ב־—.</p>
+      )}
+    </aside>
+  );
+}
+
+/**
+ * Accessible moment history (R40): captions of moments already reached, each
+ * a button seeking to that moment. Future moments are never listed (the
+ * previous/next controls may still seek forward intentionally).
+ */
+function MomentHistory({ replay, frame, onSeek }) {
+  // Keyed by the last reached moment's start (not the per-tick position), so
+  // the list is rebuilt only when a new moment is reached or left behind.
+  const reachedSec = frame.spotlight ? (replay.timeline.moments?.[frame.spotlight.momentIndex]?.startSec ?? frame.sec) : 0;
+  const moments = useMemo(() => reachedMoments(replay, reachedSec), [replay, reachedSec]);
+  const current = frame.spotlight?.momentIndex;
+  return (
+    <details className={`${styles.momentList} border-t border-[#283143] px-4 py-2 max-[520px]:px-3`}>
+      <summary className="min-h-9 cursor-pointer py-1.5 text-[12px] font-bold text-body">
+        רגעי מפתח עד כה ({moments.length})
+      </summary>
+      {moments.length === 0 ? (
+        <p className="pb-2 text-[12px] text-subtle">עוד לא הגענו לרגע מפתח. רגעים יתווספו כאן במהלך השחזור.</p>
+      ) : (
+        <ol className="flex flex-col gap-0.5 pb-1.5">
+          {moments.map((m) => (
+            <li key={m.highlightId}>
+              <button
+                type="button"
+                onClick={() => onSeek(m.sec)}
+                aria-current={m.momentIndex === current ? "true" : undefined}
+                className="flex w-full items-baseline gap-2 rounded-lg px-2 py-1.5 text-start text-[12.5px] text-body hover:bg-white/5"
+              >
+                <span className="flex-none text-[11px] text-subtle tabular-nums">
+                  {m.period}
+                  {m.clock ? (
+                    <>
+                      {" "}
+                      <bdi dir="ltr">{m.clock}</bdi>
+                    </>
+                  ) : null}
+                </span>
+                <span className="min-w-0">
+                  <CaptionText caption={m.caption} />
+                </span>
+                {m.momentIndex === current && <span className="ms-auto flex-none text-[10.5px] font-bold text-brand">· נוכחי</span>}
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
+    </details>
+  );
+}
+
 function ReadyReplay({ result, game, active, limited, onSelectTab, selectedTeamId, onSelectTeam, benchExpanded, onToggleBench }) {
   const { replay, espnGameId, capabilities } = result;
   const teams = useDisplayTeams(replay, game);
   const regulationPeriods = replay.format?.regulationPeriods ?? 4;
   const hasProbability = useMemo(() => probabilityAvailable(replay, capabilities), [replay, capabilities]);
+  const gaps = useMemo(() => capabilityGaps(replay, capabilities), [replay, capabilities]);
   // Moment marker color = the moment's (first) team, by highlight id.
   const teamColorById = useMemo(() => {
     const byHighlight = new Map();
@@ -257,8 +340,9 @@ function ReadyReplay({ result, game, active, limited, onSelectTab, selectedTeamI
   return (
     // Focusable root (tabIndex -1: click focus only) so shortcuts work after
     // clicking anywhere in the replay; keys are handled only from inside it.
-    <div ref={rootRef} tabIndex={-1} onKeyDown={onKeyDown} className="py-4 outline-none" data-event-index={frame.frame.eventIndex} data-table-layout={tableLayout}>
-      {/* Broadcast panel, mockup order: scoreboard → probability → spotlight → controls. */}
+    <div ref={rootRef} tabIndex={-1} onKeyDown={onKeyDown} className={`${styles.replayRoot} py-4 outline-none`} data-event-index={frame.frame.eventIndex} data-table-layout={tableLayout}>
+      <ReplayLimits gaps={gaps} limited={limited} />
+      {/* Broadcast panel, mockup order: scoreboard → probability → spotlight → controls → reached moments. */}
       <section
         ref={setPanelEl}
         className={`${styles.broadcast} overflow-hidden rounded-[22px] shadow-[0_12px_30px_#00000014] max-[520px]:rounded-[18px]`}
@@ -276,8 +360,8 @@ function ReadyReplay({ result, game, active, limited, onSelectTab, selectedTeamI
           teamColorById={teamColorById}
           regulationPeriods={regulationPeriods}
         />
+        <MomentHistory replay={replay} frame={frame} onSeek={actions.seek} />
       </section>
-      {limited && <p className="mt-2 text-center text-xs text-subtle">נתונים חלקיים: חלק מהסטטיסטיקות אינן זמינות למשחק זה.</p>}
       {ended && <ReplayEnd onReplay={replayAgain} onSelectTab={onSelectTab} />}
       <StickyScore
         frame={frame}
@@ -300,13 +384,22 @@ function ReadyReplay({ result, game, active, limited, onSelectTab, selectedTeamI
         onSelectTeam={onSelectTeam}
         benchExpanded={benchExpanded}
         onToggleBench={onToggleBench}
+        gaps={gaps}
       />
     </div>
   );
 }
 
 export default function ReplayView({ game, active = false, onSelectTab }) {
-  const { state, data, reasons, retry } = useReplayData(game.espn_game_id, { enabled: true });
+  // No resolved ESPN id → the hook returns `unavailable` / no_espn_id without
+  // any request. Support is decided only by the replay payload, never by
+  // whether the game has a written story.
+  const { state, data, error, reasons, retry } = useReplayData(game.espn_game_id, { enabled: true });
+  const [loadGen, setLoadGen] = useState(0);
+  const retryLoad = useCallback(() => {
+    setLoadGen((n) => n + 1);
+    retry();
+  }, [retry]);
   // Favorite team from the existing picker context (no new preference store).
   const { favorite } = useTeamPicker();
   const replay = state === "ready" || state === "limited" ? data?.replay : null;
@@ -316,38 +409,38 @@ export default function ReplayView({ game, active = false, onSelectTab }) {
   if (replay && selectedTeamId == null) setSelectedTeamId(defaultTeamId(replay, { favorite, awayTeam: game.away_team }));
   const [benchExpanded, setBenchExpanded] = useState(false);
 
-  if (state === "idle" || state === "loading") return <ReplayLoading />;
+  if (state === "idle" || state === "loading") {
+    // Keyed by attempt: a retry restarts the slow-loading timer.
+    return <ReplayLoading key={loadGen} onRetry={retryLoad} onSelectTab={onSelectTab} />;
+  }
 
   if (state === "error") {
+    const msg = errorMessage(error);
     return (
       <Message
+        title={msg.title}
+        reason="error"
+        role="alert"
         actions={
-          <button type="button" onClick={retry} className={buttonClass}>
-            נסו שוב
-          </button>
+          <>
+            <button type="button" onClick={retryLoad} className={buttonClass}>
+              נסו שוב
+            </button>
+            <OtherTabs onSelectTab={onSelectTab} />
+          </>
         }
       >
-        לא ניתן לטעון את השחזור כרגע.
+        {msg.detail}
       </Message>
     );
   }
 
   if (state === "unavailable" || !replay) {
-    const reason = reasons?.[0];
+    const msg = unavailableMessage(reasons);
     return (
-      <Message
-        actions={
-          <>
-            <button type="button" onClick={() => onSelectTab?.("recap")} className={buttonClass}>
-              לסיכום
-            </button>
-            <button type="button" onClick={() => onSelectTab?.("box")} className={buttonClass}>
-              לנתונים
-            </button>
-          </>
-        }
-      >
-        <span data-reason={reason}>{UNAVAILABLE_TEXT[reason] || DEFAULT_UNAVAILABLE}</span>
+      <Message title={msg.title} reason={msg.reason ?? "unavailable"} actions={<OtherTabs onSelectTab={onSelectTab} />}>
+        {msg.detail}
+        {msg.reason !== "game_not_final" && <> אפשר לקרוא את הסיכום הכתוב ואת נתוני המשחק המלאים.</>}
       </Message>
     );
   }
@@ -367,6 +460,52 @@ export default function ReplayView({ game, active = false, onSelectTab }) {
   );
 }
 
-export function ReplayLoading() {
-  return <Message>טוען שחזור…</Message>;
+/**
+ * Loading skeleton (panel-shaped). After LOADING_SLOW_MS it stops pulsing and
+ * offers retry + recap/stats, so it never spins forever.
+ */
+export function ReplayLoading({ onRetry, onSelectTab }) {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setSlow(true), LOADING_SLOW_MS);
+    return () => clearTimeout(timer);
+  }, []);
+  if (slow) {
+    return (
+      <Message
+        title="הטעינה נמשכת יותר מהרגיל"
+        reason="slow"
+        actions={
+          <>
+            {onRetry && (
+              <button type="button" onClick={onRetry} className={buttonClass}>
+                נסו שוב
+              </button>
+            )}
+            <OtherTabs onSelectTab={onSelectTab} />
+          </>
+        }
+      >
+        נתוני השחזור עדיין לא התקבלו.
+      </Message>
+    );
+  }
+  return (
+    <div className={`${styles.replayRoot} ${styles.skeletonPulse} py-4`} role="status" data-replay-state="loading">
+      <span className="sr-only">טוען שחזור…</span>
+      <div className="rounded-[22px] border p-4" aria-hidden="true">
+        <div className="flex items-center justify-between gap-3">
+          <div className={`${styles.skeleton} h-12 w-28`} />
+          <div className={`${styles.skeleton} h-8 w-16`} />
+          <div className={`${styles.skeleton} h-12 w-28`} />
+        </div>
+        <div className={`${styles.skeleton} mt-4 h-3`} />
+        <div className={`${styles.skeleton} mt-4 h-20`} />
+        <div className={`${styles.skeleton} mt-4 h-10`} />
+      </div>
+      <p className="mt-3 text-center text-[13px] text-subtle" aria-hidden="true">
+        טוען שחזור…
+      </p>
+    </div>
+  );
 }

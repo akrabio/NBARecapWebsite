@@ -154,6 +154,9 @@
    Name + PTS are sticky at the inline-start edge of the scroll container;
    the remaining columns scroll horizontally inside it. */
 .statScroll {
+  /* Positioned so visually hidden (absolute) labels inside cells are clipped
+     by this scroller instead of widening the page. */
+  position: relative;
   overflow-x: auto;
   overscroll-behavior-x: contain;
 }
@@ -337,7 +340,76 @@
   }
 }
 
+/* ---- Sticky team-table header copy (W19) ----
+   Zero-height sticky anchor inside the team card; the aria-hidden header copy
+   hangs below it and is visible only once the real <thead> has scrolled under
+   the compact score bar (JS toggles .headShown). top mirrors
+   lib/replay/layout.js stickyHeadTop: below the bar (96 + 44px), or directly
+   below the game tabs when the bar is hidden on short viewports. */
+.headAnchor {
+  position: sticky;
+  top: 140px;
+  z-index: 14;
+  height: 0;
+}
+.headClone {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  overflow: hidden;
+  visibility: hidden;
+  background: var(--surface);
+  box-shadow: 0 6px 12px -8px #0006;
+}
+.headShown {
+  visibility: visible;
+}
+.headClone .statTable thead th {
+  background: var(--surface);
+}
+@media (max-height: 519px) {
+  .headAnchor {
+    top: 96px;
+  }
+}
+
+/* ---- Replay-wide focus + state messages (R39–R40) ---- */
+.replayRoot :focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.replayRoot .statScroll:focus-visible {
+  outline-offset: -2px;
+}
+.replayRoot .teamTab:focus-visible {
+  outline-offset: 1px;
+}
+.skeleton {
+  background: var(--surface-2);
+  border-radius: 12px;
+}
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+.skeletonPulse .skeleton {
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+.momentList button[aria-current="true"] {
+  background: #ffffff0d;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  /* Catch-all (R40): no animation or transition anywhere in the replay —
+     discrete updates only. Static cues below replace the motion ones. */
+  .replayRoot *,
+  .replayRoot *::before,
+  .replayRoot *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
   .stickyBar {
     transition: none;
   }
