@@ -113,9 +113,9 @@ for (const id of fixtureIds) {
   const fin = n.events[last].scoreAfter;
   const title = `${n.teams.away.abbreviation}@${n.teams.home.abbreviation} ${fin.away}–${fin.home}`;
 
-  // --- Random-position comparison ---------------------------------------------
+  // --- Random-position comparison (no payload state when unavailable) ---------
   const rand = rng(Number(id.slice(-4)));
-  const positions = [-1, 0, last, ...Array.from({ length: SAMPLES }, () => Math.floor(rand() * (last + 2)) - 1)];
+  const positions = replay ? [-1, 0, last, ...Array.from({ length: SAMPLES }, () => Math.floor(rand() * (last + 2)) - 1)] : [];
   let mismatches = 0;
   let worstMs = 0;
   for (const i of positions) {
@@ -133,7 +133,7 @@ for (const id of fixtureIds) {
   const gaps = Object.values(v.lineups).map((t) => `${t.abbreviation}: ${t.validStates}/${t.totalStates} valid, ${t.fallbackIntervals.length} fallback intervals, actor violations ${t.evidence.actorViolations}/${t.evidence.actorChecks}, final five = box active: ${t.evidence.finalMatchesActive}`);
   const sizes = replay ? Object.fromEntries(Object.keys(replay).map((k) => [k, JSON.stringify(replay[k]).length])) : {};
 
-  summary.push(`| ${id} | ${title} | ${result.status} | ${result.reasons.join(", ") || "—"} | ${replay ? f1(replay.durationSec) : "—"} | ${replay?.highlights.length ?? 0} | ${holds} | ${kb(json.length)} | ${kb(gz)} | ${f1(median(times))} ms | ${mismatches}/${positions.length} | ${deterministic ? "yes" : "NO"} |`);
+  summary.push(`| ${id} | ${title} | ${result.status} | ${result.reasons.join(", ") || "—"} | ${replay ? f1(replay.durationSec) : "—"} | ${replay?.highlights.length ?? 0} | ${holds} | ${kb(json.length)} | ${kb(gz)} | ${f1(median(times))} ms | ${replay ? `${mismatches}/${positions.length}` : "—"} | ${deterministic ? "yes" : "NO"} |`);
 
   const s = [];
   s.push(`## ${id} — ${title}`);
@@ -145,7 +145,8 @@ for (const id of fixtureIds) {
   s.push(`- Lineups: ${gaps.join(" · ")}.`);
   s.push(`- Probability: ${v.probability.level}, ${v.probability.samples}/${v.probability.events} events linked.`);
   s.push(`- Duration ${replay ? f1(replay.durationSec) : "—"} s, ${holds} holds; payload ${kb(json.length)} raw / ${kb(gz)} gzip (${Object.entries(sizes).map(([k, b]) => `${k} ${kb(b)}`).join(", ")}); build median ${f1(median(times))} ms (min ${f1(Math.min(...times))}, ${BUILD_RUNS} runs); deterministic: ${deterministic}.`);
-  s.push(`- Client state check: ${positions.length} positions (-1, 0, end + ${SAMPLES} random), ${mismatches} mismatches vs sequential walk and server stateAt; slowest client lookup ${worstMs.toFixed(2)} ms (first call includes the one-time checkpoint pass).`);
+  if (!replay) s.push("- Client state check: skipped (unavailable → no replay payload).");
+  else s.push(`- Client state check: ${positions.length} positions (-1, 0, end + ${SAMPLES} random), ${mismatches} mismatches vs sequential walk and server stateAt; slowest client lookup ${worstMs.toFixed(2)} ms (first call includes the one-time checkpoint pass).`);
   s.push("");
   if (replay?.highlights.length) {
     s.push("| Moment | Type | Clock | Score | Evidence (look-back) | Caption |");
@@ -159,6 +160,7 @@ for (const id of fixtureIds) {
   sections.push(...s);
 
   // --- Explicit inspections ---------------------------------------------------
+  if (!replay) continue;
   const at = (i) => replayStateAt(replay, i);
   const eqSeq = (i) => isDeepStrictEqual(at(i), seq(i));
   const inspect = (label, i, describe) => inspections.push(`- **${label}** — ${id} #${i} ${pl(n, n.events[i])} ${clock(n.events[i].clockRemainingSec)}: ${describe(at(i - 1), at(i), n.events[i])} Client = sequential: ${eqSeq(i - 1) && eqSeq(i)}.`);
@@ -224,6 +226,8 @@ out("## Remaining source limits");
 out();
 out("- 401810062: Porter Jr. block (play 401810062656) — participant contradicts text/box; blk unavailable for him, team blk total reconciles via `unattributed`.");
 out("- 401810792: Holland II 3PA 6 (pbp) vs 5 (box) — unexplained source inconsistency; his 3PT unavailable, DET 3PT team total limited.");
+out("- Late-recorded scoring plays (source-findings §10, W20b): stale score snapshots after them are carried from the feed's own scoring records (`score_snapshot_out_of_order` warning) in 401909290, 401909294, 401909931, 401909962, 401909968, 401909971, 401909972; every final, credited and period score still reconciles.");
+out("- 401909293: unavailable — the source score gains 2 NOP points on a turnover (play 401909293681, Q4 1:33) with no scoring record, so source final 111 ≠ header/credited 109 (score_coverage_gap, period_score_mismatch). Not explained by the late-recording rule; never patched.");
 out("- Not observed in the corpus (rules untested on real data): ejections, stat corrections, reviews requiring reversal, multi-OT, playoff games, missing/partial win probability (covered by synthetic tests only).");
 out("- Pacing is not approved by this gate; viewing trials follow the UI (W20).");
 out();

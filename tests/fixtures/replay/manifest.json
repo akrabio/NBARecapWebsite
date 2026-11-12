@@ -307,6 +307,494 @@
         "close finish (2-point margin)"
       ],
       "requestedShapeConfirmed": true
+    },
+    "401909290": {
+      "eventId": "401909290",
+      "file": "401909290.json",
+      "teams": {
+        "home": {
+          "id": "6",
+          "abbreviation": "DAL",
+          "name": "Dallas Mavericks"
+        },
+        "away": {
+          "id": "26",
+          "abbreviation": "UTAH",
+          "name": "Utah Jazz"
+        }
+      },
+      "gameDate": "2026-11-07T01:00Z",
+      "retrievedAt": "2026-11-12T14:06:54.111Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401909290",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 325467,
+      "playCount": 498,
+      "winProbabilityCount": 498,
+      "periods": 4,
+      "status": "STATUS_FINAL",
+      "finalScore": "UTAH 100 @ DAL 112",
+      "winner": "DAL",
+      "margin": 12,
+      "largestDeficitOvercome": 8,
+      "largestLead": 20,
+      "leadChanges": 9,
+      "playsFinalScoreMatchesHeader": true,
+      "requestedShape": null,
+      "verifiedShapes": [
+        "ordinary"
+      ],
+      "requestedShapeConfirmed": null
+    },
+    "401909293": {
+      "eventId": "401909293",
+      "file": "401909293.json",
+      "teams": {
+        "home": {
+          "id": "3",
+          "abbreviation": "NO",
+          "name": "New Orleans Pelicans"
+        },
+        "away": {
+          "id": "16",
+          "abbreviation": "MIN",
+          "name": "Minnesota Timberwolves"
+        }
+      },
+      "gameDate": "2026-11-07T01:00Z",
+      "retrievedAt": "2026-11-12T14:06:54.111Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401909293",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 330392,
+      "playCount": 512,
+      "winProbabilityCount": 512,
+      "periods": 4,
+      "status": "STATUS_FINAL",
+      "finalScore": "MIN 115 @ NO 109",
+      "winner": "MIN",
+      "margin": 6,
+      "largestDeficitOvercome": 7,
+      "largestLead": 11,
+      "leadChanges": 13,
+      "playsFinalScoreMatchesHeader": false,
+      "requestedShape": null,
+      "verifiedShapes": [
+        "ordinary"
+      ],
+      "requestedShapeConfirmed": null
+    },
+    "401909294": {
+      "eventId": "401909294",
+      "file": "401909294.json",
+      "teams": {
+        "home": {
+          "id": "13",
+          "abbreviation": "LAL",
+          "name": "Los Angeles Lakers"
+        },
+        "away": {
+          "id": "22",
+          "abbreviation": "POR",
+          "name": "Portland Trail Blazers"
+        }
+      },
+      "gameDate": "2026-11-07T03:00Z",
+      "retrievedAt": "2026-11-12T14:06:54.111Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401909294",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 346440,
+      "playCount": 539,
+      "winProbabilityCount": 539,
+      "periods": 4,
+      "status": "STATUS_FINAL",
+      "finalScore": "POR 118 @ LAL 124",
+      "winner": "LAL",
+      "margin": 6,
+      "largestDeficitOvercome": 14,
+      "largestLead": 16,
+      "leadChanges": 2,
+      "playsFinalScoreMatchesHeader": true,
+      "requestedShape": null,
+      "verifiedShapes": [
+        "comeback (winner trailed by 14)"
+      ],
+      "requestedShapeConfirmed": null
+    },
+    "401909931": {
+      "eventId": "401909931",
+      "file": "401909931.json",
+      "teams": {
+        "home": {
+          "id": "7",
+          "abbreviation": "DEN",
+          "name": "Denver Nuggets"
+        },
+        "away": {
+          "id": "28",
+          "abbreviation": "TOR",
+          "name": "Toronto Raptors"
+        }
+      },
+      "gameDate": "2026-11-05T02:00Z",
+      "retrievedAt": "2026-11-12T14:06:54.111Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401909931",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 294483,
+      "playCount": 446,
+      "winProbabilityCount": 446,
+      "periods": 4,
+      "status": "STATUS_FINAL",
+      "finalScore": "TOR 109 @ DEN 128",
+      "winner": "DEN",
+      "margin": 19,
+      "largestDeficitOvercome": 10,
+      "largestLead": 27,
+      "leadChanges": 2,
+      "playsFinalScoreMatchesHeader": true,
+      "requestedShape": null,
+      "verifiedShapes": [
+        "comeback (winner trailed by 10)"
+      ],
+      "requestedShapeConfirmed": null
+    },
+    "401909962": {
+      "eventId": "401909962",
+      "file": "401909962.json",
+      "teams": {
+        "home": {
+          "id": "21",
+          "abbreviation": "PHX",
+          "name": "Phoenix Suns"
+        },
+        "away": {
+          "id": "12",
+          "abbreviation": "LAC",
+          "name": "LA Clippers"
+        }
+      },
+      "gameDate": "2026-11-11T02:00Z",
+      "retrievedAt": "2026-11-12T14:06:54.111Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401909962",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 304780,
+      "playCount": 468,
+      "winProbabilityCount": 468,
+      "periods": 4,
+      "status": "STATUS_FINAL",
+      "finalScore": "LAC 110 @ PHX 133",
+      "winner": "PHX",
+      "margin": 23,
+      "largestDeficitOvercome": 3,
+      "largestLead": 32,
+      "leadChanges": 4,
+      "playsFinalScoreMatchesHeader": true,
+      "requestedShape": null,
+      "verifiedShapes": [
+        "blowout (23-point margin)"
+      ],
+      "requestedShapeConfirmed": null
+    },
+    "401909968": {
+      "eventId": "401909968",
+      "file": "401909968.json",
+      "teams": {
+        "home": {
+          "id": "28",
+          "abbreviation": "TOR",
+          "name": "Toronto Raptors"
+        },
+        "away": {
+          "id": "2",
+          "abbreviation": "BOS",
+          "name": "Boston Celtics"
+        }
+      },
+      "gameDate": "2026-11-12T00:00Z",
+      "retrievedAt": "2026-11-12T14:06:54.111Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401909968",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 321700,
+      "playCount": 495,
+      "winProbabilityCount": 495,
+      "periods": 4,
+      "status": "STATUS_FINAL",
+      "finalScore": "BOS 98 @ TOR 93",
+      "winner": "BOS",
+      "margin": 5,
+      "largestDeficitOvercome": 22,
+      "largestLead": 22,
+      "leadChanges": 16,
+      "playsFinalScoreMatchesHeader": true,
+      "requestedShape": null,
+      "verifiedShapes": [
+        "comeback (winner trailed by 22)"
+      ],
+      "requestedShapeConfirmed": null
+    },
+    "401909971": {
+      "eventId": "401909971",
+      "file": "401909971.json",
+      "teams": {
+        "home": {
+          "id": "15",
+          "abbreviation": "MIL",
+          "name": "Milwaukee Bucks"
+        },
+        "away": {
+          "id": "13",
+          "abbreviation": "LAL",
+          "name": "Los Angeles Lakers"
+        }
+      },
+      "gameDate": "2026-11-12T01:00Z",
+      "retrievedAt": "2026-11-12T14:06:54.111Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401909971",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 336359,
+      "playCount": 515,
+      "winProbabilityCount": 515,
+      "periods": 4,
+      "status": "STATUS_FINAL",
+      "finalScore": "LAL 123 @ MIL 112",
+      "winner": "LAL",
+      "margin": 11,
+      "largestDeficitOvercome": 5,
+      "largestLead": 24,
+      "leadChanges": 1,
+      "playsFinalScoreMatchesHeader": true,
+      "requestedShape": null,
+      "verifiedShapes": [
+        "ordinary"
+      ],
+      "requestedShapeConfirmed": null
+    },
+    "401909972": {
+      "eventId": "401909972",
+      "file": "401909972.json",
+      "teams": {
+        "home": {
+          "id": "3",
+          "abbreviation": "NO",
+          "name": "New Orleans Pelicans"
+        },
+        "away": {
+          "id": "17",
+          "abbreviation": "BKN",
+          "name": "Brooklyn Nets"
+        }
+      },
+      "gameDate": "2026-11-12T01:00Z",
+      "retrievedAt": "2026-11-12T14:06:54.111Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401909972",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 316772,
+      "playCount": 489,
+      "winProbabilityCount": 489,
+      "periods": 4,
+      "status": "STATUS_FINAL",
+      "finalScore": "BKN 145 @ NO 111",
+      "winner": "BKN",
+      "margin": 34,
+      "largestDeficitOvercome": 4,
+      "largestLead": 41,
+      "leadChanges": 1,
+      "playsFinalScoreMatchesHeader": true,
+      "requestedShape": null,
+      "verifiedShapes": [
+        "blowout (34-point margin)"
+      ],
+      "requestedShapeConfirmed": null
     }
   }
 }
