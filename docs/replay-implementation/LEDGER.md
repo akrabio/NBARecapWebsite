@@ -12,8 +12,8 @@ Single source of truth for progress. Maintained by the orchestrator; sub-agents 
 | Unit | Tasks | Gate | Status | Commit | Notes |
 | --- | --- | --- | --- | --- | --- |
 | W01 | R01–R02 baseline + real fixtures | | done | W01 | Validator PASS. Minor script nits (no fetch timeout, ID check per-loop) accepted. |
-| W02 | R03–R04 source audit, types, support matrix | A | in progress | | |
-| W03 | R05–R06 normalize teams/rosters/clocks/order | | todo | | |
+| W02 | R03–R04 source audit, types, support matrix | A | done | W02 | Gate A PASS (validator reproduced roles, ordering, reconciliation, lineups). |
+| W03 | R05–R06 normalize teams/rosters/clocks/order | | in progress | | |
 | W04 | R07–R09 stat deltas (scoring, ast/reb, to/stl/blk/pf) | | todo | | |
 | W05 | R10–R11 lineups + substitutions | | todo | | |
 | W06 | R12–R13 win probability join + state/checkpoints | | todo | | |
@@ -46,6 +46,13 @@ _Record source-capability findings, contract changes, deviations from the plan (
 - `sequenceNumber` occasionally goes backwards vs array order (1–4×/game) → order by array order, not sequenceNumber (to confirm in W02).
 - Shot `coordinate` uses sentinel values (e.g. −214748340) on non-shots.
 - Substitutions: 53–95/game, all with 2 participants.
+- **W02 / Gate A** — full detail in `source-findings.md`; types/reason codes in `lib/replay/types.js`. Role map: shots `[0]` shooter, `[1]` assister only with "(X assists)"; blocks `[0]` shooter `[1]` blocker, `team` = shooter's team; turnovers `[0]` player, `[1]` stealer only with "(X steals)"; rebounds `[0]`; subs `[0]` enters `[1]` leaves; jump ball `[2]` gains possession (jumper order arbitrary). Team rebounds/turnovers have no participants.
+- Order = plays array order (sequenceNumber regresses 15×). Win prob joins by `playId` (index join misaligns).
+- Counting rules: heaves (type 282) excluded from FGA/3PA; FT never FGA; TO/PF via fixed type-ID lists; technicals ≠ PF. Match roles by `type.id`, not text regexes.
+- Known source error: play 401810062656 block participant is Demin but text/box say Porter Jr. → role must be cross-checked against text (name guard), else attribution unknown.
+- Reconciliation with this map: 1,589/1,590 player stat values match; only Holland II 3PA (6 pbp vs 5 box) — limit that stat, never patch.
+- Lineups: starters + subs in array order → always 5, 0 off-court actors (except the bad block), 42/42 period starting fives evidenced; between-period changes appear as subs at 12:00/5:00. Same-clock sub groups (≤7) apply atomically. Active-five feasible → no product escalation.
+- Corpus limits: no ejections, corrections, or reviews observed.
 
 ## Open issues / escalations
 
