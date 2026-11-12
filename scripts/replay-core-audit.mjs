@@ -227,6 +227,7 @@ out();
 out("- 401810062: Porter Jr. block (play 401810062656) — participant contradicts text/box; blk unavailable for him, team blk total reconciles via `unattributed`.");
 out("- 401810792: Holland II 3PA 6 (pbp) vs 5 (box) — unexplained source inconsistency; his 3PT unavailable, DET 3PT team total limited.");
 out("- Late-recorded scoring plays (source-findings §10, W20b): stale score snapshots after them are carried from the feed's own scoring records (`score_snapshot_out_of_order` warning) in 401909290, 401909294, 401909931, 401909962, 401909968, 401909971, 401909972; every final, credited and period score still reconciles.");
+out("- W20b/W20c games: remaining stat/lineup limits are source-side (one player's REB, TO or PF each; one off-court actor; box `active` ≠ tracked final five in garbage time) — see source-findings §10.");
 out("- 401909293: unavailable — the source score gains 2 NOP points on a turnover (play 401909293681, Q4 1:33) with no scoring record, so source final 111 ≠ header/credited 109 (score_coverage_gap, period_score_mismatch). Not explained by the late-recording rule; never patched.");
 out("- Not observed in the corpus (rules untested on real data): ejections, stat corrections, reviews requiring reversal, multi-OT, playoff games, missing/partial win probability (covered by synthetic tests only).");
 out("- Pacing is not approved by this gate; viewing trials follow the UI (W20).");

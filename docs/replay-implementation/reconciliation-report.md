@@ -13,14 +13,14 @@ Definitions: team REB/OREB/DREB in the box exclude team rebounds, so team totals
 | 401810792 | DET @ BKN 138–100 | **limited** | stat_mismatch | 359/360 | ✓ / ✓ (4) | BKN: corroborated, DET: corroborated | 475/475 linked |
 | 401810798 | CHI @ GS 130–124 | **ready** | — | 285/285 | ✓ / ✓ (5) | GS: corroborated, CHI: corroborated | 568/568 linked |
 | 401810799 | CHA @ POR 103–101 | **ready** | — | 300/300 | ✓ / ✓ (4) | POR: corroborated, CHA: corroborated | 506/506 linked |
-| 401909290 | UTAH @ DAL 100–112 | **limited** | stat_mismatch, lineup_actor_off_court | 387/390 | ✓ / ✓ (4) | DAL: corroborated, UTAH: partial | 498/498 linked |
+| 401909290 | UTAH @ DAL 100–112 | **limited** | stat_mismatch, lineup_actor_off_court | 388/390 | ✓ / ✓ (4) | DAL: corroborated, UTAH: partial | 498/498 linked |
 | 401909293 | MIN @ NO 115–109 | **unavailable** | score_coverage_gap, period_score_mismatch | 285/285 | ✗ / ✗ (4) | NO: corroborated, MIN: corroborated | 512/512 linked |
 | 401909294 | POR @ LAL 118–124 | **ready** | — | 300/300 | ✓ / ✓ (4) | LAL: corroborated, POR: corroborated | 539/539 linked |
-| 401909931 | TOR @ DEN 109–128 | **limited** | stat_mismatch, lineup_invalid | 383/390 | ✓ / ✓ (4) | DEN: partial, TOR: partial | 446/446 linked |
-| 401909962 | LAC @ PHX 110–133 | **limited** | stat_mismatch, lineup_actor_off_court | 373/375 | ✓ / ✓ (4) | PHX: corroborated, LAC: partial | 468/468 linked |
-| 401909968 | BOS @ TOR 98–93 | **limited** | stat_mismatch, lineup_actor_off_court | 295/300 | ✓ / ✓ (4) | TOR: partial, BOS: corroborated | 495/495 linked |
+| 401909931 | TOR @ DEN 109–128 | **limited** | stat_mismatch, lineup_invalid | 388/390 | ✓ / ✓ (4) | DEN: partial, TOR: partial | 446/446 linked |
+| 401909962 | LAC @ PHX 110–133 | **limited** | lineup_actor_off_court | 375/375 | ✓ / ✓ (4) | PHX: corroborated, LAC: partial | 468/468 linked |
+| 401909968 | BOS @ TOR 98–93 | **limited** | lineup_actor_off_court | 300/300 | ✓ / ✓ (4) | TOR: partial, BOS: corroborated | 495/495 linked |
 | 401909971 | LAL @ MIL 123–112 | **limited** | stat_mismatch, lineup_invalid | 419/420 | ✓ / ✓ (4) | MIL: partial, LAL: partial | 515/515 linked |
-| 401909972 | BKN @ NO 145–111 | **limited** | stat_mismatch | 366/375 | ✓ / ✓ (4) | NO: corroborated, BKN: corroborated | 489/489 linked |
+| 401909972 | BKN @ NO 145–111 | **limited** | stat_mismatch | 374/375 | ✓ / ✓ (4) | NO: corroborated, BKN: corroborated | 489/489 linked |
 
 ## 401810062 — TOR @ BKN: **limited**
 
@@ -212,7 +212,7 @@ None — every family reliable.
 
 ## 401909290 — UTAH @ DAL: **limited**
 
-Reasons: stat_mismatch, lineup_actor_off_court. Warnings: heave_excluded×1, lineup_actor_off_court×1, score_snapshot_out_of_order×5, sequence_out_of_order×5, unknown_event_type×2.
+Reasons: stat_mismatch, lineup_actor_off_court. Warnings: heave_excluded×1, lineup_actor_off_court×1, score_snapshot_out_of_order×5, sequence_out_of_order×5.
 
 ### Score
 
@@ -223,27 +223,26 @@ Reasons: stat_mismatch, lineup_actor_off_court. Warnings: heave_excluded×1, lin
 
 ### Players
 
-387/390 player values reconcile.
+388/390 player values reconcile.
 
 | Player | Counter | Reconstructed | Box | Treatment |
 | --- | --- | --- | --- | --- |
 | Ace Bailey (4873138) | reb | 6 | 5 | `reb` unavailable for this player (stat_mismatch) |
 | Ace Bailey (4873138) | dreb | 4 | 3 | `orebDreb` unavailable for this player (stat_mismatch) |
-| Morez Johnson Jr. (4873153) | to | 2 | 3 | `to` unavailable for this player (stat_mismatch) |
 
 ### Team totals (player sum + unattributed vs box)
 
 | Team | pts | fgm | fga | tpm | tpa | ftm | fta | reb | oreb | dreb | ast | to | stl | blk | pf | teamTo | totalTo | tech | teamReb (unvalidated) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | UTAH | 100 | 36 | 82 | 15 | 39 | 13 | 14 | **41 ≠ 40** | 8 | **33 ≠ 32** | 25 | 21 | 7 | 7 | 22 | 0 | 21 | 0 | 4 |
-| DAL | 112 | 39 | 93 | 9 | 32 | 25 | 31 | 55 | 21 | 34 | 23 | **14 ≠ 15** | 11 | 8 | 19 | 1 | **15 ≠ 16** | 0 | 8 |
+| DAL | 112 | 39 | 93 | 9 | 32 | 25 | 31 | 55 | 21 | 34 | 23 | 15 | 11 | 8 | 19 | 1 | 16 | 0 | 8 |
 
 ### Lineups
 
 | Team | Valid states | Fallback intervals | Invariant violations | Actor checks (violations) | Stints with an action | Final five = box active | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | UTAH | 465/499 | 215–248 (lineup_actor_off_court) | 0 | 209 (1) | 36/43 | ✓ | partial |
-| DAL | 499/499 | none | 0 | 256 (0) | 36/39 | ✓ | corroborated |
+| DAL | 499/499 | none | 0 | 257 (0) | 36/39 | ✓ | corroborated |
 
 Probability: 498/498 events linked, first at event 0, 0 derived, discarded {}.
 
@@ -255,17 +254,12 @@ Probability: 498/498 events linked, first at event 0, 0 derived, discarded {}.
 - `orebDreb` [game]: **limited** (stat_mismatch)
 - `orebDreb` [player: Ace Bailey]: **unavailable** (stat_mismatch)
 - `orebDreb` [teamTotal: team 26]: **limited** (stat_mismatch)
-- `to` [game]: **limited** (stat_mismatch)
-- `to` [player: Morez Johnson Jr.]: **unavailable** (stat_mismatch)
-- `to` [teamTotal: team 6]: **limited** (stat_mismatch)
-- `teamOnly` [game]: **limited** (stat_mismatch)
-- `teamOnly` [teamTotal: team 6]: **limited** (stat_mismatch)
 - `lineups` [game]: **limited** (lineup_actor_off_court)
 - `lineups` [team: team 26 events 215–248]: **limited** (lineup_actor_off_court)
 
 ## 401909293 — MIN @ NO: **unavailable**
 
-Reasons: score_coverage_gap, period_score_mismatch. Warnings: heave_excluded×1, score_delta_mismatch×1, sequence_out_of_order×8, unknown_event_type×1.
+Reasons: score_coverage_gap, period_score_mismatch. Warnings: attribution_unknown×1, heave_excluded×1, score_delta_mismatch×1, sequence_out_of_order×8.
 
 ### Score
 
@@ -283,7 +277,7 @@ Reasons: score_coverage_gap, period_score_mismatch. Warnings: heave_excluded×1,
 | Team | pts | fgm | fga | tpm | tpa | ftm | fta | reb | oreb | dreb | ast | to | stl | blk | pf | teamTo | totalTo | tech | teamReb (unvalidated) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | MIN | 115 | 38 | 88 | 12 | 39 | 27 | 37 | 49 | 17 | 32 | 23 | 11 | 5 | 6 | 22 | 3 | 14 | 1 | 11 |
-| NO | 109 | 39 | 86 | 10 | 24 | 21 | 26 | 41 | 12 | 29 | 25 | 13 | 7 | 4 | 28 | 0 | 13 | **2 ≠ 3** | 12 |
+| NO | 109 | 39 | 86 | 10 | 24 | 21 | 26 | 41 | 12 | 29 | 25 | 13 | 7 | 4 | 28 | 0 | 13 | 3 | 12 |
 
 ### Lineups
 
@@ -297,8 +291,6 @@ Probability: 512/512 events linked, first at event 0, 0 derived, discarded {}.
 ### Capabilities below reliable
 
 - `score` [game]: **unavailable** (score_coverage_gap, period_score_mismatch)
-- `teamOnly` [game]: **limited** (stat_mismatch)
-- `teamOnly` [teamTotal: team 3]: **limited** (stat_mismatch)
 
 ## 401909294 — POR @ LAL: **ready**
 
@@ -337,7 +329,7 @@ None — every family reliable.
 
 ## 401909931 — TOR @ DEN: **limited**
 
-Reasons: stat_mismatch, lineup_invalid. Warnings: heave_excluded×1, score_snapshot_out_of_order×2, sequence_out_of_order×6, unknown_event_type×1, unknown_shot_value×1.
+Reasons: stat_mismatch, lineup_invalid. Warnings: heave_excluded×1, score_snapshot_out_of_order×2, sequence_out_of_order×6.
 
 ### Score
 
@@ -348,56 +340,41 @@ Reasons: stat_mismatch, lineup_invalid. Warnings: heave_excluded×1, score_snaps
 
 ### Players
 
-383/390 player values reconcile.
+388/390 player values reconcile.
 
 | Player | Counter | Reconstructed | Box | Treatment |
 | --- | --- | --- | --- | --- |
 | Scottie Barnes (4433134) | to | 5 | 6 | `to` unavailable for this player (stat_mismatch) |
 | Collin Murray-Boyles (5093267) | to | 2 | 1 | `to` unavailable for this player (stat_mismatch) |
-| Ja'Kobe Walter (4684272) | to | 1 | 2 | `to` unavailable for this player (stat_mismatch) |
-| Jamison Battle (4431893) | fgm | 4 | 3 | `fg` unavailable for this player (stat_mismatch) |
-| Jamison Battle (4431893) | fga | 6 | 5 | `fg` unavailable for this player (stat_mismatch) |
-| Jamison Battle (4431893) | ftm | 0 | 1 | `ft` unavailable for this player (stat_mismatch) |
-| Jamison Battle (4431893) | fta | 0 | 1 | `ft` unavailable for this player (stat_mismatch) |
 
 ### Team totals (player sum + unattributed vs box)
 
 | Team | pts | fgm | fga | tpm | tpa | ftm | fta | reb | oreb | dreb | ast | to | stl | blk | pf | teamTo | totalTo | tech | teamReb (unvalidated) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| TOR | 109 | **42 ≠ 41** | **86 ≠ 85** | 12 | 34 | **14 ≠ 15** | **21 ≠ 22** | 29 | 11 | 18 | 29 | **14 ≠ 15** | 10 | 1 | 23 | 1 | **15 ≠ 16** | 0 | 12 |
+| TOR | 109 | 41 | 85 | 12 | 34 | 15 | 22 | 29 | 11 | 18 | 29 | 15 | 10 | 1 | 23 | 1 | 16 | 0 | 12 |
 | DEN | 128 | 48 | 78 | 9 | 23 | 23 | 27 | 36 | 7 | 29 | 35 | 15 | 11 | 1 | 18 | 0 | 15 | 1 | 9 |
 
 ### Lineups
 
 | Team | Valid states | Fallback intervals | Invariant violations | Actor checks (violations) | Stints with an action | Final five = box active | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| TOR | 447/447 | 413–445 (lineup_invalid) | 0 | 217 (0) | 34/38 | ✗ | partial |
+| TOR | 447/447 | 413–445 (lineup_invalid) | 0 | 218 (0) | 34/38 | ✗ | partial |
 | DEN | 447/447 | 401–445 (lineup_invalid) | 0 | 222 (0) | 27/27 | ✗ | partial |
 
 Probability: 446/446 events linked, first at event 0, 0 derived, discarded {}.
 
 ### Capabilities below reliable
 
-- `fg` [game]: **limited** (stat_mismatch)
-- `fg` [player: Jamison Battle]: **unavailable** (stat_mismatch)
-- `fg` [teamTotal: team 28]: **limited** (stat_mismatch)
-- `ft` [game]: **limited** (stat_mismatch)
-- `ft` [player: Jamison Battle]: **unavailable** (stat_mismatch)
-- `ft` [teamTotal: team 28]: **limited** (stat_mismatch)
 - `to` [game]: **limited** (stat_mismatch)
 - `to` [player: Scottie Barnes]: **unavailable** (stat_mismatch)
 - `to` [player: Collin Murray-Boyles]: **unavailable** (stat_mismatch)
-- `to` [player: Ja'Kobe Walter]: **unavailable** (stat_mismatch)
-- `to` [teamTotal: team 28]: **limited** (stat_mismatch)
-- `teamOnly` [game]: **limited** (stat_mismatch)
-- `teamOnly` [teamTotal: team 28]: **limited** (stat_mismatch)
 - `lineups` [game]: **limited** (lineup_invalid)
 - `lineups` [team: team 7 events 401–445]: **limited** (lineup_invalid)
 - `lineups` [team: team 28 events 413–445]: **limited** (lineup_invalid)
 
 ## 401909962 — LAC @ PHX: **limited**
 
-Reasons: stat_mismatch, lineup_actor_off_court. Warnings: lineup_actor_off_court×1, score_snapshot_out_of_order×21, sequence_out_of_order×5, unknown_event_type×2.
+Reasons: lineup_actor_off_court. Warnings: lineup_actor_off_court×1, score_snapshot_out_of_order×21, sequence_out_of_order×5.
 
 ### Score
 
@@ -408,45 +385,32 @@ Reasons: stat_mismatch, lineup_actor_off_court. Warnings: lineup_actor_off_court
 
 ### Players
 
-373/375 player values reconcile.
-
-| Player | Counter | Reconstructed | Box | Treatment |
-| --- | --- | --- | --- | --- |
-| Kris Dunn (2991139) | pf | 1 | 2 | `pf` unavailable for this player (stat_mismatch) |
-| Kobe Sanders (4702352) | to | 2 | 3 | `to` unavailable for this player (stat_mismatch) |
+375/375 player values reconcile.
 
 ### Team totals (player sum + unattributed vs box)
 
 | Team | pts | fgm | fga | tpm | tpa | ftm | fta | reb | oreb | dreb | ast | to | stl | blk | pf | teamTo | totalTo | tech | teamReb (unvalidated) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| LAC | 110 | 38 | 90 | 15 | 44 | 19 | 26 | 37 | 10 | 27 | 28 | **11 ≠ 12** | 10 | 2 | **17 ≠ 18** | 1 | **12 ≠ 13** | 0 | 11 |
+| LAC | 110 | 38 | 90 | 15 | 44 | 19 | 26 | 37 | 10 | 27 | 28 | 12 | 10 | 2 | 18 | 1 | 13 | 0 | 11 |
 | PHX | 133 | 49 | 88 | 22 | 43 | 13 | 20 | 48 | 8 | 40 | 32 | 18 | 4 | 1 | 20 | 1 | 19 | 3 | 9 |
 
 ### Lineups
 
 | Team | Valid states | Fallback intervals | Invariant violations | Actor checks (violations) | Stints with an action | Final five = box active | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| LAC | 300/469 | 299–467 (lineup_actor_off_court) | 0 | 132 (1) | 16/21 | — | partial |
+| LAC | 300/469 | 299–467 (lineup_actor_off_court) | 0 | 134 (1) | 16/21 | — | partial |
 | PHX | 469/469 | none | 0 | 234 (0) | 29/31 | ✓ | corroborated |
 
 Probability: 468/468 events linked, first at event 0, 0 derived, discarded {}.
 
 ### Capabilities below reliable
 
-- `to` [game]: **limited** (stat_mismatch)
-- `to` [player: Kobe Sanders]: **unavailable** (stat_mismatch)
-- `to` [teamTotal: team 12]: **limited** (stat_mismatch)
-- `pf` [game]: **limited** (stat_mismatch)
-- `pf` [player: Kris Dunn]: **unavailable** (stat_mismatch)
-- `pf` [teamTotal: team 12]: **limited** (stat_mismatch)
-- `teamOnly` [game]: **limited** (stat_mismatch)
-- `teamOnly` [teamTotal: team 12]: **limited** (stat_mismatch)
 - `lineups` [game]: **limited** (lineup_actor_off_court)
 - `lineups` [team: team 12 events 299–467]: **limited** (lineup_actor_off_court)
 
 ## 401909968 — BOS @ TOR: **limited**
 
-Reasons: stat_mismatch, lineup_actor_off_court. Warnings: heave_excluded×1, lineup_actor_off_court×1, score_snapshot_out_of_order×140, sequence_out_of_order×4, unknown_event_type×1, unknown_shot_value×1.
+Reasons: lineup_actor_off_court. Warnings: heave_excluded×1, lineup_actor_off_court×1, score_snapshot_out_of_order×140, sequence_out_of_order×4.
 
 ### Score
 
@@ -457,51 +421,32 @@ Reasons: stat_mismatch, lineup_actor_off_court. Warnings: heave_excluded×1, lin
 
 ### Players
 
-295/300 player values reconcile.
-
-| Player | Counter | Reconstructed | Box | Treatment |
-| --- | --- | --- | --- | --- |
-| Jayson Tatum (4065648) | fgm | 7 | 6 | `fg` unavailable for this player (stat_mismatch) |
-| Jayson Tatum (4065648) | fga | 22 | 21 | `fg` unavailable for this player (stat_mismatch) |
-| Jayson Tatum (4065648) | ftm | 9 | 10 | `ft` unavailable for this player (stat_mismatch) |
-| Jayson Tatum (4065648) | fta | 11 | 12 | `ft` unavailable for this player (stat_mismatch) |
-| Neemias Queta (4397424) | to | 4 | 5 | `to` unavailable for this player (stat_mismatch) |
+300/300 player values reconcile.
 
 ### Team totals (player sum + unattributed vs box)
 
 | Team | pts | fgm | fga | tpm | tpa | ftm | fta | reb | oreb | dreb | ast | to | stl | blk | pf | teamTo | totalTo | tech | teamReb (unvalidated) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| BOS | 98 | **31 ≠ 30** | **74 ≠ 73** | 14 | 40 | **23 ≠ 24** | **27 ≠ 28** | 45 | 9 | 36 | 22 | **17 ≠ 18** | 7 | 10 | 19 | 0 | **17 ≠ 18** | 0 | 9 |
+| BOS | 98 | 30 | 73 | 14 | 40 | 24 | 28 | 45 | 9 | 36 | 22 | 18 | 7 | 10 | 19 | 0 | 18 | 0 | 9 |
 | TOR | 93 | 32 | 85 | 16 | 43 | 13 | 18 | 42 | 12 | 30 | 26 | 14 | 9 | 4 | 28 | 1 | 15 | 0 | 10 |
 
 ### Lineups
 
 | Team | Valid states | Fallback intervals | Invariant violations | Actor checks (violations) | Stints with an action | Final five = box active | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| BOS | 496/496 | none | 0 | 223 (0) | 35/39 | ✓ | corroborated |
+| BOS | 496/496 | none | 0 | 224 (0) | 35/39 | ✓ | corroborated |
 | TOR | 411/496 | 330–414 (lineup_actor_off_court) | 0 | 181 (1) | 37/49 | ✓ | partial |
 
 Probability: 495/495 events linked, first at event 0, 0 derived, discarded {}.
 
 ### Capabilities below reliable
 
-- `fg` [game]: **limited** (stat_mismatch)
-- `fg` [player: Jayson Tatum]: **unavailable** (stat_mismatch)
-- `fg` [teamTotal: team 2]: **limited** (stat_mismatch)
-- `ft` [game]: **limited** (stat_mismatch)
-- `ft` [player: Jayson Tatum]: **unavailable** (stat_mismatch)
-- `ft` [teamTotal: team 2]: **limited** (stat_mismatch)
-- `to` [game]: **limited** (stat_mismatch)
-- `to` [player: Neemias Queta]: **unavailable** (stat_mismatch)
-- `to` [teamTotal: team 2]: **limited** (stat_mismatch)
-- `teamOnly` [game]: **limited** (stat_mismatch)
-- `teamOnly` [teamTotal: team 2]: **limited** (stat_mismatch)
 - `lineups` [game]: **limited** (lineup_actor_off_court)
 - `lineups` [team: team 28 events 330–414]: **limited** (lineup_actor_off_court)
 
 ## 401909971 — LAL @ MIL: **limited**
 
-Reasons: stat_mismatch, lineup_invalid. Warnings: score_snapshot_out_of_order×38, sequence_out_of_order×6, unknown_event_type×2.
+Reasons: stat_mismatch, lineup_invalid. Warnings: score_snapshot_out_of_order×38, sequence_out_of_order×6.
 
 ### Score
 
@@ -522,7 +467,7 @@ Reasons: stat_mismatch, lineup_invalid. Warnings: score_snapshot_out_of_order×3
 
 | Team | pts | fgm | fga | tpm | tpa | ftm | fta | reb | oreb | dreb | ast | to | stl | blk | pf | teamTo | totalTo | tech | teamReb (unvalidated) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| LAL | 123 | 44 | 95 | 15 | 40 | 20 | 23 | 48 | 19 | 29 | 32 | 17 | 14 | 4 | 24 | **0 ≠ 1** | **17 ≠ 18** | 2 | 11 |
+| LAL | 123 | 44 | 95 | 15 | 40 | 20 | 23 | 48 | 19 | 29 | 32 | 17 | 14 | 4 | 24 | 1 | 18 | 2 | 11 |
 | MIL | 112 | 35 | 81 | 13 | 38 | 29 | 33 | 40 | 14 | 26 | 25 | 17 | 10 | 7 | 23 | 1 | 18 | 2 | 5 |
 
 ### Lineups
@@ -538,15 +483,13 @@ Probability: 515/515 events linked, first at event 0, 0 derived, discarded {}.
 
 - `pf` [game]: **limited** (stat_mismatch)
 - `pf` [player: Ziaire Williams]: **unavailable** (stat_mismatch)
-- `teamOnly` [game]: **limited** (stat_mismatch)
-- `teamOnly` [teamTotal: team 13]: **limited** (stat_mismatch)
 - `lineups` [game]: **limited** (lineup_invalid)
 - `lineups` [team: team 15 events 510–514]: **limited** (lineup_invalid)
 - `lineups` [team: team 13 events 452–514]: **limited** (lineup_invalid)
 
 ## 401909972 — BKN @ NO: **limited**
 
-Reasons: stat_mismatch. Warnings: attribution_unknown×1, score_snapshot_out_of_order×5, sequence_out_of_order×5, unknown_athlete×1, unknown_event_type×6, unknown_shot_value×3.
+Reasons: stat_mismatch. Warnings: attribution_unknown×1, score_snapshot_out_of_order×5, sequence_out_of_order×5, unknown_athlete×1.
 
 ### Score
 
@@ -557,58 +500,32 @@ Reasons: stat_mismatch. Warnings: attribution_unknown×1, score_snapshot_out_of_
 
 ### Players
 
-366/375 player values reconcile.
+374/375 player values reconcile.
 
 | Player | Counter | Reconstructed | Box | Treatment |
 | --- | --- | --- | --- | --- |
-| Julius Randle (3064514) | to | 0 | 2 | `to` unavailable for this player (stat_mismatch) |
-| Day'Ron Sharpe (4432194) | to | 1 | 2 | `to` unavailable for this player (stat_mismatch) |
-| Egor Demin (5175643) | fgm | 8 | 5 | `fg` unavailable for this player (stat_mismatch) |
-| Egor Demin (5175643) | fga | 11 | 8 | `fg` unavailable for this player (stat_mismatch) |
-| Egor Demin (5175643) | ftm | 5 | 8 | `ft` unavailable for this player (stat_mismatch) |
-| Egor Demin (5175643) | fta | 7 | 10 | `ft` unavailable for this player (stat_mismatch) |
-| Josh Minott (4687718) | pf | 1 | 2 | `pf` unavailable for this player (stat_mismatch) |
-| Herbert Jones (4277813) | to | 1 | 2 | `to` unavailable for this player (stat_mismatch) |
-| Julian Reese (4683742) | pf | 1 | 3 | `pf` unavailable for this player (stat_mismatch) |
+| Julian Reese (4683742) | pf | 2 | 3 | `pf` unavailable for this player (stat_mismatch) |
 
 ### Team totals (player sum + unattributed vs box)
 
 | Team | pts | fgm | fga | tpm | tpa | ftm | fta | reb | oreb | dreb | ast | to | stl | blk | pf | teamTo | totalTo | tech | teamReb (unvalidated) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| BKN | 145 | **48 ≠ 45** | **82 ≠ 79** | 20 | 41 | **32 ≠ 35** | **39 ≠ 42** | 42 | 11 | 31 | 30 | **10 ≠ 13** | 8 | 8 | **24 ≠ 25** | 2 | **12 ≠ 15** | 1 | 8 |
-| NO | 111 | 34 | 77 | 12 | 30 | 31 | 38 | 28 | 9 | 19 | 20 | **15 ≠ 16** | 10 | 6 | **28 ≠ 29** | 0 | **15 ≠ 16** | 2 | 13 |
+| BKN | 145 | 45 | 79 | 20 | 41 | 35 | 42 | 42 | 11 | 31 | 30 | 13 | 8 | 8 | 25 | 2 | 15 | 1 | 8 |
+| NO | 111 | 34 | 77 | 12 | 30 | 31 | 38 | 28 | 9 | 19 | 20 | 16 | 10 | 6 | 29 | 0 | 16 | 2 | 13 |
 
 ### Lineups
 
 | Team | Valid states | Fallback intervals | Invariant violations | Actor checks (violations) | Stints with an action | Final five = box active | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| BKN | 490/490 | none | 0 | 245 (0) | 32/33 | ✓ | corroborated |
-| NO | 490/490 | none | 0 | 225 (0) | 30/30 | ✓ | corroborated |
+| BKN | 490/490 | none | 0 | 249 (0) | 32/33 | ✓ | corroborated |
+| NO | 490/490 | none | 0 | 228 (0) | 30/30 | ✓ | corroborated |
 
 Probability: 489/489 events linked, first at event 0, 0 derived, discarded {}.
 
 ### Capabilities below reliable
 
-- `fg` [game]: **limited** (stat_mismatch)
-- `fg` [player: Egor Demin]: **unavailable** (stat_mismatch)
-- `fg` [teamTotal: team 17]: **limited** (stat_mismatch)
-- `ft` [game]: **limited** (stat_mismatch)
-- `ft` [player: Egor Demin]: **unavailable** (stat_mismatch)
-- `ft` [teamTotal: team 17]: **limited** (stat_mismatch)
-- `to` [game]: **limited** (stat_mismatch)
-- `to` [player: Julius Randle]: **unavailable** (stat_mismatch)
-- `to` [player: Day'Ron Sharpe]: **unavailable** (stat_mismatch)
-- `to` [player: Herbert Jones]: **unavailable** (stat_mismatch)
-- `to` [teamTotal: team 3]: **limited** (stat_mismatch)
-- `to` [teamTotal: team 17]: **limited** (stat_mismatch)
 - `pf` [game]: **limited** (stat_mismatch)
-- `pf` [player: Josh Minott]: **unavailable** (stat_mismatch)
 - `pf` [player: Julian Reese]: **unavailable** (stat_mismatch)
-- `pf` [teamTotal: team 3]: **limited** (stat_mismatch)
-- `pf` [teamTotal: team 17]: **limited** (stat_mismatch)
-- `teamOnly` [game]: **limited** (stat_mismatch)
-- `teamOnly` [teamTotal: team 3]: **limited** (stat_mismatch)
-- `teamOnly` [teamTotal: team 17]: **limited** (stat_mismatch)
 
 ## Gate B notes
 

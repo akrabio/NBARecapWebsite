@@ -32,8 +32,8 @@ Single source of truth for progress. Maintained by the orchestrator; sub-agents 
 | W19 | R39–R40 states + accessibility/motion | D | done | W19 | Gate D PASS (validator re-ran failure states, a11y, regression sweep live). 549 tests. See `gate-d.md`. |
 | W20 | R41–R43 E2E, pacing trials, regressions | | done | W20 | E2E PASS on 5 fixtures (live endpoint = fixtures), regressions PASS at all widths (1 fix: sticky period label wrap). Pacing simulated in node (real 1× trials pending user). Reports: `e2e-report.md`, `pacing-trials.md`, `regression-check.md`. Found: 8/60 recent games unavailable (score_regression) → W20b. |
 | W20b | Score-snapshot anomaly adapter (late-recorded plays) | | done | W20b | Validator PASS (model reproduced on 13 fixtures; masking variants still unavailable). 7/8 rescued; 401909293 genuinely unavailable (turnover play carries +2). Builder v2. 566 tests. |
-| W20c | Parser gaps: flagrant FTs, extra turnover/foul/violation types | | in progress | | | | |
-| W21 | R44–R46 perf, final checks, handoff | E | todo | | |
+| W20c | Parser gaps: flagrant FTs, extra turnover/foul/violation types | | done | W20c | Validator PASS. All unknown types mapped & box-checked; remaining limits are source issues. Builder v3. 590 tests. | | |
+| W21 | R44–R46 perf, final checks, handoff | E | in progress | | |
 
 ## Baseline (R01)
 
@@ -89,5 +89,6 @@ _Record source-capability findings, contract changes, deviations from the plan (
 - Real games: most are `limited` (typically one player's TO/BLK/3PA) → "שחזור חלקי" banner is the common case.
 - **W20b rule** (`staleSnapshot` in normalize.js, per side): replace source score only if ≠ prev + own credited points AND source + late-recorded plays' points equals it exactly; raw kept in `sourceScoreAfter`, issue `score_snapshot_out_of_order` (warning). Final/credited/period scores must still match. Fixtures now 13 (8 new real games). See source-findings §10.
 - **(→W20c) parser gaps** (validator-confirmed): flagrant FT types 106/157/165/166 parsed as field goals (shootingPlay) → FG over / FT under (validation hides it as unavailable); unknown turnover types 66/67/69/71/72/73, fouls 36/257, lane violation 10, challenge 214 → `other`.
+- **W20c** mappings: flagrant FT 106/157/165/166 → FT; TO 66/67/69/71/72/73 (participant-less → team TO); 257 → PF; 36 double foul → `doubleFouler` role (PF to both); 28 delay technical → team technical; 10 lane violation → violation; 214 → review; safety net unknown shootingPlay + "free throw" → FT. Remaining limits on real games are ESPN-side (swapped TO credit, box PF with double technicals, rebound before sub-in, stale box `active`, late-recorded turnovers placed after a sub → off-court actor flag).
 - (→W20 pacing) optional: 062 decisive lead #147 is a technical FT (weak); 791 #442/#456 both turnovers (repetitive).
 - (→normalize, defensive) self-assist (assister = shooter) not guarded; not in corpus.
