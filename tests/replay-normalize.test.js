@@ -56,7 +56,7 @@ function summary({ plays = [], competitors, players, teams } = {}) {
       id: "1",
       competitions: [
         {
-          status: { type: { completed: true } },
+          status: { type: { name: "STATUS_FINAL", state: "post", completed: true } },
           competitors: competitors ?? [
             { id: "1", homeAway: "home", score: "100", team: { abbreviation: "HOM", displayName: "Home Team" } },
             { id: "2", homeAway: "away", score: "98", team: { abbreviation: "AWY", displayName: "Away Team" } },

@@ -17,11 +17,11 @@ Single source of truth for progress. Maintained by the orchestrator; sub-agents 
 | W04 | R07–R09 stat deltas (scoring, ast/reb, to/stl/blk/pf) | | done | W04 | Validator PASS (own reconciliation, all 5 fixtures). 156 tests. |
 | W05 | R10–R11 lineups + substitutions | | done | W05 | Validator FAIL→fix→PASS (DNP actor could become active). 210 tests. |
 | W06 | R12–R13 win probability join + state/checkpoints | | done | W06 | Validator PASS (independent accumulate+lineupAt path, random seeks). 290 tests. |
-| W07 | R14 reconcile + quality classification | B | in progress | | |
-| W08 | R15–R17 highlight detection/ranking | | todo | | |
+| W07 | R14 reconcile + quality classification | B | done | W07 | Gate B PASS. Validator FAIL (truncated feed → ready) → fix → PASS. 323 tests. Report: `reconciliation-report.md`. |
+| W08 | R15–R17 highlight detection/ranking | | in progress | | |
 | W09 | R18 Hebrew captions | | todo | | |
 | W10 | R19–R20 timeline + frame lookup/moment nav | | todo | | |
-| W11 | R21–R22 playback clock + lifecycle | | todo | | |
+| W11 | R21–R22 playback clock + lifecycle | | in progress | | Run in parallel with W08 against a minimal timeline interface; W10 must conform. | | |
 | W12 | R23–R24 builder + core audit | C | todo | | |
 | W13 | R25–R27 replay API route + cache + tests | | todo | | |
 | W14 | R28–R29 client loader + lazy UI boundary | | todo | | |
@@ -58,9 +58,9 @@ _Record source-capability findings, contract changes, deviations from the plan (
 - **W05** `lib/replay/lineups.js`: `lineupContext`, `initialLineups(normalized)` → `{eventIndex:-1, teams, pendingSubs, issues}`; step `applyLineupEvent(state, event, ctx)` → `{state, issues, appliedGroup}`; `lineupTimeline(normalized,{uptoIndex})` → `{initial, states[i], groups[{id,from,to,teams}], issues}`; `lineupAt(normalized,i)`. Group = consecutive subs at same period+clock (`substitutionGroup` from normalize); any other event ends a group; applied atomically at its last event — inside a group state = pre-group five + `pendingSubs` (UI may show "change pending"). Entering player takes leaving player's slot. Invalid → empty `onCourt` (roster fallback) + `candidates`/`confirmed`; recovers only when 5 distinct candidates all confirmed post-failure (no look-ahead). DNP never active. Corpus: 0 lineup issues, final ten = box `active`.
 - **W06** `lib/replay/probability.js`: `joinWinProbability(wp, events, opts)` → `{samples:[{eventIndex, sourcePlayId, home, tie, derived}], issues}`; `normalizeGame` now outputs `probability`. Codes: `probability_unlinked|out_of_range|conflict|missing`. Final synthesis opt-in only (`derived:true`), never needed in corpus.
 - **W06** `lib/replay/state.js`: `buildStateIndex(normalized,{checkpointEvery=25})` → `{checkpointEvery, checkpoints, issues, stateAt(i)}` (i clamped to [-1,last]); `stateFromCheckpoints(normalized, checkpoints, i)` works on wire checkpoints; `stepState`, `initialState`, `stateContext`. State: `{eventIndex, score, creditedScore, players, teams, unattributed, lineups:{teams,pendingSubs}, probability|null}`. Checkpoint size on 568-event OT game: every 25 → 99 KB, every 50 → 51 KB; lookups <0.15 ms at any spacing → consider 50+ for payload in W12/W13.
+- **W07 / Gate B** `lib/replay/validate.js`: `validateReplay(normalized, stateIndex?, opts?)` → `{validatorVersion, espnGameId, status, reasons, capabilities, warnings, reconciliation:{score,players,teams}, lineups, probability}`. `capabilities: Capability[]` with `scope` (`game` one per family | `player` | `team` (opt. event interval) | `teamTotal`). `capabilityFor(caps, family, {playerId, teamId, eventIndex, teamTotal})` — throws if playerId w/o teamId; player override beats game level. Statuses: 791/798/799 `ready`; 062 `limited` (Porter Jr. blk unavailable); 792 `limited` (Holland II 3PT unavailable + DET 3PT teamTotal). Holland's FG reconciles → keep; never derive 2PT = FG−3PT for him. Unavailable when: not final (completed+post+STATUS_FINAL*), missing teams/box/plays, score regression, final/credited/period score mismatch, no GAME_END / final PERIOD_END, >2% events no clock. Tunable defaults: family disabled for all if ≥3 players and ≥20% mismatch; lineup limited from last sub if final five ≠ box active; missing linescores → ready + warning. `normalize` adds `periodScores`. Report via `node scripts/replay-report.mjs`.
 
 ## Open issues / escalations
 
-- (→W07) Per-player capability must mark Porter Jr. blk (401810062) and Holland II 3PA (401810792) as limited/unknown so UI never shows a supported-looking value.
-- (→W07, defensive) `lib/replay/stats.js` silently drops team rebound/turnover with null teamId and technicals for players not in `playerTeam` — add issues.
+- ~~(→W07) per-player capability for Porter/Holland~~ done. ~~(→W07) stats.js silent drops~~ done (`unknown_team`, `unknown_athlete`).
 - (→normalize, defensive) self-assist (assister = shooter) not guarded; not in corpus.

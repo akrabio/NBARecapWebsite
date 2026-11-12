@@ -175,6 +175,19 @@ describe("eventStatDeltas — turnovers, steals, blocks, fouls (R09)", () => {
     expect(double.teams).toEqual({ [HOME]: { technicalFouls: 1 }, [AWAY]: { technicalFouls: 1 } });
   });
 
+  it("team-only credit without a team, or a technical for an unrostered player, is reported (never silently dropped)", () => {
+    const reb = deltas(ev(K.REBOUND, { teamId: null, detail: { offensive: false, teamOnly: true } }));
+    expect(reb.teams).toEqual({});
+    expect(reb.issues).toMatchObject([{ code: R.UNKNOWN_TEAM, role: "team", family: "teamOnly" }]);
+    const to = deltas(ev(K.TURNOVER, { teamId: null, detail: { teamOnly: true } }));
+    expect(to.issues).toMatchObject([{ code: R.UNKNOWN_TEAM, family: "teamOnly" }]);
+    const tech = deltas(ev(K.TECHNICAL, { roles: { technical: ["zz"] } }));
+    expect(tech.teams).toEqual({});
+    expect(tech.issues).toMatchObject([{ code: R.UNKNOWN_ATHLETE, role: "technical", playerId: "zz" }]);
+    const anon = deltas(ev(K.TECHNICAL, { teamId: null }));
+    expect(codes(anon)).toEqual([R.ATTRIBUTION_UNKNOWN, R.UNKNOWN_TEAM]);
+  });
+
   it("events without counters produce empty deltas", () => {
     for (const kind of [K.VIOLATION, K.SUBSTITUTION, K.JUMP_BALL, K.TIMEOUT, K.REVIEW, K.PERIOD_END]) {
       const d = deltas(ev(kind, { roles: { violator: "h1" } }));
