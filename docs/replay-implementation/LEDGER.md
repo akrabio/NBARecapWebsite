@@ -30,7 +30,8 @@ Single source of truth for progress. Maintained by the orchestrator; sub-agents 
 | W17 | R35–R36 active-five tables + team tabs | | done | W17 | Validator PASS (live + scripts over all fixtures). 523 tests. |
 | W18 | R37–R38 layout fit + keyboard/lifecycle isolation | | done | W18 | Validator PASS (live at 320/390/1024/1280/1440 + `/`). 533 tests. |
 | W19 | R39–R40 states + accessibility/motion | D | done | W19 | Gate D PASS (validator re-ran failure states, a11y, regression sweep live). 549 tests. See `gate-d.md`. |
-| W20 | R41–R43 E2E, pacing trials, regressions | | in progress | | Real 1× viewing trials need the user (pane renders frames only on screenshot); agent prepares analysis + protocol. | | |
+| W20 | R41–R43 E2E, pacing trials, regressions | | done | W20 | E2E PASS on 5 fixtures (live endpoint = fixtures), regressions PASS at all widths (1 fix: sticky period label wrap). Pacing simulated in node (real 1× trials pending user). Reports: `e2e-report.md`, `pacing-trials.md`, `regression-check.md`. Found: 8/60 recent games unavailable (score_regression) → W20b. |
+| W20b | Score-snapshot anomaly adapter (late-recorded plays) | | in progress | | Diagnose + capture affected games; explicit source-adapter rule per README gate guidance. | | |
 | W21 | R44–R46 perf, final checks, handoff | E | todo | | |
 
 ## Baseline (R01)
@@ -82,5 +83,8 @@ _Record source-capability findings, contract changes, deviations from the plan (
 - ~~(→W18) team-tab arrows / scrub pulses~~ done.
 - ~~(→W19) sticky thead~~ done. Was: at 320px the sticky score bar covers the scrolled table and column headers are gone → consider sticky `thead` below the bar.
 - (out of scope per design open decisions; **design call for user**) document title + side game list still show final scores (incl. selected game) while replay plays from 0–0.
+- **(→W20b) score_regression on real games**: 8/60 recent games (401909972, 401909971, 401909968, 401909962, 401909294, 401909293, 401909290, 401909931) unavailable. Pattern: a late-recorded play (higher sequenceNumber, inserted mid-array) carries a newer score snapshot; following plays carry the old score → transient 1–2 pt dip. Includes a 22-pt comeback game.
+- **(→W21/user) pacing recommendations** (pacing-trials.md): 791 has 31.5 s without a moment and its "first lead since" caption shows only 2.1 s before being replaced; 062 has 64 s without a moment. Ideas: space consecutive moments, "largest lead so far" moment, fill long silences, cap plain turnovers in finish, longer holds for long captions. Defaults unchanged pending real viewing.
+- Real games: most are `limited` (typically one player's TO/BLK/3PA) → "שחזור חלקי" banner is the common case.
 - (→W20 pacing) optional: 062 decisive lead #147 is a technical FT (weak); 791 #442/#456 both turnovers (repetitive).
 - (→normalize, defensive) self-assist (assister = shooter) not guarded; not in corpus.

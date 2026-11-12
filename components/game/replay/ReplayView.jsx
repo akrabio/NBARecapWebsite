@@ -165,7 +165,8 @@ function StickyScore({ frame, teams, playing, ended, onToggle, regulationPeriods
       >
         {side(teams.away, score.away)}
         <span className="flex items-center gap-2 text-[12px] font-bold tabular-nums">
-          <span className={status.phase === "live" ? "text-brand" : "text-subtle"}>{status.label}</span>
+          {/* "רבע 1" must not break between word and number at 320px; longer end/pre labels may wrap. */}
+          <span className={status.phase === "live" ? "text-brand whitespace-nowrap" : "text-subtle text-center leading-tight"}>{status.label}</span>
           {status.clock && <bdi dir="ltr">{status.clock}</bdi>}
           {!ended && (
             <button type="button" onClick={onToggle} aria-label={label} title={label} className="grid h-8 w-8 place-items-center rounded-full bg-brand text-on-brand">
