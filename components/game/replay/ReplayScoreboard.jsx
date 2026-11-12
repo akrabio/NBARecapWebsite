@@ -21,15 +21,16 @@ const NATURAL_STEP = 12;
  * previous renders" pattern): bumps only on a natural forward step that
  * changed that side's score while playing.
  */
-function useScorePulses(eventIndex, score, playing) {
-  const [track, setTrack] = useState({ eventIndex, home: score.home, away: score.away, pulse: { home: 0, away: 0 } });
-  if (track.eventIndex !== eventIndex) {
+function useScorePulses(eventIndex, score, playing, jumpGen) {
+  const [track, setTrack] = useState({ eventIndex, jumpGen, home: score.home, away: score.away, pulse: { home: 0, away: 0 } });
+  if (track.eventIndex !== eventIndex || track.jumpGen !== jumpGen) {
     const step = eventIndex - track.eventIndex;
-    const natural = playing && step > 0 && step <= NATURAL_STEP;
+    // A new jumpGen = seek/moment jump/restart: never a natural tick.
+    const natural = playing && track.jumpGen === jumpGen && step > 0 && step <= NATURAL_STEP;
     const pulse = { ...track.pulse };
     if (natural && score.home !== track.home) pulse.home += 1;
     if (natural && score.away !== track.away) pulse.away += 1;
-    setTrack({ eventIndex, home: score.home, away: score.away, pulse });
+    setTrack({ eventIndex, jumpGen, home: score.home, away: score.away, pulse });
     return pulse;
   }
   return track.pulse;
@@ -58,9 +59,9 @@ function TeamSide({ team, side, score, pulse, dim }) {
   );
 }
 
-export default function ReplayScoreboard({ frame, teams, playing, regulationPeriods }) {
+export default function ReplayScoreboard({ frame, teams, playing, jumpGen = 0, regulationPeriods }) {
   const score = { home: frame.state.score?.home ?? 0, away: frame.state.score?.away ?? 0 };
-  const pulses = useScorePulses(frame.frame.eventIndex, score, playing);
+  const pulses = useScorePulses(frame.frame.eventIndex, score, playing, jumpGen);
   const status = gameClockStatus(frame, regulationPeriods);
   const ended = status.phase === "end";
   // Final styling only once the replay has reached the end.

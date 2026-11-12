@@ -12,6 +12,7 @@ import BoxScore from "./BoxScore";
 import LineScore from "./LineScore";
 import GameFlow from "./GameFlow";
 import { navState } from "@/lib/navState";
+import { keyTargetKind, siblingNavAllowed } from "@/lib/replay/keyboard";
 import { parseRecap } from "@/lib/recap";
 import { formatLongDate } from "@/lib/dates";
 import { getBoxScore } from "@/utils/api";
@@ -96,7 +97,9 @@ export default function GameView({ game, media, siblings }) {
   // Callback ref: the hero unmounts on the replay tab and returns afterwards.
   const [heroEl, setHeroEl] = useState(null);
   const progressRef = useRef(null);
-  const tabsRef = useRef(null);
+  // Zero-height marker at the tabs' in-flow position. (The sticky tabs' own
+  // rect reports the stuck position, so it cannot tell whether they're stuck.)
+  const tabsAnchorRef = useRef(null);
   // Set by switchTab: keep the tabs pinned under the top bar after the switch.
   const pinTabsRef = useRef(false);
   // Replay mode: the running replay scoreboard is the only score on the page,
@@ -135,7 +138,9 @@ export default function GameView({ game, media, siblings }) {
   useLayoutEffect(() => {
     if (!pinTabsRef.current) return;
     pinTabsRef.current = false;
-    window.scrollTo(0, tabsRef.current.getBoundingClientRect().top + window.scrollY - 52);
+    // Tabs land right under the top bar: the replay scoreboard (or the recap
+    // start) is directly below them, never scrolled away.
+    window.scrollTo(0, tabsAnchorRef.current.getBoundingClientRect().top + window.scrollY - 52);
   }, [tab]);
 
   // Reading progress. Written straight to the bar (no state), so scrolling
@@ -163,12 +168,25 @@ export default function GameView({ game, media, siblings }) {
     };
   }, [tab]);
 
-  // Desktop: ↑ / ↓ move through the list beside the recap
+  // Desktop: ↑ / ↓ move through the list beside the recap. Never from form
+  // controls (select/range keep their native arrows), from inside the replay
+  // tab panel (its scrubber, team tabs and shortcuts own the keys) or for keys
+  // already handled elsewhere (lib/replay/keyboard.js).
   useEffect(() => {
     const onKey = (e) => {
-      if (!["ArrowUp", "ArrowDown"].includes(e.key) || e.altKey || e.metaKey || e.ctrlKey) return;
-      if (!window.matchMedia("(min-width: 1024px)").matches) return;
-      if (["INPUT", "TEXTAREA"].includes(e.target.tagName) || document.querySelector("[role=dialog]")) return;
+      if (!["ArrowUp", "ArrowDown"].includes(e.key)) return;
+      const allowed = siblingNavAllowed({
+        key: e.key,
+        altKey: e.altKey,
+        ctrlKey: e.ctrlKey,
+        metaKey: e.metaKey,
+        defaultPrevented: e.defaultPrevented,
+        targetKind: keyTargetKind(e.target),
+        insideReplay: Boolean(e.target?.closest?.("#game-tabpanel-replay")),
+        dialogOpen: Boolean(document.querySelector("[role=dialog]")),
+        desktop: window.matchMedia("(min-width: 1024px)").matches,
+      });
+      if (!allowed) return;
       const index = siblings.findIndex((g) => g.id === game.id);
       const next = siblings[index + (e.key === "ArrowDown" ? 1 : -1)];
       if (!next) return;
@@ -205,8 +223,7 @@ export default function GameView({ game, media, siblings }) {
     if (next === "replay") setReplayOpenedFor(game.id);
     // Keep the tabs pinned where they are instead of jumping to the top
     // (applied after render, once the header for the new tab is laid out).
-    const tabsTop = tabsRef.current.getBoundingClientRect().top + window.scrollY - 52;
-    pinTabsRef.current = next !== tab && window.scrollY > tabsTop;
+    pinTabsRef.current = next !== tab && tabsAnchorRef.current.getBoundingClientRect().top < 52;
   };
 
   // Arrow keys move between tabs (reversed, since the page is right-to-left).
@@ -303,7 +320,8 @@ export default function GameView({ game, media, siblings }) {
       )}
 
       {/* Tabs */}
-      <div ref={tabsRef} className="sticky top-[52px] z-20 border-b bg-app">
+      <div ref={tabsAnchorRef} aria-hidden="true" />
+      <div className="sticky top-[52px] z-20 border-b bg-app">
         <div className="mx-auto flex max-w-[696px]" role="tablist" aria-label="תוכן המשחק" onKeyDown={onTabsKeyDown}>
           {TABS.map(([key, label]) => (
             <button
@@ -358,7 +376,9 @@ export default function GameView({ game, media, siblings }) {
         aria-labelledby="tab-replay"
         hidden={tab !== "replay"}
         inert={tab !== "replay"}
-        className="mx-auto max-w-[680px] px-4 pt-4 pb-[calc(40px+env(safe-area-inset-bottom))]"
+        // Wider than recap/stats (680px): the replay uses the pane, and picks
+        // side-by-side team tables from its own measured width (lib/replay/layout.js).
+        className="mx-auto max-w-[1100px] px-4 pt-4 pb-[calc(40px+env(safe-area-inset-bottom))]"
       >
         {replayMounted && <ReplayView key={game.id} game={game} active={tab === "replay"} onSelectTab={switchTab} />}
       </div>

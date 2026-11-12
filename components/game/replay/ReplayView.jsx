@@ -15,14 +15,27 @@
 // always show the same event index. State reconstruction is memoized by
 // eventIndex (and the spotlight's own eventIndex), so 60 fps ticks only
 // recompute the cheap time fields. Scoreboard, probability, spotlight and
-// controls (W16) sit in one broadcast panel; team tables follow (W17):
-// team tabs by default (`tableLayout` 'tabs'); W18 switches to 'both' from
-// the measured container width.
+// controls (W16) sit in one broadcast panel; team tables follow (W17).
+//
+// Layout (R37): GameView gives the replay panel up to 1100px. The team tables
+// are side by side ('both') when the replay container's own content width
+// (ResizeObserver) is ≥ BOTH_MIN_WIDTH (lib/replay/layout.js), else one-team
+// tabs. A compact sticky score bar (score, clock, play/pause) appears under
+// the site's top bar + game tabs once the broadcast panel scrolls away, so
+// the running score stays visible beside the player rows; hidden by CSS on
+// viewports shorter than STICKY_MIN_VIEWPORT_HEIGHT (520px).
+//
+// Keyboard (R38, lib/replay/keyboard.js): Space/K play-pause, ←/→ next/previous
+// key moment, only while focus is inside this view (its root is focusable).
+// Seeks/restarts bump `jumpGen` so score flashes and tab activity cues fire
+// only on natural playback ticks, never on a scrub while playing.
 //
 // Owned here (game-local, reset by the game-id key): selected stats team
 // (default chosen once: involved favorite, else home) and bench expansion.
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Pause, Play } from "lucide-react";
+import TeamLogo from "@/components/ui/TeamLogo";
 import { useTeamPicker } from "@/components/games/TeamPicker";
 import { useReplayData } from "@/utils/replay-api";
 import { createFrameDeriver, defaultTeamId } from "@/lib/replay/frame";
@@ -33,7 +46,9 @@ import ReplaySpotlight from "./ReplaySpotlight";
 import ReplayControls from "./ReplayControls";
 import ReplayTeamTables from "./ReplayTeamTables";
 import { matchupColors } from "@/utils/teamColors";
-import { momentTeamId, panelColor, probabilityAvailable } from "@/lib/replay/display";
+import { gameClockStatus, momentTeamId, panelColor, probabilityAvailable } from "@/lib/replay/display";
+import { STICKY_TOP, tableLayoutFor } from "@/lib/replay/layout";
+import { keyTargetKind, replayShortcut } from "@/lib/replay/keyboard";
 import { replayStateAt } from "@/lib/replay/client-state";
 import styles from "./replay.module.css";
 
@@ -89,7 +104,72 @@ function useDisplayTeams(replay, game) {
   }, [replay, game.away_team, game.home_team]);
 }
 
-function ReadyReplay({ result, game, active, limited, onSelectTab, selectedTeamId, onSelectTeam, benchExpanded, onToggleBench, tableLayout = "tabs" }) {
+/** Measured content width of an element (0 while hidden/unmounted). */
+function useContentWidth(el) {
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    if (!el || typeof ResizeObserver === "undefined") return undefined;
+    const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [el]);
+  return width;
+}
+
+/** True once `el` has scrolled up under the sticky site header. */
+function useScrolledPast(el) {
+  const [past, setPast] = useState(false);
+  useEffect(() => {
+    if (!el || typeof IntersectionObserver === "undefined") return undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => setPast(!entry.isIntersecting && entry.boundingClientRect.bottom <= STICKY_TOP),
+      { rootMargin: `-${STICKY_TOP}px 0px 0px 0px` },
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      setPast(false);
+    };
+  }, [el]);
+  return past;
+}
+
+function StickyScore({ frame, teams, playing, ended, onToggle, regulationPeriods, shown }) {
+  const status = gameClockStatus(frame, regulationPeriods);
+  const score = { home: frame.state.score?.home ?? 0, away: frame.state.score?.away ?? 0 };
+  const label = playing ? "השהיה" : "הפעלה";
+  const side = (team, value) => (
+    <span className="flex min-w-0 items-center gap-1.5">
+      <TeamLogo teamName={team.siteName} hebrewName={team.nameHe} alt="" size="xs" className="!h-6 !w-6 shrink-0" />
+      <bdi dir="ltr" className="text-[12px] text-subtle">{team.abbreviation}</bdi>
+      <b className="text-[19px] leading-none font-black tabular-nums">{value}</b>
+    </span>
+  );
+  return (
+    // Zero-height sticky anchor: the bar overlays the tables' top instead of
+    // reserving space while the full scoreboard is still on screen.
+    <div className={styles.stickyAnchor} style={{ top: STICKY_TOP }} aria-hidden={!shown} inert={!shown}>
+      <div
+        className={`${styles.broadcast} ${styles.stickyBar} ${shown ? styles.stickyShown : ""} flex h-11 items-center justify-between gap-2 rounded-b-[14px] px-3`}
+        style={{ "--away-c": teams.away.uiColor, "--home-c": teams.home.uiColor }}
+      >
+        {side(teams.away, score.away)}
+        <span className="flex items-center gap-2 text-[12px] font-bold tabular-nums">
+          <span className={status.phase === "live" ? "text-brand" : "text-subtle"}>{status.label}</span>
+          {status.clock && <bdi dir="ltr">{status.clock}</bdi>}
+          {!ended && (
+            <button type="button" onClick={onToggle} aria-label={label} title={label} className="grid h-8 w-8 place-items-center rounded-full bg-brand text-on-brand">
+              {playing ? <Pause className="h-4 w-4" fill="currentColor" aria-hidden="true" /> : <Play className="h-4 w-4" fill="currentColor" aria-hidden="true" />}
+            </button>
+          )}
+        </span>
+        {side(teams.home, score.home)}
+      </div>
+    </div>
+  );
+}
+
+function ReadyReplay({ result, game, active, limited, onSelectTab, selectedTeamId, onSelectTeam, benchExpanded, onToggleBench }) {
   const { replay, espnGameId, capabilities } = result;
   const teams = useDisplayTeams(replay, game);
   const regulationPeriods = replay.format?.regulationPeriods ?? 4;
@@ -110,19 +190,82 @@ function ReadyReplay({ result, game, active, limited, onSelectTab, selectedTeamI
     durationSec: replay.timeline.durationSec,
     active,
   });
-  const actions = useMemo(() => ({ play, pause, toggle, seek, setSpeed, restart }), [play, pause, toggle, seek, setSpeed, restart]);
+  // Jumps (seek / moment nav / restart) bump the generation: cues compare it
+  // so only natural playback ticks flash scores or pulse team tabs.
+  const [jumpGen, setJumpGen] = useState(0);
+  const actions = useMemo(
+    () => ({
+      play,
+      pause,
+      toggle,
+      setSpeed,
+      seek: (sec) => {
+        setJumpGen((g) => g + 1);
+        seek(sec);
+      },
+      restart: () => {
+        setJumpGen((g) => g + 1);
+        restart();
+      },
+    }),
+    [play, pause, toggle, seek, setSpeed, restart],
+  );
   const frame = useReplayFrame(replay, snapshot.positionSec);
   const ended = snapshot.ended || frame.frame.ended;
 
+  // One element: playback's zero-size (hidden preview) check + layout width.
+  const [rootEl, setRootEl] = useState(null);
+  const rootRef = useCallback(
+    (node) => {
+      containerRef(node);
+      setRootEl(node);
+    },
+    [containerRef],
+  );
+  const width = useContentWidth(rootEl);
+  // Keep the last real layout while hidden (width 0).
+  const [tableLayout, setTableLayout] = useState("tabs");
+  const nextLayout = tableLayoutFor(width, tableLayout);
+  if (nextLayout !== tableLayout) setTableLayout(nextLayout);
+
+  const [panelEl, setPanelEl] = useState(null);
+  const panelPast = useScrolledPast(panelEl);
+
+  const replayAgain = () => {
+    actions.restart();
+    actions.play();
+  };
+  const togglePlay = ended ? replayAgain : actions.toggle;
+
+  const onKeyDown = (e) => {
+    const action = replayShortcut({
+      key: e.key,
+      code: e.code,
+      altKey: e.altKey,
+      ctrlKey: e.ctrlKey,
+      metaKey: e.metaKey,
+      defaultPrevented: e.defaultPrevented,
+      targetKind: keyTargetKind(e.target),
+    });
+    if (!action) return;
+    e.preventDefault();
+    if (action === "toggle") togglePlay();
+    else if (action === "next" && frame.nav.next) actions.seek(frame.nav.next.sec);
+    else if (action === "prev" && frame.nav.prev) actions.seek(frame.nav.prev.sec);
+  };
+
   return (
-    <div ref={containerRef} className="py-4" data-event-index={frame.frame.eventIndex}>
+    // Focusable root (tabIndex -1: click focus only) so shortcuts work after
+    // clicking anywhere in the replay; keys are handled only from inside it.
+    <div ref={rootRef} tabIndex={-1} onKeyDown={onKeyDown} className="py-4 outline-none" data-event-index={frame.frame.eventIndex} data-table-layout={tableLayout}>
       {/* Broadcast panel, mockup order: scoreboard → probability → spotlight → controls. */}
       <section
+        ref={setPanelEl}
         className={`${styles.broadcast} overflow-hidden rounded-[22px] shadow-[0_12px_30px_#00000014] max-[520px]:rounded-[18px]`}
         style={{ "--away-c": teams.away.uiColor, "--home-c": teams.home.uiColor }}
         aria-label="שחזור המשחק"
       >
-        <ReplayScoreboard frame={frame} teams={teams} playing={snapshot.playing} regulationPeriods={regulationPeriods} />
+        <ReplayScoreboard frame={frame} teams={teams} playing={snapshot.playing} jumpGen={jumpGen} regulationPeriods={regulationPeriods} />
         <ReplayProbability frame={frame} teams={teams} timeline={replay.timeline} available={hasProbability} regulationPeriods={regulationPeriods} />
         <ReplaySpotlight frame={frame} replay={replay} teams={teams} capabilities={capabilities} regulationPeriods={regulationPeriods} />
         <ReplayControls
@@ -135,21 +278,23 @@ function ReadyReplay({ result, game, active, limited, onSelectTab, selectedTeamI
         />
       </section>
       {limited && <p className="mt-2 text-center text-xs text-subtle">נתונים חלקיים: חלק מהסטטיסטיקות אינן זמינות למשחק זה.</p>}
-      {ended && (
-        <ReplayEnd
-          onReplay={() => {
-            restart();
-            play();
-          }}
-          onSelectTab={onSelectTab}
-        />
-      )}
+      {ended && <ReplayEnd onReplay={replayAgain} onSelectTab={onSelectTab} />}
+      <StickyScore
+        frame={frame}
+        teams={teams}
+        playing={snapshot.playing}
+        ended={ended}
+        onToggle={togglePlay}
+        regulationPeriods={regulationPeriods}
+        shown={panelPast && active}
+      />
       <ReplayTeamTables
         frame={frame}
         replay={replay}
         teams={teams}
         capabilities={capabilities}
         playing={snapshot.playing}
+        jumpGen={jumpGen}
         layout={tableLayout}
         selectedTeamId={selectedTeamId}
         onSelectTeam={onSelectTeam}

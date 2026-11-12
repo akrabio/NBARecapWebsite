@@ -303,7 +303,44 @@
   animation: tab-activity 1s ease-out;
 }
 
+/* ---- Compact sticky score bar (R37) ----
+   Zero-height sticky anchor below the site top bar (52px) + game tabs (44px)
+   (top set inline from lib/replay/layout.js STICKY_TOP). The bar overlays
+   content instead of reserving space and is only visible once the broadcast
+   panel has scrolled away. No sticky bar on short viewports. */
+.stickyAnchor {
+  position: sticky;
+  z-index: 15;
+  height: 0;
+}
+.stickyBar {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  border-top: 0;
+  box-shadow: 0 8px 18px #00000026;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition:
+    opacity 0.15s,
+    transform 0.15s;
+}
+.stickyShown {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+@media (max-height: 519px) {
+  .stickyAnchor {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .stickyBar {
+    transition: none;
+  }
   .scoreFlash,
   .spotlightIn,
   .rowEntered > *,

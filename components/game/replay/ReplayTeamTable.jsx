@@ -100,7 +100,7 @@ export default function ReplayTeamTable({ team, rows, replay, state, capabilitie
         )}
         <small className="ms-auto text-[11px] text-subtle">{rows.fallback ? "הרכב על המגרש אינו זמין" : "על המגרש"}</small>
       </div>
-      <div className={styles.statScroll} tabIndex={0} role="group" aria-label={`טבלת ${teamName}, ניתנת לגלילה אופקית`}>
+      <div className={styles.statScroll} tabIndex={0} data-replay-scroll="" role="group" aria-label={`טבלת ${teamName}, ניתנת לגלילה אופקית`}>
         <table className={styles.statTable} aria-label={`סטטיסטיקה מצטברת · ${teamName}`}>
           <colgroup>
             <col className={styles.nameCol} />

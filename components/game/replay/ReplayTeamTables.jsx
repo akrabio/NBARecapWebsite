@@ -16,8 +16,9 @@
 // Arrow/Home/End keydowns are stopped here so GameView's window-level ↑/↓
 // sibling-game navigation never fires from inside the tablist.
 //
-// Cues (forward playback only — small forward steps while playing; never on
-// mount, seek, moment jump or restart):
+// Cues (forward playback only — small forward steps while playing with no
+// jump in between (`jumpGen` from ReplayView); never on mount, seek — even a
+// small forward scrub while playing — moment jump or restart):
 // - changed cells: weight + outline pulse for a few events;
 // - entering players: brief row transition when a substitution group lands;
 // - activity: the UNSELECTED team's tab pulses a dot when one of its players
@@ -39,9 +40,10 @@ const keep = (map, eventIndex) => new Map([...map].filter(([, at]) => eventIndex
  * Playback cues, updated during render when the event index changes (React's
  * "adjust state on prop change" pattern, like the scoreboard flash).
  */
-function useTableCues({ replay, eventIndex, playing, onCourtByTeam, selectedTeamId }) {
+function useTableCues({ replay, eventIndex, playing, jumpGen = 0, onCourtByTeam, selectedTeamId }) {
   const [track, setTrack] = useState(() => ({
     eventIndex,
+    jumpGen,
     selectedTeamId,
     onCourt: onCourtByTeam,
     cells: new Map(),
@@ -49,8 +51,10 @@ function useTableCues({ replay, eventIndex, playing, onCourtByTeam, selectedTeam
     activity: {},
   }));
   let next = track;
-  if (track.eventIndex !== eventIndex) {
-    const natural = isNaturalStep(track.eventIndex, eventIndex, playing);
+  if (track.eventIndex !== eventIndex || track.jumpGen !== jumpGen) {
+    // A seek/moment jump/restart (new jumpGen) is never a natural step, even
+    // a small forward scrub while playing.
+    const natural = track.jumpGen === jumpGen && isNaturalStep(track.eventIndex, eventIndex, playing);
     const cells = natural ? keep(track.cells, eventIndex) : new Map();
     const entered = natural ? keep(track.entered, eventIndex) : new Map();
     const activity = { ...track.activity };
@@ -62,7 +66,7 @@ function useTableCues({ replay, eventIndex, playing, onCourtByTeam, selectedTeam
         activity[teamId] = { count: (activity[teamId]?.count ?? 0) + 1, unseen: true };
       }
     }
-    next = { ...track, eventIndex, onCourt: onCourtByTeam, cells, entered, activity };
+    next = { ...track, eventIndex, jumpGen, onCourt: onCourtByTeam, cells, entered, activity };
   }
   if (next.selectedTeamId !== selectedTeamId) {
     const activity = { ...next.activity };
@@ -111,6 +115,7 @@ export default function ReplayTeamTables({
   benchExpanded,
   onToggleBench,
   playing = false,
+  jumpGen = 0,
   layout = "tabs",
 }) {
   const prefix = useId().replace(/[^a-zA-Z0-9_-]/g, "");
@@ -118,7 +123,7 @@ export default function ReplayTeamTables({
   const state = frame.state;
   const rowsByTeam = Object.fromEntries(order.map((t) => [t.id, teamRows(replay, state, t.id, capabilities)]));
   const onCourtByTeam = Object.fromEntries(order.map((t) => [t.id, rowsByTeam[t.id].onCourt]));
-  const cues = useTableCues({ replay, eventIndex: frame.frame.eventIndex, playing, onCourtByTeam, selectedTeamId });
+  const cues = useTableCues({ replay, eventIndex: frame.frame.eventIndex, playing, jumpGen, onCourtByTeam, selectedTeamId });
   const tabRefs = useRef({});
   const tabs = layout !== "both";
   const ids = (team) => ({ tabId: `${prefix}-team-tab-${team.id}`, panelId: `${prefix}-team-panel-${team.id}`, headingId: `${prefix}-team-heading-${team.id}` });
@@ -127,6 +132,11 @@ export default function ReplayTeamTables({
     if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) return;
     // Keep team-tab keys away from GameView's window-level handlers.
     e.stopPropagation();
+    // ↑/↓ do nothing in a horizontal tablist; don't let them scroll the page either.
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      e.preventDefault();
+      return;
+    }
     const current = Math.max(0, order.findIndex((t) => t.id === selectedTeamId));
     const index = rtlTabIndex(e.key, current, order.length);
     if (index == null) return;
