@@ -27,8 +27,8 @@ Single source of truth for progress. Maintained by the orchestrator; sub-agents 
 | W14 | R28–R29 client loader + lazy UI boundary | | done | W14 | Validator FAIL (stuck loading after cache TTL) → fix → PASS. 483 tests. Replay chunk separate (~16 KB). |
 | W15 | R30–R31 third tab + frame container | | done | W15 | Validator PASS incl. live browser check. 494 tests. |
 | W16 | R32–R34 scoreboard, probability, spotlight, controls | | done | W16 | Validator FAIL (neutral moments credited to away team) → fix → PASS. Live-checked 390/1280, light/dark. 507 tests. |
-| W17 | R35–R36 active-five tables + team tabs | | in progress | | |
-| W18 | R37–R38 layout fit + keyboard/lifecycle isolation | | todo | | |
+| W17 | R35–R36 active-five tables + team tabs | | done | W17 | Validator PASS (live + scripts over all fixtures). 523 tests. |
+| W18 | R37–R38 layout fit + keyboard/lifecycle isolation | | in progress | | |
 | W19 | R39–R40 states + accessibility/motion | D | todo | | |
 | W20 | R41–R43 E2E, pacing trials, regressions | | todo | | |
 | W21 | R44–R46 perf, final checks, handoff | E | todo | | |
@@ -69,6 +69,7 @@ _Record source-capability findings, contract changes, deviations from the plan (
 - **W15** GameView: explicit 3-way content switch; replay mode hides hero, top bar shows logos + "A נגד B" + date (no score), hidden `h1` always present (no result in replay). Hero observer via callback ref; tab re-pin via `useLayoutEffect([tab])`. `lib/replay/frame.js`: `createFrameDeriver(replay)` (memoized by eventIndex/moment) → frame `{sec, durationSec, frame, state, changes, event, spotlight:{…spotlightAt, highlight, state(snapshot)}|null, nav, probability:{samples(≤i), current}}`; `defaultTeamId` (favorite if involved, else home). ReplayView owns `selectedTeamId` (set once) + `benchExpanded`; end actions "צפייה חוזרת" / "לסיכום המלא". Stubs: `ReplayScoreboard`, `ReplayProbability`, `ReplaySpotlight`, `ReplayControls`, `ReplayTeamTables`.
 - **Browser QA:** user approved dev server with copied `.env` (gitignored). Test game: `/game/6af566378ec906cd0ea608a4` (WAS 101–114 IND), ESPN 401909966 (limited). Use ports 3110+. Browser pane pauses RAF when hidden (env limit).
 - **W16** dark broadcast panel (`components/game/replay/replay.module.css`), order scoreboard → probability → spotlight → controls → tables. `lib/replay/display.js` browser-safe helpers incl. `momentTeamId` (player team → single team → game_end winner → none) and `panelColor` (lightens dark team colors). Scoreboard: "לפני פתיחה" pre-tip, "סיום"/"סיום · אחרי הארכה"; flash only on small forward steps while playing. Probability: SVG step line RTL, reached samples only, "אין עדיין נתון", unavailable message. Spotlight: `<bdi>` parts, initials avatar, snapshot stat line ("עד כה" during hold / "באותו רגע" after), one polite live region. Controls: prev/next (disabled at ends), play/pause, restart, speed select 0.5–2×, range w/ aria-valuetext, quarter ticks + moment dots (colored only once reached), "זמן שחזור" vs "שעון המשחק".
+- **W17** `lib/replay/tables.js` (browser-safe; `familyAvailable` mirrors `capabilityFor` client-side): `teamRows` (on-court slot order, then roster in payload order; roster fallback when lineup invalid/unavailable; never reads `dnp`), `cellValue` ("5/9", "—"+unavailable flag, supported 0), `changedCells`/`activityTeams` (forward step 1–12 events while playing), `enteredPlayers`, `rtlTabIndex`. `ReplayTeamTable.jsx` semantic table, sticky name+PTS, bench toggle "ספסל (n)", "חילוף" badge on pendingSubs. `ReplayTeamTables.jsx` prop `layout:'tabs'|'both'` (default tabs); team tablist `aria-label="קבוצה"`, RTL arrows (ArrowLeft=next), Home/End, key events stopped from reaching GameView; activity dot on unselected tab. `ReplayView` passes `tableLayout` prop (W18 to set by container width).
 
 ## Open issues / escalations
 
@@ -76,6 +77,7 @@ _Record source-capability findings, contract changes, deviations from the plan (
 - ~~(→W10) holdSec~~ resolved: timeline hold rule uses only type/period/clock. Previously: holdSec currently derives from importance incl. the decisive-lead +12 boost (future-dependent). Timeline should compute holds from pre-boost importance / own rule.
 - **(USER DECISION, pre-existing)** `lib/espn.js` `fetchEspnSummary` caches any 200 for 6 h regardless of game status. If a live game's summary is fetched first (direct `/api/replay/<id>`, `/api/boxscore/<id>`, legacy ESPN-id link), replay stays `unavailable` and box score stale for up to 6 h. Low–medium severity (game pages exist only post-recap). Suggested fix: tag the fetch and expire/short-revalidate when `status.type.completed` is not true. Not changed — shared code outside replay scope.
 - ~~(→W16) pre-tip-off label~~ done.
+- (→W18) team-tab ArrowUp/ArrowDown still scroll page natively (no preventDefault); forward scrub ≤12 events while playing pulses activity (tables.js:91) — consider tying activity to natural ticks only.
 - (out of scope per design open decisions) document title + desktop sidebar list still show final score.
 - (→W20 pacing) optional: 062 decisive lead #147 is a technical FT (weak); 791 #442/#456 both turnovers (repetitive).
 - (→normalize, defensive) self-assist (assister = shooter) not guarded; not in corpus.

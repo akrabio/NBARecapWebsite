@@ -148,10 +148,176 @@
   cursor: pointer;
 }
 
+
+/* ---- Team tables (R35) ------------------------------------------------
+   Dense aligned table on the site surface (outside the broadcast panel).
+   Name + PTS are sticky at the inline-start edge of the scroll container;
+   the remaining columns scroll horizontally inside it. */
+.statScroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.statScroll:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+.statTable {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  min-width: calc(var(--name-w) + 9 * 44px);
+  table-layout: fixed;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  --name-w: 118px;
+}
+.nameCol {
+  width: var(--name-w);
+}
+.statCol {
+  width: 44px;
+}
+.statTable th,
+.statTable td {
+  height: 42px;
+  padding: 0 4px;
+  text-align: center;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--line);
+}
+.statTable thead th {
+  height: 32px;
+  color: var(--subtle);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.statTable tbody:last-child tr:last-child > * {
+  border-bottom: 0;
+}
+.nameCell {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 2;
+  background: var(--surface);
+  padding-inline: 12px 4px !important;
+  text-align: start !important;
+}
+.ptsCell {
+  position: sticky;
+  inset-inline-start: var(--name-w);
+  z-index: 2;
+  background: var(--surface);
+  font-weight: 900;
+  font-size: 14px;
+  box-shadow: -5px 0 8px -6px #0005;
+}
+.statTable thead .ptsCell {
+  font-size: 10.5px;
+}
+.sectionRow > th {
+  height: auto !important;
+  background: var(--surface-2);
+}
+.sectionLabel {
+  position: sticky;
+  inset-inline-start: 0;
+  width: fit-content;
+  padding: 4px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--subtle);
+}
+.benchToggle {
+  min-height: 32px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Changed cell during forward playback: weight + outline (not color alone). */
+@keyframes cell-changed {
+  0%,
+  55% {
+    font-weight: 900;
+    outline-color: var(--brand);
+  }
+  100% {
+    font-weight: inherit;
+    outline-color: transparent;
+  }
+}
+.cellChanged {
+  display: inline-block;
+  min-width: 2.2em;
+  border-radius: 6px;
+  outline: 1.5px solid transparent;
+  outline-offset: 1px;
+  animation: cell-changed 1.2s ease-out;
+}
+
+/* Entering player (substitution applied): brief row transition. */
+@keyframes row-in {
+  from {
+    background: color-mix(in srgb, var(--brand) 16%, var(--surface));
+    transform: translateY(4px);
+  }
+}
+.rowEntered > * {
+  animation: row-in 0.6s ease-out;
+}
+
+/* ---- Team tabs (R36) ---- */
+.teamTabs {
+  background: var(--surface-2);
+}
+.teamTab {
+  color: var(--subtle);
+}
+.teamTab[aria-selected="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 4px #0000000c;
+}
+.teamTab:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+.activityDot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--c, var(--brand));
+  opacity: 0;
+}
+@keyframes tab-activity {
+  0%,
+  40% {
+    opacity: 1;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--c, var(--brand)) 22%, transparent);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.activityPulse {
+  animation: tab-activity 1s ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scoreFlash,
-  .spotlightIn {
+  .spotlightIn,
+  .rowEntered > *,
+  .activityPulse {
     animation: none;
+  }
+  /* Static cues instead of motion. */
+  .cellChanged {
+    animation: none;
+    font-weight: 900;
+    outline-color: var(--brand);
+  }
+  .activityDot[data-unseen="true"] {
+    opacity: 1;
   }
   .probSeg {
     transition: none;

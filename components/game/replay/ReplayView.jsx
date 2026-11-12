@@ -15,7 +15,9 @@
 // always show the same event index. State reconstruction is memoized by
 // eventIndex (and the spotlight's own eventIndex), so 60 fps ticks only
 // recompute the cheap time fields. Scoreboard, probability, spotlight and
-// controls (W16) sit in one broadcast panel; team tables follow (W17).
+// controls (W16) sit in one broadcast panel; team tables follow (W17):
+// team tabs by default (`tableLayout` 'tabs'); W18 switches to 'both' from
+// the measured container width.
 //
 // Owned here (game-local, reset by the game-id key): selected stats team
 // (default chosen once: involved favorite, else home) and bench expansion.
@@ -87,7 +89,7 @@ function useDisplayTeams(replay, game) {
   }, [replay, game.away_team, game.home_team]);
 }
 
-function ReadyReplay({ result, game, active, limited, onSelectTab, selectedTeamId, onSelectTeam, benchExpanded, onToggleBench }) {
+function ReadyReplay({ result, game, active, limited, onSelectTab, selectedTeamId, onSelectTeam, benchExpanded, onToggleBench, tableLayout = "tabs" }) {
   const { replay, espnGameId, capabilities } = result;
   const teams = useDisplayTeams(replay, game);
   const regulationPeriods = replay.format?.regulationPeriods ?? 4;
@@ -145,6 +147,10 @@ function ReadyReplay({ result, game, active, limited, onSelectTab, selectedTeamI
       <ReplayTeamTables
         frame={frame}
         replay={replay}
+        teams={teams}
+        capabilities={capabilities}
+        playing={snapshot.playing}
+        layout={tableLayout}
         selectedTeamId={selectedTeamId}
         onSelectTeam={onSelectTeam}
         benchExpanded={benchExpanded}
