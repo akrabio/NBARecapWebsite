@@ -53,7 +53,7 @@ Replay lives in `components/game/GameView.jsx` as the **שחזור** tab alongsi
 - While replay is selected, its running scoreboard replaces the existing final-score header. The compact score in the sticky top bar must also avoid showing a conflicting final score.
 - Switching back to recap or stats restores their normal final-score presentation.
 - Retain the existing desktop games sidebar. Determine side-by-side tables versus team tabs from the available content width, not just the overall browser width.
-- Pause playback when the reader leaves the replay tab so it does not continue unseen. Decide separately whether returning restores the paused position or resets the replay.
+- Pause playback when the reader leaves the replay tab so it does not continue unseen. Decided (R22): returning to the replay tab preserves the position, speed, and team selection, paused (no auto-resume). Changing to another game resets the replay. This state is in memory only (no URL or storage persistence). Hiding the browser tab also pauses without auto-resume, and returning from the background never catches up skipped time.
 - At the end, offer replay and an action selecting the written-recap tab, rather than a return link to a separate page.
 
 ### Scoreboard and controls
@@ -279,7 +279,7 @@ Before writing Next.js application code, read the relevant installed guides in `
 ## Open decisions
 
 - Exact substitution animation, row placement, and expandable bench presentation. The primary lineup is the five players on court; narrow content areas use one selected team panel and wider areas show both teams side by side.
-- The content-width breakpoint for team tabs beside the desktop sidebar, and whether returning to the replay tab restores its paused position or resets it.
+- The content-width breakpoint for team tabs beside the desktop sidebar. (Decided in R22: returning to the replay tab restores its paused position, speed, and selection; a game change resets it; in memory only.)
 - Which additional stats meet the reconstruction accuracy bar.
 - Highlight thresholds, maximum caption count, and minimum readable hold duration.
 - Whether the player spotlight uses portraits or initials, and whether table rows also include portraits.
