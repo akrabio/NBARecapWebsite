@@ -7,7 +7,7 @@ import { TIMELINE_CONFIG, buildTimeline, frameAt, holdSecFor, momentNav, revealT
 import { validateReplay } from "@/lib/replay/validate";
 import { EVENT_KINDS as K } from "@/lib/replay/types";
 
-const IDS = ["401810062", "401810791", "401810792", "401810798", "401810799"];
+const IDS = Object.keys(JSON.parse(readFileSync(new URL("./fixtures/replay/manifest.json", import.meta.url), "utf8")).fixtures).sort();
 const fixtures = Object.fromEntries(
   IDS.map((id) => {
     const n = normalizeGame(JSON.parse(readFileSync(new URL(`./fixtures/replay/${id}.json`, import.meta.url), "utf8")));
@@ -283,6 +283,31 @@ describe("pacing", () => {
     const reveal = revealTimes(tl.segments, n.events.length);
     for (const i of g) expect(reveal[i]).toBe(reveal[g[0]]);
     expect(frameAt(tl, (hold.startSec + hold.endSec) / 2).eventIndex).toBe(g.at(-1));
+  });
+
+  it.each(IDS)("%s: consecutive holds are at least minGapSec apart and readable (W22: up to 20 moments)", (id) => {
+    const { tl } = fixtures[id];
+    const holds = tl.segments.filter((s) => s.kind === "hold");
+    for (const h of holds) expect(h.endSec - h.startSec).toBeGreaterThanOrEqual(TIMELINE_CONFIG.hold.minSec - 1e-9);
+    for (let k = 1; k < holds.length; k++) expect(holds[k].startSec - holds[k - 1].endSec).toBeGreaterThanOrEqual(TIMELINE_CONFIG.minGapSec - 0.002);
+  });
+
+  it("min gap: adjacent highlights get a stretched fast span; total duration unchanged; more moments grow the target", () => {
+    const { n } = fixtures["401810791"];
+    const pair = [
+      { id: "a", type: "tie", eventIndex: 200, keyEventIndex: 200 },
+      { id: "b", type: "lead_change", eventIndex: 201, keyEventIndex: 201 },
+    ];
+    const tl = buildTimeline(n, pair);
+    const [h1, h2] = tl.segments.filter((s) => s.kind === "hold");
+    expect(h2.startSec - h1.endSec).toBeCloseTo(TIMELINE_CONFIG.minGapSec, 2);
+    expect(tl.durationSec).toBe(tl.targetSec);
+    const noGap = buildTimeline(n, pair, { config: { minGapSec: 0 } });
+    const [g1, g2] = noGap.segments.filter((s) => s.kind === "hold");
+    expect(g2.startSec - g1.endSec).toBeLessThan(TIMELINE_CONFIG.minGapSec);
+    const ten = Array.from({ length: 10 }, (_, k) => ({ id: `t${k}`, type: "tie", eventIndex: 40 * k + 20 }));
+    const twenty = Array.from({ length: 20 }, (_, k) => ({ id: `w${k}`, type: "tie", eventIndex: 20 * k + 20 }));
+    expect(buildTimeline(n, twenty).targetSec - buildTimeline(n, ten).targetSec).toBeCloseTo(10 * TIMELINE_CONFIG.perMomentSec, 3);
   });
 
   it("durationSec equals the planned fast + hold budget (no rounding drift)", () => {

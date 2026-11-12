@@ -6,7 +6,8 @@ import { normalizeGame } from "@/lib/replay/normalize";
 import { CAPABILITY_FAMILIES as F, CAPABILITY_LEVELS as L } from "@/lib/replay/types";
 import { validateReplay } from "@/lib/replay/validate";
 
-const FIXTURES = ["401810062", "401810791", "401810792", "401810798", "401810799"];
+const FIXTURES = Object.keys(JSON.parse(readFileSync("tests/fixtures/replay/manifest.json", "utf8")).fixtures).sort();
+const UNAVAILABLE = new Set(["401909293"]); // genuinely unavailable replay (no highlights)
 const games = Object.fromEntries(
   FIXTURES.map((id) => {
     const normalized = normalizeGame(JSON.parse(readFileSync(`tests/fixtures/replay/${id}.json`, "utf8")));
@@ -84,6 +85,11 @@ describe("templates", () => {
       [T.MISSED_FINAL_ATTEMPT]: { ...base, playerId: "p1", stake: "win", shotValue: 3 },
       [T.FOUL_OUT]: { teamId: "1", playerId: "p1", fouls: 6, period: 4, clockSec: 25.2 },
       [T.LEAD_MILESTONE]: { ...base, playerId: "p1", threshold: 20, lead: 21, scoreHome: 60, scoreAway: 39, period: 2, clockSec: 400 },
+      [T.SCORING_RUN]: { teamId: "1", runPoints: 12, scoreHome: 40, scoreAway: 28, period: 2, clockSec: 300 },
+      [T.PLAYER_MILESTONE]: { teamId: "1", playerId: "p1", milestone: "points", threshold: 30, pts: 31, period: 3, clockSec: 200 },
+      [T.CLOSING_BASKET]: { teamId: "1", playerId: "p1", action: "field_goal", shotValue: 3, scoreHome: 30, scoreAway: 25, period: 1, clockSec: 0.4 },
+      [T.MISSED_LATE_ATTEMPT]: { ...base, playerId: "p1", stake: "go_ahead", shotValue: 3, scoreHome: 102, clockSec: 15.3 },
+      [T.PERIOD_END]: { teamId: "1", lead: 5, scoreHome: 30, scoreAway: 25, endedPeriod: 1 },
       [T.OVERTIME]: { scoreHome: 104, scoreAway: 104, endedPeriod: 4, nextPeriod: 5, overtimeNumber: 1 },
       [T.GAME_END]: { scoreHome: 104, scoreAway: 106, winnerTeamId: "2", period: 4 },
     };
@@ -194,7 +200,7 @@ describe("templates", () => {
           throw new Error("verification must not be read");
         },
       });
-      const h = hl(type, { teamId: "1", playerId: "p1", scoreHome: 104, scoreAway: 104, period: 4, clockSec: 3, endedPeriod: 4, nextPeriod: 5, winnerTeamId: "1", lead: 20, fouls: 6 }, { evidence, verification });
+      const h = hl(type, { teamId: "1", playerId: "p1", scoreHome: 104, scoreAway: 104, period: 4, clockSec: 3, endedPeriod: 4, nextPeriod: 5, winnerTeamId: "1", lead: 20, fouls: 6, runPoints: 10, milestone: "points", pts: 20 }, { evidence, verification });
       const c = captionFor(h, ctx);
       expect(c.text).not.toContain(poison);
     }
@@ -221,10 +227,43 @@ describe("templates", () => {
   });
 });
 
+describe("W22 caption templates", () => {
+  const cap = (type, params) => captionFor(hl(type, params), ctx);
+  it("scoring run: the run so far as an isolated LTR number, then the score", () => {
+    const c = cap(T.SCORING_RUN, { teamId: "1", runPoints: 12, scoreHome: 40, scoreAway: 28, period: 2, clockSec: 300 });
+    expect(c.text).toBe("ריצת 12–0 של הסלטיקס — 40–28");
+    expect(c.parts.find((p) => p.value === "12–0")).toMatchObject({ t: "number", dir: "ltr", isolate: true });
+    expect(cap(T.SCORING_RUN, { teamId: "1", scoreHome: 40, scoreAway: 28 })).toBeNull(); // no run evidence → nothing to say
+  });
+
+  it("player milestones state the value at the moment; double/triple-double list their stats", () => {
+    expect(cap(T.PLAYER_MILESTONE, { teamId: "1", playerId: "p1", milestone: "points", threshold: 30, pts: 31, period: 3, clockSec: 200 }).text).toBe("J. Tatum מגיע ל-31 נקודות");
+    expect(cap(T.PLAYER_MILESTONE, { teamId: "1", playerId: "p1", milestone: "double_double", stat1: "pts", value1: 14, stat2: "reb", value2: 10, period: 3, clockSec: 200 }).text).toBe("J. Tatum משלים דאבל-דאבל: 14 נק׳ ו-10 ריב׳");
+    expect(cap(T.PLAYER_MILESTONE, { teamId: "1", playerId: "p1", milestone: "triple_double", stat1: "pts", value1: 20, stat2: "reb", value2: 11, stat3: "ast", value3: 10, period: 4, clockSec: 100 }).text).toBe("J. Tatum משלים טריפל-דאבל: 20 נק׳, 11 ריב׳ ו-10 אס׳");
+    // Unknown player → team-level wording; incomplete stats → null.
+    expect(cap(T.PLAYER_MILESTONE, { teamId: "1", playerId: "nobody", milestone: "points", threshold: 20, pts: 20 }).text).toBe("שחקן של הסלטיקס מגיע ל-20 נקודות");
+    expect(cap(T.PLAYER_MILESTONE, { teamId: "1", playerId: "p1", milestone: "double_double", stat1: "pts", value1: 14 })).toBeNull();
+  });
+
+  it("closing basket states the shot's own clock and period; period end states the boundary", () => {
+    expect(cap(T.CLOSING_BASKET, { teamId: "1", playerId: "p1", shotValue: 3, scoreHome: 30, scoreAway: 25, period: 1, clockSec: 0.4 }).text).toBe("J. Tatum קולע שלשה, 0.4 שנ׳ לסיום הרבע הראשון — 30–25");
+    expect(cap(T.CLOSING_BASKET, { teamId: "2", playerId: "p2", shotValue: 2, scoreHome: 30, scoreAway: 27, period: 3, clockSec: 0 }).text).toBe("סל של S. Barnes עם סיום הרבע השלישי — 27–30");
+    expect(cap(T.PERIOD_END, { teamId: "1", lead: 5, scoreHome: 30, scoreAway: 25, endedPeriod: 1 }).text).toBe("סיום הרבע הראשון: הסלטיקס מובילים 30–25");
+    expect(cap(T.PERIOD_END, { teamId: "2", lead: 3, scoreHome: 50, scoreAway: 53, endedPeriod: 2, halftime: 1 }).text).toBe("מחצית: הראפטורס מובילים 53–50");
+    expect(cap(T.PERIOD_END, { scoreHome: 50, scoreAway: 50, endedPeriod: 3 }).text).toBe("שוויון 50–50 בסיום הרבע השלישי");
+  });
+
+  it("late non-final miss: stake only, chronology-safe", () => {
+    const c = cap(T.MISSED_LATE_ATTEMPT, { teamId: "2", playerId: "p2", stake: "go_ahead", shotValue: 3, scoreHome: 100, scoreAway: 98, period: 4, clockSec: 15.3 });
+    expect(c.text).toBe("S. Barnes מחטיא שלשה שיכלה לתת יתרון — 98–100, 15.3 שנ׳ לסיום");
+    expect(c.text).not.toMatch(OT_WORDS);
+  });
+});
+
 describe("capabilities end to end", () => {
   it("a scorer with unavailable PTS is never named (team-level caption)", () => {
     const { normalized, highlights } = games["401810799"];
-    const target = highlights.find((h) => h.type === T.GO_AHEAD && h.captionParams.playerId);
+    const target = highlights.find((h) => [T.GO_AHEAD, T.LEAD_CHANGE, T.TIE].includes(h.type) && h.captionParams.playerId);
     expect(target).toBeTruthy();
     const scorer = target.captionParams.playerId;
     const base = validateReplay(normalized).capabilities;
@@ -248,7 +287,8 @@ describe("fixture captions", () => {
   for (const id of FIXTURES) {
     it(`${id}: every selected highlight has a clean, evidence-consistent caption`, () => {
       const { normalized, highlights } = games[id];
-      expect(highlights.length).toBeGreaterThan(0);
+      if (UNAVAILABLE.has(id)) return expect(highlights).toEqual([]);
+      expect(highlights.length).toBeGreaterThanOrEqual(10);
       for (const h of highlights) {
         const c = captionFor(h, normalized);
         assertClean(c);

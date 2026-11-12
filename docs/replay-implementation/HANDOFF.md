@@ -48,7 +48,7 @@ Server-only modules: `normalize, stats, lineups, probability, state, validate, h
 - Outcomes / headers (`delivery.md`): 200 `ready`/`limited` (`s-maxage=3600, stale-while-revalidate=21600`), 200 `unavailable` with `replay: null` (`s-maxage=60`), 400 invalid id, 404 unknown event, 500 build failed, 502 upstream, 504 upstream timeout (8 s, `REPLAY_UPSTREAM_TIMEOUT_MS`), errors `no-store`. Headers `X-Replay-Schema`, `X-Replay-Builder`.
 - `capabilities` is a list of `{ family, scope: game|player|team|teamTotal, status, … }`; resolve with `capabilityFor(caps, family, { playerId, teamId, eventIndex, teamTotal })` (server) / `familyAvailable` (`lib/replay/display.js`, client). A player override beats the game level. UI shows unavailable cells as "—" + sr "לא זמין" + footer legend, and a "שחזור חלקי" banner for `limited`.
 - Unavailable when: not final, missing teams/box/plays, unexplained score regression, final/credited/period score mismatch, no GAME_END/final PERIOD_END, >2% events without clock, size cap exceeded. Reason codes: `REASON_CODES` in `types.js`; Hebrew text per code in `lib/replay/messages.js`.
-- Bump `BUILDER_VERSION` (`build.js`, now 3) whenever output changes, `REPLAY_SCHEMA_VERSION` when the shape changes; the client cache key includes both.
+- Bump `BUILDER_VERSION` (`build.js`, now 4) whenever output changes, `REPLAY_SCHEMA_VERSION` when the shape changes; the client cache key includes both.
 
 ## Supported source patterns and adapter rules
 

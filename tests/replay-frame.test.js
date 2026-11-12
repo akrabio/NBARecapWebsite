@@ -59,8 +59,10 @@ describe("deriveFrame", () => {
   });
 
   it("keeps the spotlight snapshot at the moment's index while the running state advances", () => {
-    const moment = timeline.moments[0];
-    const after = timeline.segments.find((s) => s.kind === "fast" && s.startSec >= moment.endSec);
+    // A moment followed by a fast span that reveals several events before the next hold.
+    const nextFast = (m) => timeline.segments.find((s) => s.kind === "fast" && s.startSec >= m.endSec);
+    const moment = timeline.moments.find((m) => nextFast(m) && nextFast(m).toEventIndex > nextFast(m).fromEventIndex + 1);
+    const after = nextFast(moment);
     // A point inside the next fast span, after several more events were revealed.
     const sec = after.startSec + (after.endSec - after.startSec) * 0.8;
     const f = deriveFrame(replay, sec);
@@ -109,10 +111,10 @@ describe("createFrameDeriver", () => {
     expect(b.state).toBe(a.state);
     expect(b.spotlight.state).toBe(a.spotlight.state);
     expect(b.sec).not.toBe(a.sec);
-    const c = derive(seg.endSec + 1); // later events revealed
+    const c = derive(seg.endSec + 4); // later events revealed (holds are ≥ minGapSec apart)
     expect(c.frame.eventIndex).toBeGreaterThan(a.frame.eventIndex);
     expect(c.state).not.toBe(a.state);
-    expect(c).toEqual(deriveFrame(replay, seg.endSec + 1));
+    expect(c).toEqual(deriveFrame(replay, seg.endSec + 4));
     expect(derive(0)).toEqual(deriveFrame(replay, 0)); // backward seek
   });
 });

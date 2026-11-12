@@ -674,6 +674,67 @@
       ],
       "requestedShapeConfirmed": null
     },
+    "401909970": {
+      "eventId": "401909970",
+      "file": "401909970.json",
+      "teams": {
+        "home": {
+          "id": "29",
+          "abbreviation": "MEM",
+          "name": "Memphis Grizzlies"
+        },
+        "away": {
+          "id": "7",
+          "abbreviation": "DEN",
+          "name": "Denver Nuggets"
+        }
+      },
+      "gameDate": "2026-11-12T01:00Z",
+      "retrievedAt": "2026-11-12T15:51:24.550Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401909970",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 310952,
+      "playCount": 475,
+      "winProbabilityCount": 475,
+      "periods": 4,
+      "status": "STATUS_FINAL",
+      "finalScore": "DEN 123 @ MEM 118",
+      "winner": "DEN",
+      "margin": 5,
+      "largestDeficitOvercome": 0,
+      "largestLead": 18,
+      "leadChanges": 0,
+      "playsFinalScoreMatchesHeader": true,
+      "requestedShape": null,
+      "verifiedShapes": [
+        "ordinary"
+      ],
+      "requestedShapeConfirmed": null
+    },
     "401909971": {
       "eventId": "401909971",
       "file": "401909971.json",

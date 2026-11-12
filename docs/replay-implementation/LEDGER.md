@@ -34,6 +34,7 @@ Single source of truth for progress. Maintained by the orchestrator; sub-agents 
 | W20b | Score-snapshot anomaly adapter (late-recorded plays) | | done | W20b | Validator PASS (model reproduced on 13 fixtures; masking variants still unavailable). 7/8 rescued; 401909293 genuinely unavailable (turnover play carries +2). Builder v2. 566 tests. |
 | W20c | Parser gaps: flagrant FTs, extra turnover/foul/violation types | | done | W20c | Validator PASS. All unknown types mapped & box-checked; remaining limits are source issues. Builder v3. 590 tests. | | |
 | W21 | R44–R46 perf, final checks, handoff | E | done (conditional) | W21 | Validator PASS. Gate E ready for review; R42 real 1× viewing trials pending user. 590 tests, lint clean, build OK. See `HANDOFF.md`, `performance.md`. |
+| W22 | User feedback: more key moments (target 10–20/game) | | done | W22 | DEN–MEM (401909970) 1→15. All available games 10–16 moments, 75–108 s. Validator PASS ×2 (correctness of every moment + quality polish). Builder v4. 715 tests. |
 
 ## Baseline (R01)
 
@@ -80,6 +81,10 @@ _Record source-capability findings, contract changes, deviations from the plan (
 All work units W01–W21 (+W20b/W20c) done and validated. Gates A–D PASS; Gate E ready for review with one condition: real-time 1× viewing trials (R42) by the user. Entry point for the next developer: `HANDOFF.md`.
 
 Incident: during W21 an agent killed a process holding port 3121 after `next start` stopped; it was the Claude app's Chromium network-service helper (PID 3195), not the server. Chromium normally respawns it.
+
+## User feedback
+
+- 2026-11-12: overall looks good; **too few key moments** — Nuggets vs Grizzlies had only one. User wants **~10–20 key moments per game**. → W22 done. Root cause: selection only knew lead-swing types + big-probability-swing shots; a wire-to-wire lead game produced 1 candidate. New types: `scoring_run`, `player_milestone` (20/30/40/50 pts, double/triple-double), `closing_basket` (≤3 s Q1–Q3), `missed_late_attempt`, `period_end` (≤2/game, suppressed after a closing basket). Lead milestones 10/15/…/40 (≤3/game). Settled filter (score-before + clock only) drops garbage-time runs/milestones. Cluster limit ≤2 within 5 events / 30 game-s. Timeline: holds ≥2 s apart, target +1 s per moment beyond 10. Blowouts 792/962/972 have no Q4 moments (all garbage time). Tuning notes: 062 Q4 has no lead change; 972 opens with a trivial block at 2–0. New Hebrew copy needs review.
 
 ## Open issues / escalations
 

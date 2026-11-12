@@ -6,6 +6,29 @@ Date 2026-11-12. Timeline defaults: `lib/replay/timeline.js` `TIMELINE_CONFIG` (
 
 How to read the tables: windows of 10 replay seconds; "events" = source events revealed in the window (every one is applied to the stats); "max/0.25 s" = largest number of events revealed in one 0.25 s tick (batching); holds = moments whose hold starts in the window (`type game-clock (hold s)`). Scores away–home. After a hold ends the spotlight keeps the caption on screen, dimmed, labelled "באותו רגע", until the next moment — so a caption's **visible time** is hold + gap to the next moment.
 
+## W22 update — more key moments (builder v4)
+
+User feedback: too few key moments (the Nuggets–Grizzlies game 401909970 had **one**); target **10–20 per completed game**, blowouts and ordinary games included. W22 widened the evidence-based moment types (scoring runs, lead milestones 10/15/…/40, player point milestones and double/triple-doubles from running state, closing baskets in Q1–Q3, late non-final tying/go-ahead misses, end-of-period state, close-finish baskets, steal→basket and could-tie blocks at any time), changed selection to coverage-per-period + per-type caps + a 10/12–20 count band, and the timeline now keeps ≥ 2 s of fast time between consecutive holds and grows the target by 1 s per moment beyond 10. Simulated from `buildReplay(fixture)` (same method as below); real 1× viewing still pending.
+
+| Game | Matchup / status | Moments (v3 → v4) | Per period (v4) | Duration s | Holds s | Min hold s | Min gap s | Longest stretch without a new moment s |
+| --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| 401810062 | TOR@BKN limited | 2 → 12 | Q1 1 · Q2 4 · Q3 4 · Q4 3 | 87.8 | 17.5 | 1.3 | 2.0 | 11.1 |
+| 401810791 | MEM@PHI ready | 7 → 15 | Q1 2 · Q2 4 · Q3 2 · Q4 7 | 94.2 | 22.3 | 1.3 | 2.0 | 18.6 |
+| 401810792 | DET@BKN limited | 2 → 10 | Q1 2 · Q2 4 · Q3 4 | 75.0 | 13.8 | 1.3 | 2.0 | 11.4 |
+| 401810798 | CHI@GS ready (OT) | 12 → 16 | Q1 2 · Q2 2 · Q3 2 · Q4 6 · OT 4 | 108.0 | 29.2 | 1.4 | 2.0 | 11.1 |
+| 401810799 | CHA@POR ready | 12 → 15 | Q1 2 · Q2 2 · Q3 2 · Q4 9 | 95.0 | 24.7 | 1.4 | 2.0 | 15.3 |
+| 401909290 | UTAH@DAL limited | 4 → 15 | Q1 2 · Q2 4 · Q3 4 · Q4 5 | 90.1 | 22.5 | 1.3 | 2.0 | 13.6 |
+| 401909293 | MIN@NO unavailable | 0 → 0 | — | — | — | — | — | — |
+| 401909294 | POR@LAL ready | 4 → 15 | Q1 2 · Q2 2 · Q3 4 · Q4 7 | 95.0 | 24.3 | 1.3 | 2.0 | 12.5 |
+| 401909931 | TOR@DEN limited | 3 → 12 | Q1 3 · Q2 4 · Q3 4 · Q4 1 | 79.4 | 18.1 | 1.3 | 2.0 | 18.6 |
+| 401909962 | LAC@PHX limited | 3 → 10 | Q1 4 · Q2 2 · Q3 4 | 78.0 | 15.2 | 1.3 | 2.0 | 16.0 |
+| 401909968 | BOS@TOR limited | 12 → 15 | Q1 2 · Q2 2 · Q3 2 · Q4 9 | 95.0 | 26.1 | 1.3 | 2.0 | 16.4 |
+| 401909970 | DEN@MEM ready | 1 → 15 | Q1 3 · Q2 2 · Q3 4 · Q4 6 | 95.0 | 24.2 | 1.3 | 2.0 | 16.3 |
+| 401909971 | LAL@MIL limited | 4 → 12 | Q1 3 · Q2 3 · Q3 4 · Q4 2 | 83.2 | 18.0 | 1.3 | 2.0 | 14.5 |
+| 401909972 | BKN@NO limited | 3 → 10 | Q1 4 · Q2 2 · Q3 4 | 75.5 | 14.6 | 1.3 | 2.0 | 14.6 |
+
+Quality pass (validator follow-up): a period end is not selected when another moment of that period already shows the same score; runs, lead milestones and closing baskets are dropped once the game is settled (timeline rule: margin ≥ 10 + 1.5/min of regulation left) or when a run/closing basket leaves its team ≥ 20 behind, and Q4 player milestones in a settled game are garbage time; outside the finish window at most 2 moments within 5 events / 30 game seconds (fill pass exempt); Q4/OT coverage must be a game-flow moment; ≤ 3 lead milestones and ≤ 2 period ends per game. Per-period counts use the period of the hold's event (an end-of-period hold counts for the period that ended). The blowouts (792 by 38, 962 by 23, 972 by 34) have no Q4 moment: every Q4 candidate there is garbage time (runs/lead milestones with ≤ 6 min left and a ≥ 15 margin are dropped), and nothing is invented to fill it. 401909293 stays unavailable (score regression, W20b). Recommendations 1–3 below are addressed by W22 (min fast gap + context-moment spacing; runs/lead milestones narrate deficits as of the moment; per-period coverage removes the long silences — longest stretch now 11–19 s instead of 31–64 s). The per-window tables below are the **v3 (pre-W22)** simulation, kept for comparison.
+
 ## Comeback — 401810791 MEM@PHI 129–139 (PHI trailed by 14)
 
 89.2 s, 7 holds (10.5 s). Periods Q1 14.2 · Q2 19.5 · Q3 19.6 · Q4 35.9 s.

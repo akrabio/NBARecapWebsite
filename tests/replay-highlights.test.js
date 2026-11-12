@@ -233,7 +233,8 @@ describe("R16 — defensive plays and missed finishers (synthetic)", () => {
     expect(h.eventIndex).toBe(basket); // steal → basket is one moment held after the basket
     expect(h.groupEndIndex).toBe(basket);
     expect(r.highlights.filter((x) => x.keyEventIndex === basket && x.id !== h.id)).toEqual([]);
-    const ids = [h.id, ...(h.evidence.related ?? []).map((x) => x.id)].sort();
+    // (The synthetic lump baskets also form a scoring run ending at the basket; it is grouped too.)
+    const ids = [h.id, ...(h.evidence.related ?? []).map((x) => x.id)].filter((id) => !id.startsWith("scoring_run-")).sort();
     expect(ids).toEqual([`steal-${s}`, `tie-${basket}`].sort());
     expect(h.playerIds).toEqual(expect.arrayContaining(["a5", "a2"]));
   });
@@ -364,12 +365,22 @@ describe("R17 — ranking, grouping and selection (synthetic)", () => {
     for (let k = 0; k < 5; k++) b.fg(H, 2, { period: 4, clock: 300 - k * 10 }); // 2–32 (lead 30) in garbage time
     b.periodEnd(4);
     b.gameEnd(4);
+    // Default thresholds 10/15/20/25/30…: one candidate per first-time crossing; late ones are garbage time.
     const r = b.run();
     const ms = r.candidates.filter((c) => c.type === T.LEAD_MILESTONE);
-    expect(ms.map((c) => [c.keyEventIndex, c.captionParams.threshold, c.reason])).toEqual([
-      [m20, 20, null],
-      [ms[1].keyEventIndex, 30, D.GARBAGE_TIME],
+    expect(ms.map((c) => c.captionParams.threshold)).toEqual([10, 15, 20, 25, 30]);
+    expect(ms.find((c) => c.captionParams.threshold === 20).keyEventIndex).toBe(m20);
+    expect(ms.filter((c) => c.captionParams.threshold <= 20).every((c) => ![D.GARBAGE_TIME, D.HISTORY_INCOMPLETE].includes(c.reason))).toBe(true);
+    expect(ms.filter((c) => c.captionParams.threshold > 20).map((c) => c.reason)).toEqual([D.GARBAGE_TIME, D.GARBAGE_TIME]);
+    for (const c of ms) expect(c.captionParams.lead).toBeGreaterThanOrEqual(c.captionParams.threshold);
+    // Only the 20/30 thresholds (W08 defaults): the 20 is selected.
+    const r2 = b.run({ config: { leadMilestones: [20, 30] } });
+    const ms2 = r2.candidates.filter((c) => c.type === T.LEAD_MILESTONE);
+    expect(ms2.map((c) => [c.keyEventIndex, c.captionParams.threshold])).toEqual([
+      [m20, 20],
+      [ms2[1].keyEventIndex, 30],
     ]);
+    expect(ms2[1].reason).toBe(D.GARBAGE_TIME);
     expect(ms.some((c) => c.keyEventIndex === again)).toBe(false);
     b.events[m20 - 2].scoreAfter = { home: null, away: 0 };
     expect(b.run().candidates.find((c) => c.keyEventIndex === m20 && c.type === T.LEAD_MILESTONE).reason).toBe(D.HISTORY_INCOMPLETE);
@@ -452,11 +463,114 @@ describe("R17 — ranking, grouping and selection (synthetic)", () => {
   });
 });
 
+describe("W22 — more evidence-based key moments (synthetic)", () => {
+  it("scoring runs: one candidate per run of ≥ runMinPoints, at its last unit, with the run so far", () => {
+    const b = builder();
+    b.jump();
+    b.fg(A, 2, { period: 1, clock: 700 }); // 2–0
+    const runStart = b.events.length;
+    const run = [];
+    for (let k = 0; k < 4; k++) run.push(b.fg(H, k === 1 ? 3 : 2, { period: 1, clock: 680 - k * 20 })); // 2–9 (9–0 run)
+    b.fg(A, 2, { period: 1, clock: 590 }); // 4–9 ends it
+    for (let k = 0; k < 3; k++) b.fg(H, 2, { period: 1, clock: 570 - k * 20 }); // 6–0: too short
+    b.fg(A, 2, { period: 1, clock: 500 });
+    b.periodEnd(1);
+    const r = b.run();
+    const runs = r.candidates.filter((c) => c.type === T.SCORING_RUN);
+    expect(runs).toHaveLength(1);
+    expect(runs[0].keyEventIndex).toBe(run.at(-1));
+    expect(runs[0].captionParams).toMatchObject({ teamId: H, runPoints: 9, scoreHome: 9, scoreAway: 2 });
+    expect(runs[0].evidence.runStartIndex).toBe(runStart);
+    expect(runs[0].playerIds).toEqual([]); // a team moment
+  });
+
+  it("period ends before the last regulation period: leader and margin at the marker; halftime flagged", () => {
+    const b = builder();
+    b.jump();
+    b.fg(H, 3, { period: 1, clock: 600 });
+    const q1 = b.periodEnd(1);
+    b.fg(A, 3, { period: 2, clock: 600 });
+    const q2 = b.periodEnd(2);
+    b.periodEnd(3);
+    b.periodEnd(4);
+    b.gameEnd(4);
+    const r = b.run();
+    const pe = r.candidates.filter((c) => c.type === T.PERIOD_END);
+    expect(pe.map((c) => c.keyEventIndex)).toEqual([q1, q2, q2 + 1]);
+    expect(pe[0].captionParams).toMatchObject({ teamId: H, lead: 3, endedPeriod: 1 });
+    expect(pe[1].captionParams).toMatchObject({ scoreHome: 3, scoreAway: 3, endedPeriod: 2, halftime: 1 });
+    expect(pe[1].captionParams.teamId).toBeUndefined();
+  });
+
+  it("closing baskets only with ≤ closingBasketMaxClockSec left before the last regulation period", () => {
+    const b = builder();
+    b.jump();
+    const early = b.fg(H, 3, { period: 1, clock: 5 });
+    const q1 = b.fg(A, 3, { period: 1, clock: 1.2 });
+    b.periodEnd(1);
+    b.periodEnd(2);
+    b.periodEnd(3);
+    const q4 = b.fg(H, 2, { period: 4, clock: 0.5 });
+    b.periodEnd(4);
+    b.gameEnd(4);
+    const ids = b.run().candidates.filter((c) => c.type === T.CLOSING_BASKET).map((c) => c.keyEventIndex);
+    expect(ids).toEqual([q1]);
+    expect(ids).not.toContain(early);
+    expect(ids).not.toContain(q4);
+  });
+
+  it("late non-final tying/go-ahead misses: stake from the score before; never when leading or out of reach", () => {
+    const b = lateGame(98, 100, 30);
+    const tieMiss = b.miss(A, 2, { period: 4, clock: 20 }); // down 2 → could tie
+    b.reb(H, { period: 4, clock: 19 });
+    b.fg(H, 2, { period: 4, clock: 15 }); // 98–102
+    const outOfReach = b.miss(A, 3, { period: 4, clock: 12 }); // down 4: a three cannot tie
+    b.reb(A, { period: 4, clock: 11 });
+    b.fg(A, 3, { period: 4, clock: 9 }); // 101–102
+    const goAhead = b.miss(A, 3, { period: 4, clock: 3 }); // down 1 with a three
+    b.reb(H, { period: 4, clock: 2 });
+    b.ft(H, true, { period: 4, clock: 1 }); // more happens: not the final attempt
+    b.periodEnd(4);
+    b.gameEnd(4);
+    const r = b.run();
+    const late = r.candidates.filter((c) => c.type === T.MISSED_LATE_ATTEMPT);
+    expect(late.map((c) => [c.keyEventIndex, c.captionParams.stake])).toEqual([
+      [tieMiss, "tie"],
+      [goAhead, "go_ahead"],
+    ]);
+    expect(late.some((c) => c.keyEventIndex === outOfReach)).toBe(false);
+    expect(late[0].captionParams).toMatchObject({ scoreHome: 100, scoreAway: 98 }); // the score at the shot
+    expect(late[0].range).toEqual({ from: tieMiss, to: tieMiss + 1 }); // grouped with the rebound
+  });
+
+  it("player milestones from running state; never for a player whose family is unavailable", () => {
+    const b = builder();
+    b.jump();
+    const pts = [];
+    for (let k = 0; k < 7; k++) pts.push(b.fg(H, 3, { period: 1, clock: 700 - k * 30 })); // h1: 21 points
+    for (let k = 0; k < 10; k++) b.reb(H, { period: 2, clock: 700 - k * 30 }); // h2: 10 rebounds
+    for (let k = 0; k < 5; k++) b.fg(H, 2, { period: 2, clock: 390 - k * 20, shooter: "h2" }); // h2: 10 points → double-double
+    b.periodEnd(2);
+    const r = b.run();
+    const ms = r.candidates.filter((c) => c.type === T.PLAYER_MILESTONE);
+    const twenty = ms.find((c) => c.captionParams.milestone === "points");
+    expect(twenty.keyEventIndex).toBe(pts[6]); // 18 → 21
+    expect(twenty.captionParams).toMatchObject({ playerId: "h1", threshold: 20, pts: 21 });
+    const dd = ms.find((c) => c.captionParams.milestone === "double_double");
+    expect(dd.captionParams).toMatchObject({ playerId: "h2", stat1: "pts", value1: 10, stat2: "reb", value2: 10 });
+    const caps = [...reliable().filter((c) => c.family !== F.PTS), { family: F.PTS, level: L.RELIABLE, reasons: [], scope: "game" }, { family: F.PTS, level: L.UNAVAILABLE, reasons: ["stat_mismatch"], players: ["h1"], scope: "player" }];
+    const again = b.run({ capabilities: caps });
+    expect(again.candidates.find((c) => c.type === T.PLAYER_MILESTONE && c.captionParams.playerId === "h1").reason).toBe(D.CAPABILITY_UNAVAILABLE);
+    expect(again.highlights.some((h) => h.type === T.PLAYER_MILESTONE && h.playerIds.includes("h1"))).toBe(false);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // Real fixtures
 // ---------------------------------------------------------------------------
 
-const FIXTURE_IDS = ["401810062", "401810791", "401810792", "401810798", "401810799"];
+const MANIFEST = JSON.parse(readFileSync(new URL("./fixtures/replay/manifest.json", import.meta.url), "utf8"));
+const FIXTURE_IDS = Object.keys(MANIFEST.fixtures).sort();
 const fixtures = Object.fromEntries(
   FIXTURE_IDS.map((id) => {
     const n = normalizeGame(JSON.parse(readFileSync(new URL(`./fixtures/replay/${id}.json`, import.meta.url), "utf8")));
@@ -469,6 +583,75 @@ const margin = (score, teamId, n) => (teamId === n.teams.home.id ? score.home - 
 const QUIET = new Set([K.REBOUND, K.TIMEOUT, K.SUBSTITUTION, K.REVIEW]);
 
 describe("highlights — real fixtures", () => {
+  it.each(FIXTURE_IDS)("%s: 10–20 moments (W22) unless the replay is unavailable, with per-type caps", (id) => {
+    const { n, v, r } = fixtures[id];
+    if (v.status === "unavailable") {
+      expect(r.highlights).toEqual([]);
+      return;
+    }
+    expect(r.highlights.length).toBeGreaterThanOrEqual(10);
+    expect(r.highlights.length).toBeLessThanOrEqual(20);
+    const counts = {};
+    for (const h of r.highlights) counts[h.type] = (counts[h.type] ?? 0) + 1;
+    for (const [type, k] of Object.entries(counts)) {
+      if ([T.OVERTIME, T.GAME_END, T.MISSED_FINAL_ATTEMPT].includes(type)) continue;
+      expect(k).toBeLessThanOrEqual(type === T.LEAD_MILESTONE ? HIGHLIGHT_CONFIG.maxMilestones : (HIGHLIGHT_CONFIG.maxPerType[type] ?? HIGHLIGHT_CONFIG.maxPerTypeDefault));
+    }
+    // Spread: the first three periods each have a moment; the last regulation period too unless the game was settled.
+    for (let p = 1; p < n.format.regulationPeriods; p++) expect(r.highlights.some((h) => n.events[h.keyEventIndex].period === p)).toBe(true);
+    // Context moments are never adjacent to another selected moment.
+    const SECONDARY = [T.SCORING_RUN, T.PLAYER_MILESTONE, T.LEAD_MILESTONE, T.CLOSING_BASKET, T.PERIOD_END];
+    const hs = r.highlights;
+    for (let k = 1; k < hs.length; k++) {
+      if (SECONDARY.includes(hs[k].type) || SECONDARY.includes(hs[k - 1].type)) expect(hs[k].groupStartIndex - hs[k - 1].eventIndex).toBeGreaterThanOrEqual(HIGHLIGHT_CONFIG.minEventGap);
+    }
+  });
+
+  it.each(FIXTURE_IDS)("%s: W22 quality — no repeated period-end state, no settled filler, no clusters, a Q4 flow moment", (id) => {
+    const { n, idx, r } = fixtures[id];
+    const reg = n.format.regulationPeriods;
+    const cfg = HIGHLIGHT_CONFIG;
+    const ev = (h) => n.events[h.keyEventIndex];
+    const hs = r.highlights;
+    // 1. A period end never repeats the score of another selected moment of that period.
+    for (const pe of hs.filter((h) => h.type === T.PERIOD_END)) {
+      for (const h of hs) {
+        if (h === pe || ev(h).period !== pe.captionParams.endedPeriod) continue;
+        const s = idx.stateAt(h.eventIndex).score;
+        expect(s.home === pe.captionParams.scoreHome && s.away === pe.captionParams.scoreAway).toBe(false);
+      }
+    }
+    // 2. Runs / lead milestones / closing baskets never in a settled game (margin before vs regulation time left),
+    //    and runs / closing baskets never leave their team ≥ trailingMaxDeficit behind.
+    for (const h of hs.filter((x) => [T.SCORING_RUN, T.LEAD_MILESTONE, T.CLOSING_BASKET].includes(x.type))) {
+      const e = n.events[h.groupStartIndex];
+      const before = idx.stateAt(h.groupStartIndex - 1).score;
+      const minutesLeft = ((reg - e.period) * n.format.regulationSec + e.clockRemainingSec) / 60;
+      expect(Math.abs(before.home - before.away)).toBeLessThan(cfg.settled.baseMargin + cfg.settled.perMinute * minutesLeft);
+      if (h.type !== T.LEAD_MILESTONE) expect(-margin(idx.stateAt(h.eventIndex).score, h.teamIds[0], n)).toBeLessThan(cfg.trailingMaxDeficit);
+    }
+    // 3. Outside the finish window, at most clusterMax moments within clusterEventGap events / clusterGameSec of each other.
+    const finish = (h) => ev(h).period >= reg && ev(h).clockRemainingSec <= cfg.finishWindowSec;
+    const plain = hs.filter((h) => ![T.OVERTIME, T.GAME_END, T.MISSED_FINAL_ATTEMPT].includes(h.type));
+    const near = (a, b) => Math.max(a.groupStartIndex - b.eventIndex, b.groupStartIndex - a.eventIndex) <= cfg.clusterEventGap || (ev(a).period === ev(b).period && Math.abs(ev(a).gameElapsedSec - ev(b).gameElapsedSec) <= cfg.clusterGameSec);
+    for (let k = 2; k < plain.length; k++) {
+      const [a, b, c] = plain.slice(k - 2, k + 1);
+      if (finish(a) || finish(b) || finish(c)) continue;
+      expect(near(a, b) && near(b, c) && near(a, c)).toBe(false);
+    }
+    // 4. A non-blowout (within trailingMaxDeficit entering the last regulation period) has a game-flow moment there.
+    const start = n.events.find((e) => e.period === reg);
+    if (start && hs.length) {
+      const s = idx.stateAt(start.index - 1).score;
+      if (Math.abs(s.home - s.away) < cfg.trailingMaxDeficit) {
+        expect(hs.some((h) => ev(h).period === reg && ![T.PLAYER_MILESTONE, T.PERIOD_END].includes(h.type))).toBe(true);
+      }
+    }
+    // 5. Caps.
+    expect(hs.filter((h) => h.type === T.LEAD_MILESTONE).length).toBeLessThanOrEqual(3);
+    expect(hs.filter((h) => h.type === T.PERIOD_END).length).toBeLessThanOrEqual(2);
+  });
+
   it.each(FIXTURE_IDS)("%s: every selected moment's evidence holds in stateAt", (id) => {
     const { n, idx, v, r } = fixtures[id];
     expect(r.highlights.length).toBeLessThanOrEqual(HIGHLIGHT_CONFIG.maxHighlights);
@@ -481,7 +664,7 @@ describe("highlights — real fixtures", () => {
       const at = idx.stateAt(h.eventIndex);
       const before = idx.stateAt(h.groupStartIndex - 1);
       const team = h.teamIds.length === 1 ? h.teamIds[0] : null;
-      if (h.captionParams.scoreHome != null && h.type !== T.MISSED_FINAL_ATTEMPT) expect([at.score.home, at.score.away]).toEqual([h.captionParams.scoreHome, h.captionParams.scoreAway]);
+      if (h.captionParams.scoreHome != null && h.type !== T.MISSED_FINAL_ATTEMPT && h.type !== T.MISSED_LATE_ATTEMPT) expect([at.score.home, at.score.away]).toEqual([h.captionParams.scoreHome, h.captionParams.scoreAway]);
       switch (h.type) {
         case T.TIE:
           expect(at.score.home).toBe(at.score.away);
@@ -533,7 +716,66 @@ describe("highlights — real fixtures", () => {
         case T.LEAD_MILESTONE: {
           const th = h.captionParams.threshold;
           expect(margin(at.score, team, n)).toBeGreaterThanOrEqual(th);
+          expect(margin(at.score, team, n)).toBe(h.captionParams.lead);
           for (let k = -1; k < h.groupStartIndex; k++) expect(margin(idx.stateAt(k).score, team, n)).toBeLessThan(th); // first time
+          break;
+        }
+        case T.SCORING_RUN: {
+          // Unanswered: from the run start to the hold, only this team scored, exactly runPoints.
+          const start = idx.stateAt(h.evidence.runStartIndex - 1).score;
+          const own = team === n.teams.home.id ? "home" : "away";
+          const other = own === "home" ? "away" : "home";
+          expect(at.score[own] - start[own]).toBe(h.captionParams.runPoints);
+          expect(at.score[other]).toBe(start[other]);
+          expect(h.captionParams.runPoints).toBeGreaterThanOrEqual(HIGHLIGHT_CONFIG.runMinPoints);
+          // The run is preceded by an opponent score (or the tip-off).
+          if (h.evidence.runStartIndex > 0) expect(idx.stateAt(h.evidence.runStartIndex - 1).score[other]).toBeGreaterThan(idx.stateAt(h.evidence.runStartIndex - 2).score[other]);
+          break;
+        }
+        case T.PLAYER_MILESTONE: {
+          const p = h.captionParams;
+          const row = at.players[p.playerId];
+          const prev = idx.stateAt(h.keyEventIndex - 1).players[p.playerId];
+          if (p.milestone === "points") {
+            expect(row.pts).toBe(p.pts); // value at the moment, never the final line
+            expect(prev.pts).toBeLessThan(p.threshold);
+            expect(row.pts).toBeGreaterThanOrEqual(p.threshold);
+            expect(capabilityFor(v.capabilities, F.PTS, { playerId: p.playerId, teamId: team, eventIndex: h.keyEventIndex }).level).not.toBe(L.UNAVAILABLE);
+          } else {
+            const need = p.milestone === "triple_double" ? 3 : 2;
+            const tens = (x) => ["pts", "reb", "ast", "stl", "blk"].filter((k) => x[k] >= 10).length;
+            expect(tens(prev)).toBeLessThan(need);
+            expect(tens(row)).toBeGreaterThanOrEqual(need);
+            for (let k = 1; k <= need; k++) expect(row[p[`stat${k}`]]).toBe(p[`value${k}`]);
+          }
+          break;
+        }
+        case T.CLOSING_BASKET: {
+          const e = n.events[h.keyEventIndex];
+          expect(e.kind).toBe(K.FIELD_GOAL);
+          expect(e.detail.made).toBe(true);
+          expect(e.clockRemainingSec).toBeLessThanOrEqual(HIGHLIGHT_CONFIG.closingBasketMaxClockSec);
+          expect(e.period).toBeLessThan(n.format.regulationPeriods);
+          expect(h.captionParams.clockSec).toBe(e.clockRemainingSec);
+          break;
+        }
+        case T.MISSED_LATE_ATTEMPT: {
+          const e = n.events[h.keyEventIndex];
+          expect(e.kind).toBe(K.FIELD_GOAL);
+          expect(e.detail.made).toBe(false);
+          const m = margin(before.score, e.teamId, n);
+          expect(m).toBeLessThanOrEqual(0);
+          expect(e.detail.attemptValue + m).toBeGreaterThanOrEqual(0);
+          expect(h.captionParams.stake).toBe(e.detail.attemptValue + m === 0 ? "tie" : "go_ahead");
+          expect([h.captionParams.scoreHome, h.captionParams.scoreAway]).toEqual([before.score.home, before.score.away]);
+          break;
+        }
+        case T.PERIOD_END: {
+          const e = n.events[h.eventIndex];
+          expect(e.kind).toBe(K.PERIOD_END);
+          expect(e.period).toBeLessThan(n.format.regulationPeriods);
+          if (h.captionParams.teamId) expect(margin(at.score, h.captionParams.teamId, n)).toBe(h.captionParams.lead);
+          else expect(at.score.home).toBe(at.score.away);
           break;
         }
         default:
@@ -584,6 +826,14 @@ describe("highlights — real fixtures", () => {
     // The last OT attempt (down 6) could not tie.
     expect(cand(r, "missed_final_attempt-564").reason).toBe(D.SHOT_COULD_NOT_TIE);
     expect(byType(r, T.GAME_END)).toEqual([]);
+  });
+
+  it("W22: the Nuggets–Grizzlies game (401909970, DEN wire-to-wire after Q1) now has 10–20 moments in every quarter", () => {
+    const { n, r } = fixtures["401909970"];
+    expect(r.highlights.length).toBeGreaterThanOrEqual(10);
+    for (let p = 1; p <= 4; p++) expect(r.highlights.filter((h) => n.events[h.keyEventIndex].period === p).length).toBeGreaterThanOrEqual(2);
+    // Only one lead change after the first minutes: the extra moments are runs, milestones and the close finish.
+    expect(new Set(r.highlights.map((h) => h.type)).size).toBeGreaterThanOrEqual(5);
   });
 
   it("gives the blowout 401810792 evidence-backed lead milestones only, and keeps the API entry points consistent", () => {

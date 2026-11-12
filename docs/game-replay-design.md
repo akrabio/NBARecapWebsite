@@ -135,7 +135,7 @@ Selection principles:
 3. Consider score margin, period, remaining time, lead changes, and how long a team has trailed.
 4. Deduplicate connected events. A steal and the transition basket that follows may deserve one sequence rather than two competing captions.
 5. Reserve extra time for the finish of a close game; do not treat every fourth-quarter basket as decisive.
-6. Prefer a small set of readable, varied moments over a caption for every event. Prototype roughly 8–12 featured moments, adjusting to the runtime budget.
+6. Prefer a small set of readable, varied moments over a caption for every event. Target roughly 10–20 featured moments in every completed game, blowouts and ordinary games included (user feedback; replaces the earlier 8–12 prototype figure), adjusting to the runtime budget — without inventing drama: every moment is an evidenced fact (runs, lead milestones, player milestones from running stats, period-end state, and the swing types).
 7. Do not invent motives, tactics, emotional descriptions, or historical records from numerical events.
 8. Use deterministic caption templates first. Generative narration is not required for this feature.
 
