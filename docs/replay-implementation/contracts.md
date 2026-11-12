@@ -129,7 +129,7 @@ Examples of evidence: previous score and resulting score; prior last-lead event;
 }
 ```
 
-The body is `BuildResult` (`lib/replay/types.js`; `capabilities` is a `Capability[]` and `reasons`/`warnings` use `REASON_CODES`). `replay` is `ReplayPayload`: `teams`, `players`, `events`, `initialLineups`, `checkpoints`, `probability` (linked `{ eventIndex, home }` samples only), `highlights`, `timeline`, `durationSec`. Serialize ordinary JSON arrays/objects, not Maps or unconverted typed arrays. No news, article HTML, credentials, or raw unrelated summary sections.
+The body is `BuildResult` (`lib/replay/types.js`; `capabilities` is a `Capability[]` and `reasons`/`warnings` use `REASON_CODES`). `replay` is `ReplayPayload` (built by `lib/replay/build.js`, R23): `format`, `teams`, `players` (per team: starters in box order, then bench by jersey/name), compact `events`, `state` (`{ initial, patches }` — initial state plus one changed-values patch per event; reconstructed in the browser by `lib/replay/client-state.js` `replayStateAt`, no server checkpoints), `probability` (linked `{ eventIndex, home, tie? }` samples only; also the source of the carried state probability), `highlights` (ids/indices/type/players/teams + precomputed caption `{ text, parts }`; no evidence), `timeline` (`{ version, durationSec, targetSec, segments, moments, periods, lastEventIndex }`), `durationSec`. Serialize ordinary JSON arrays/objects, not Maps or unconverted typed arrays. No news, article HTML, credentials, or raw unrelated summary sections.
 
 | Outcome | Transport/body | Client behavior |
 | --- | --- | --- |
