@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -93,9 +93,15 @@ export default function GameView({ game, media, siblings }) {
   const [summary, setSummary] = useState({ status: game.espn_game_id ? "loading" : "missing" });
   const [showLines, setShowLines] = useState(false);
   const [heroVisible, setHeroVisible] = useState(true);
-  const heroRef = useRef(null);
+  // Callback ref: the hero unmounts on the replay tab and returns afterwards.
+  const [heroEl, setHeroEl] = useState(null);
   const progressRef = useRef(null);
   const tabsRef = useRef(null);
+  // Set by switchTab: keep the tabs pinned under the top bar after the switch.
+  const pinTabsRef = useRef(false);
+  // Replay mode: the running replay scoreboard is the only score on the page,
+  // so the final-score hero and the top bar's compact final score are hidden.
+  const replayMode = tab === "replay";
 
   // Box score + quarter scores (one ESPN request, shared by both tabs)
   useEffect(() => {
@@ -109,14 +115,28 @@ export default function GameView({ game, media, siblings }) {
     };
   }, [game.espn_game_id]);
 
-  // Compact score in the top bar once the hero scrolls away
+  // Compact score in the top bar once the hero scrolls away. Re-attached
+  // whenever the hero node mounts (it is absent on the replay tab); the
+  // observer's first callback reports the returning hero's real position.
   useEffect(() => {
+    if (!heroEl) return undefined;
     const observer = new IntersectionObserver(([entry]) => setHeroVisible(entry.isIntersecting), {
       rootMargin: "-52px 0px 0px 0px",
     });
-    if (heroRef.current) observer.observe(heroRef.current);
-    return () => observer.disconnect();
-  }, []);
+    observer.observe(heroEl);
+    return () => {
+      observer.disconnect();
+      setHeroVisible(true);
+    };
+  }, [heroEl]);
+
+  // After a tab switch (the hero may have appeared or disappeared above the
+  // tabs), keep the tabs pinned under the top bar if they were pinned before.
+  useLayoutEffect(() => {
+    if (!pinTabsRef.current) return;
+    pinTabsRef.current = false;
+    window.scrollTo(0, tabsRef.current.getBoundingClientRect().top + window.scrollY - 52);
+  }, [tab]);
 
   // Reading progress. Written straight to the bar (no state), so scrolling
   // doesn't re-render the recap.
@@ -184,8 +204,9 @@ export default function GameView({ game, media, siblings }) {
     setTab(next);
     if (next === "replay") setReplayOpenedFor(game.id);
     // Keep the tabs pinned where they are instead of jumping to the top
+    // (applied after render, once the header for the new tab is laid out).
     const tabsTop = tabsRef.current.getBoundingClientRect().top + window.scrollY - 52;
-    if (window.scrollY > tabsTop) window.scrollTo(0, tabsTop);
+    pinTabsRef.current = next !== tab && window.scrollY > tabsTop;
   };
 
   // Arrow keys move between tabs (reversed, since the page is right-to-left).
@@ -212,11 +233,23 @@ export default function GameView({ game, media, siblings }) {
             <ChevronRight className="h-5 w-5" />
             משחקים
           </button>
-          <div className={`flex items-center gap-2 transition-opacity duration-200 ${heroVisible ? "opacity-0" : "opacity-100"}`} aria-hidden={heroVisible}>
-            <TeamLogo teamName={game.away_team} hebrewName={nbaEnToHe[game.away_team]} alt={nbaEnToHe[game.away_team]} size="xs" />
-            <Score game={game} className="text-[15px]" />
-            <TeamLogo teamName={game.home_team} hebrewName={nbaEnToHe[game.home_team]} alt={nbaEnToHe[game.home_team]} size="xs" />
-          </div>
+          {replayMode ? (
+            // Game identity only — never the final result while replaying.
+            <div className="flex min-w-0 flex-col items-center leading-tight">
+              <div className="flex items-center gap-1.5 text-[13.5px] font-bold">
+                <TeamLogo teamName={game.away_team} hebrewName={nbaEnToHe[game.away_team]} alt="" size="xs" />
+                <span className="truncate">{matchupText({ ...game, home_score: null, away_score: null }, shortName)}</span>
+                <TeamLogo teamName={game.home_team} hebrewName={nbaEnToHe[game.home_team]} alt="" size="xs" />
+              </div>
+              <small className="text-[11px] text-subtle">{formatLongDate(game.date)}</small>
+            </div>
+          ) : (
+            <div className={`flex items-center gap-2 transition-opacity duration-200 ${heroVisible ? "opacity-0" : "opacity-100"}`} aria-hidden={heroVisible}>
+              <TeamLogo teamName={game.away_team} hebrewName={nbaEnToHe[game.away_team]} alt={nbaEnToHe[game.away_team]} size="xs" />
+              <Score game={game} className="text-[15px]" />
+              <TeamLogo teamName={game.home_team} hebrewName={nbaEnToHe[game.home_team]} alt={nbaEnToHe[game.home_team]} size="xs" />
+            </div>
+          )}
           <button onClick={share} aria-label="שיתוף" className="grid h-11 w-11 place-items-center justify-self-end rounded-xl text-subtle">
             <Share className="h-5 w-5" />
           </button>
@@ -224,44 +257,50 @@ export default function GameView({ game, media, siblings }) {
         <div ref={progressRef} className="absolute bottom-[-1px] right-0 h-0.5 w-0 bg-brand" />
       </div>
 
-      {/* Compact score header: one row, so the recap starts above the fold */}
-      <div
-        ref={heroRef}
-        className="px-4 pt-1.5 pb-3"
-        style={{
-          background: `linear-gradient(105deg, color-mix(in srgb, ${awayColor} 22%, var(--app-bg)), var(--app-bg) 45%, var(--app-bg) 55%, color-mix(in srgb, ${homeColor} 22%, var(--app-bg)))`,
-        }}
-      >
-        <div className="mx-auto max-w-[696px]">
-          <h1 className="sr-only">
-            {matchupText(game, (team) => nbaEnToHe[team] || team)}
-          </h1>
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-            <HeroTeam team={game.away_team} record={formatRecord(game.title, game.away_team)} />
-            <Score game={game} className="text-[32px] lg:text-[42px]" />
-            <HeroTeam team={game.home_team} record={formatRecord(game.title, game.home_team)} reverse />
+      {/* Page heading, outside the hero so it survives the replay tab (which
+          names the teams only — the result is not revealed while replaying). */}
+      <h1 className="sr-only">
+        {matchupText(replayMode ? { ...game, home_score: null, away_score: null } : game, (team) => nbaEnToHe[team] || team)}
+      </h1>
+
+      {/* Compact score header: one row, so the recap starts above the fold.
+          Not rendered on the replay tab: the running replay scoreboard replaces it. */}
+      {!replayMode && (
+        <div
+          ref={setHeroEl}
+          className="px-4 pt-1.5 pb-3"
+          style={{
+            background: `linear-gradient(105deg, color-mix(in srgb, ${awayColor} 22%, var(--app-bg)), var(--app-bg) 45%, var(--app-bg) 55%, color-mix(in srgb, ${homeColor} 22%, var(--app-bg)))`,
+          }}
+        >
+          <div className="mx-auto max-w-[696px]">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+              <HeroTeam team={game.away_team} record={formatRecord(game.title, game.away_team)} />
+              <Score game={game} className="text-[32px] lg:text-[42px]" />
+              <HeroTeam team={game.home_team} record={formatRecord(game.title, game.home_team)} reverse />
+            </div>
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[12.5px] text-subtle">
+              <span>{formatLongDate(game.date)}</span>
+              {tags.map((tag) => (
+                <span key={tag.key + tag.label} className={`tag tag-${tag.key}`}>
+                  {tag.label}
+                </span>
+              ))}
+              {recap.series && <span className="tag tag-playoffs">סדרה {recap.series}</span>}
+              {hasLines && (
+                <button
+                  onClick={() => setShowLines(!showLines)}
+                  aria-expanded={showLines}
+                  className="h-7 rounded-full border px-2.5 text-xs text-subtle"
+                >
+                  לפי רבעים {showLines ? "▴" : "▾"}
+                </button>
+              )}
+            </div>
+            {hasLines && showLines && <LineScore game={game} linescores={summary.linescores} />}
           </div>
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[12.5px] text-subtle">
-            <span>{formatLongDate(game.date)}</span>
-            {tags.map((tag) => (
-              <span key={tag.key + tag.label} className={`tag tag-${tag.key}`}>
-                {tag.label}
-              </span>
-            ))}
-            {recap.series && <span className="tag tag-playoffs">סדרה {recap.series}</span>}
-            {hasLines && (
-              <button
-                onClick={() => setShowLines(!showLines)}
-                aria-expanded={showLines}
-                className="h-7 rounded-full border px-2.5 text-xs text-subtle"
-              >
-                לפי רבעים {showLines ? "▴" : "▾"}
-              </button>
-            )}
-          </div>
-          {hasLines && showLines && <LineScore game={game} linescores={summary.linescores} />}
         </div>
-      </div>
+      )}
 
       {/* Tabs */}
       <div ref={tabsRef} className="sticky top-[52px] z-20 border-b bg-app">
@@ -292,8 +331,10 @@ export default function GameView({ game, media, siblings }) {
         hidden={tab === "replay"}
         className="mx-auto max-w-[680px] px-4 pt-4 pb-[calc(40px+env(safe-area-inset-bottom))]"
       >
-        {/* Kept in the DOM (empty, hidden) on the replay tab so every tab's aria-controls resolves */}
-        {tab === "replay" ? null : tab === "recap" ? (
+        {/* Explicit per-tab content. Kept in the DOM (empty, hidden) on the replay
+            tab so every tab's aria-controls resolves; replay content lives only in
+            #game-tabpanel-replay and can never render the final box score. */}
+        {tab === "recap" && (
           <>
             {game.headline && <h2 className="text-[22px] leading-snug font-black lg:text-[26px]">{game.headline}</h2>}
             {game.one_liner && <p className="mt-2 mb-5 text-[17px] leading-relaxed text-body">{game.one_liner}</p>}
@@ -306,9 +347,8 @@ export default function GameView({ game, media, siblings }) {
               </nav>
             )}
           </>
-        ) : (
-          <BoxScore game={game} summary={summary} />
         )}
+        {tab === "box" && <BoxScore game={game} summary={summary} />}
       </div>
 
       {/* Always present (empty until first opened) so aria-controls resolves */}

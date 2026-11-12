@@ -1,6 +1,6 @@
 "use client";
 
-// Replay tab content (task R29 — initial, functional placeholders only).
+// Replay tab content (tasks R29, R31).
 //
 // Demand-loaded by GameView (next/dynamic) the first time the replay tab is
 // selected, then kept mounted (hidden + inert) while another tab is shown, so
@@ -9,14 +9,27 @@
 // pauses playback (useReplayPlayback). Data is fetched once per game via
 // useReplayData — never per frame.
 //
-// The finished scoreboard/controls/tables replace ReadyReplay in W15–W17.
+// One controller (R31): useReplayPlayback owns the clock; every render derives
+// ONE frame (lib/replay/frame.js) from its position and hands that same object
+// to every subview, so scoreboard, probability, spotlight, controls and tables
+// always show the same event index. State reconstruction is memoized by
+// eventIndex (and the spotlight's own eventIndex), so 60 fps ticks only
+// recompute the cheap time fields. The finished subviews replace the stubs in
+// W16–W17.
+//
+// Owned here (game-local, reset by the game-id key): selected stats team
+// (default chosen once: involved favorite, else home) and bench expansion.
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTeamPicker } from "@/components/games/TeamPicker";
 import { useReplayData } from "@/utils/replay-api";
-import { replayStateAt } from "@/lib/replay/client-state";
-import { frameAt } from "@/lib/replay/timeline";
+import { createFrameDeriver, defaultTeamId } from "@/lib/replay/frame";
 import { useReplayPlayback } from "./useReplayPlayback";
+import ReplayScoreboard from "./ReplayScoreboard";
+import ReplayProbability from "./ReplayProbability";
+import ReplaySpotlight from "./ReplaySpotlight";
+import ReplayControls from "./ReplayControls";
+import ReplayTeamTables from "./ReplayTeamTables";
 
 const UNAVAILABLE_TEXT = {
   no_espn_id: "לא נמצאו נתוני מהלכים למשחק הזה.",
@@ -25,8 +38,6 @@ const UNAVAILABLE_TEXT = {
   game_not_final: "השחזור יהיה זמין לאחר סיום המשחק.",
 };
 const DEFAULT_UNAVAILABLE = "אין מספיק נתונים אמינים לשחזור המשחק.";
-
-const formatDuration = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, "0")}`;
 
 function Message({ children, actions }) {
   return (
@@ -39,49 +50,74 @@ function Message({ children, actions }) {
 
 const buttonClass = "h-10 rounded-full border px-4 text-sm font-bold";
 
-function ReadyReplay({ result, active, limited, defaultTeam }) {
+/** The single frame for this render: cheap time fields per tick, state memoized by event index. */
+function useReplayFrame(replay, positionSec) {
+  const derive = useMemo(() => createFrameDeriver(replay), [replay]);
+  return derive(positionSec);
+}
+
+function ReplayEnd({ onReplay, onSelectTab }) {
+  return (
+    <div className="mt-4 flex justify-center gap-2">
+      <button type="button" onClick={onReplay} className={buttonClass}>
+        צפייה חוזרת
+      </button>
+      <button type="button" onClick={() => onSelectTab?.("recap")} className={buttonClass}>
+        לסיכום המלא
+      </button>
+    </div>
+  );
+}
+
+function ReadyReplay({ result, active, limited, onSelectTab, selectedTeamId, onSelectTeam, benchExpanded, onToggleBench }) {
   const { replay, espnGameId } = result;
-  const { timeline } = replay;
-  const { snapshot, containerRef, toggle, restart } = useReplayPlayback({
+  const { snapshot, containerRef, play, pause, toggle, seek, setSpeed, restart } = useReplayPlayback({
     gameKey: espnGameId,
-    durationSec: timeline.durationSec,
+    durationSec: replay.timeline.durationSec,
     active,
   });
-  const frame = frameAt(timeline, snapshot.positionSec);
-  const score = useMemo(() => replayStateAt(replay, frame.eventIndex).score, [replay, frame.eventIndex]);
-  const { home, away } = replay.teams;
+  const actions = useMemo(() => ({ play, pause, toggle, seek, setSpeed, restart }), [play, pause, toggle, seek, setSpeed, restart]);
+  const frame = useReplayFrame(replay, snapshot.positionSec);
+  const ended = snapshot.ended || frame.frame.ended;
 
   return (
-    <div ref={containerRef} data-default-team={defaultTeam || undefined} className="py-4">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-center">
-        <b className="truncate">{away.nameHe || away.abbreviation}</b>
-        <span className="text-[28px] font-black tabular-nums" aria-live="off">
-          {score?.away ?? 0} – {score?.home ?? 0}
-        </span>
-        <b className="truncate">{home.nameHe || home.abbreviation}</b>
-      </div>
-      <p className="mt-1 text-center text-xs text-subtle">
-        {frame.periodLabel || "לפני פתיחה"} · {formatDuration(snapshot.positionSec)} / {formatDuration(timeline.durationSec)}
-        {limited && " · נתונים חלקיים"}
-      </p>
-      <div className="mt-4 flex justify-center gap-2">
-        <button type="button" onClick={toggle} className={buttonClass}>
-          {snapshot.playing ? "השהיה" : snapshot.ended ? "מהתחלה" : "הפעלה"}
-        </button>
-        <button type="button" onClick={restart} className={buttonClass}>
-          אתחול
-        </button>
-      </div>
+    <div ref={containerRef} className="py-4" data-event-index={frame.frame.eventIndex}>
+      <ReplayScoreboard frame={frame} teams={replay.teams} />
+      <ReplayProbability frame={frame} teams={replay.teams} />
+      {limited && <p className="mt-1 text-center text-xs text-subtle">נתונים חלקיים</p>}
+      <ReplaySpotlight frame={frame} />
+      <ReplayControls frame={frame} playback={snapshot} actions={actions} />
+      {ended && (
+        <ReplayEnd
+          onReplay={() => {
+            restart();
+            play();
+          }}
+          onSelectTab={onSelectTab}
+        />
+      )}
+      <ReplayTeamTables
+        frame={frame}
+        replay={replay}
+        selectedTeamId={selectedTeamId}
+        onSelectTeam={onSelectTeam}
+        benchExpanded={benchExpanded}
+        onToggleBench={onToggleBench}
+      />
     </div>
   );
 }
 
 export default function ReplayView({ game, active = false, onSelectTab }) {
   const { state, data, reasons, retry } = useReplayData(game.espn_game_id, { enabled: true });
-  // Favorite team from the existing picker context (no new preference store);
-  // the team tabs (W17) use it as their initial selection.
+  // Favorite team from the existing picker context (no new preference store).
   const { favorite } = useTeamPicker();
-  const defaultTeam = favorite === game.away_team || favorite === game.home_team ? favorite : game.home_team;
+  const replay = state === "ready" || state === "limited" ? data?.replay : null;
+  // Chosen once per game, when the payload first arrives; later renders
+  // (favorite changes, data refreshes) never reset a manual selection.
+  const [selectedTeamId, setSelectedTeamId] = useState(null);
+  if (replay && selectedTeamId == null) setSelectedTeamId(defaultTeamId(replay, { favorite, awayTeam: game.away_team }));
+  const [benchExpanded, setBenchExpanded] = useState(false);
 
   if (state === "idle" || state === "loading") return <ReplayLoading />;
 
@@ -99,7 +135,7 @@ export default function ReplayView({ game, active = false, onSelectTab }) {
     );
   }
 
-  if (state === "unavailable") {
+  if (state === "unavailable" || !replay) {
     const reason = reasons?.[0];
     return (
       <Message
@@ -119,7 +155,18 @@ export default function ReplayView({ game, active = false, onSelectTab }) {
     );
   }
 
-  return <ReadyReplay result={data} active={active} limited={state === "limited"} defaultTeam={defaultTeam} />;
+  return (
+    <ReadyReplay
+      result={data}
+      active={active}
+      limited={state === "limited"}
+      onSelectTab={onSelectTab}
+      selectedTeamId={selectedTeamId}
+      onSelectTeam={setSelectedTeamId}
+      benchExpanded={benchExpanded}
+      onToggleBench={() => setBenchExpanded((open) => !open)}
+    />
+  );
 }
 
 export function ReplayLoading() {
