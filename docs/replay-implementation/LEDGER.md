@@ -15,8 +15,8 @@ Single source of truth for progress. Maintained by the orchestrator; sub-agents 
 | W02 | R03–R04 source audit, types, support matrix | A | done | W02 | Gate A PASS (validator reproduced roles, ordering, reconciliation, lineups). |
 | W03 | R05–R06 normalize teams/rosters/clocks/order | | done | W03 | Validator PASS; follow-up fix: all roles must match name captured from text (shooter etc.), `clock_fallback` issue. 112 tests. |
 | W04 | R07–R09 stat deltas (scoring, ast/reb, to/stl/blk/pf) | | done | W04 | Validator PASS (own reconciliation, all 5 fixtures). 156 tests. |
-| W05 | R10–R11 lineups + substitutions | | in progress | | |
-| W06 | R12–R13 win probability join + state/checkpoints | | todo | | |
+| W05 | R10–R11 lineups + substitutions | | done | W05 | Validator FAIL→fix→PASS (DNP actor could become active). 210 tests. |
+| W06 | R12–R13 win probability join + state/checkpoints | | in progress | | |
 | W07 | R14 reconcile + quality classification | B | todo | | |
 | W08 | R15–R17 highlight detection/ranking | | todo | | |
 | W09 | R18 Hebrew captions | | todo | | |
@@ -55,6 +55,7 @@ _Record source-capability findings, contract changes, deviations from the plan (
 - Corpus limits: no ejections, corrections, or reviews observed.
 - **W03** `lib/replay/normalize.js`: `normalizeGame(summary)` → `{espnGameId, final, format, teams:{home,away}, players, expected:{players,teams}, events, issues}`. Event `detail`: `made, points, attemptValue (2|3|null), heave, blocked, offensive, ftKind (regular|technical|flagrant), teamOnly`. Roles only set when participant matches the name captured from text; failures → `role_text_conflict` issue with `candidate` (never applied). Consequence: Porter Jr. reconstructs 0 blk vs box 1 (play 401810062656) → W07 must limit his blk. Corpus issues: only that conflict + 15 `sequence_out_of_order`.
 - **W04** `lib/replay/stats.js`: `statContext(normalized)`, `eventStatDeltas(event, ctx)` → `{eventIndex, players:{id:Partial}, teams:{teamId:TeamOnly}, unattributed:{teamId:Partial}, points:{teamId:n}, issues}` (non-zero only); `applyDeltas(state, event, deltas, teams)` in-place step w/ `score_delta_mismatch` check vs source scoreAfter; `initialStatState`, `accumulate(normalized,{uptoIndex})`; exports `PLAYER_COUNTERS`, `TEAM_ONLY_COUNTERS`. Unknown credit → `unattributed[team]` + `attribution_unknown`. Team-only counters incl. `teamRebounds`, `teamTurnovers`, `technicalFouls`. Reconciliation exact except the two known exceptions.
+- **W05** `lib/replay/lineups.js`: `lineupContext`, `initialLineups(normalized)` → `{eventIndex:-1, teams, pendingSubs, issues}`; step `applyLineupEvent(state, event, ctx)` → `{state, issues, appliedGroup}`; `lineupTimeline(normalized,{uptoIndex})` → `{initial, states[i], groups[{id,from,to,teams}], issues}`; `lineupAt(normalized,i)`. Group = consecutive subs at same period+clock (`substitutionGroup` from normalize); any other event ends a group; applied atomically at its last event — inside a group state = pre-group five + `pendingSubs` (UI may show "change pending"). Entering player takes leaving player's slot. Invalid → empty `onCourt` (roster fallback) + `candidates`/`confirmed`; recovers only when 5 distinct candidates all confirmed post-failure (no look-ahead). DNP never active. Corpus: 0 lineup issues, final ten = box `active`.
 
 ## Open issues / escalations
 
