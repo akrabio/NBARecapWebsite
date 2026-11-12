@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { ChevronRight, Share } from "lucide-react";
 import TeamLogo from "@/components/ui/TeamLogo";
 import { toast } from "@/components/ui/Toast";
@@ -22,7 +23,15 @@ import { nbaEnToHe, nbaShortHe } from "@/utils/consts";
 const TABS = [
   ["recap", "סיכום"],
   ["box", "נתונים"],
+  ["replay", "שחזור"],
 ];
+
+// Replay UI + data load on demand: the chunk is requested only when the
+// replay tab is first selected (readers who stay in recap/stats never load it).
+const ReplayView = dynamic(() => import("./replay/ReplayView"), {
+  ssr: false,
+  loading: () => <p className="py-10 text-center text-[15px] text-body">טוען שחזור…</p>,
+});
 
 const shortName = (team) => nbaShortHe[team] || nbaEnToHe[team] || team;
 
@@ -76,6 +85,11 @@ export default function GameView({ game, media, siblings }) {
   // The series tag below already says "playoffs"
   const tags = getTags(game, { omit: recap.series ? ["playoffs"] : [] });
   const [tab, setTab] = useState("recap");
+  // Game id whose replay view has been opened; kept mounted (hidden) after.
+  const [replayOpenedFor, setReplayOpenedFor] = useState(null);
+  // (Game changed while the replay tab is open: adopt it, so it stays mounted.)
+  if (tab === "replay" && replayOpenedFor !== game.id) setReplayOpenedFor(game.id);
+  const replayMounted = tab === "replay" || replayOpenedFor === game.id;
   const [summary, setSummary] = useState({ status: game.espn_game_id ? "loading" : "missing" });
   const [showLines, setShowLines] = useState(false);
   const [heroVisible, setHeroVisible] = useState(true);
@@ -168,6 +182,7 @@ export default function GameView({ game, media, siblings }) {
 
   const switchTab = (next) => {
     setTab(next);
+    if (next === "replay") setReplayOpenedFor(game.id);
     // Keep the tabs pinned where they are instead of jumping to the top
     const tabsTop = tabsRef.current.getBoundingClientRect().top + window.scrollY - 52;
     if (window.scrollY > tabsTop) window.scrollTo(0, tabsTop);
@@ -257,7 +272,7 @@ export default function GameView({ game, media, siblings }) {
               id={`tab-${key}`}
               role="tab"
               aria-selected={tab === key}
-              aria-controls="game-tabpanel"
+              aria-controls={key === "replay" ? "game-tabpanel-replay" : "game-tabpanel"}
               tabIndex={tab === key ? 0 : -1}
               onClick={() => switchTab(key)}
               className={`-mb-px h-11 flex-1 border-b-2 text-[14.5px] font-bold ${
@@ -273,10 +288,12 @@ export default function GameView({ game, media, siblings }) {
       <div
         id="game-tabpanel"
         role="tabpanel"
-        aria-labelledby={`tab-${tab}`}
+        aria-labelledby={tab === "box" ? "tab-box" : "tab-recap"}
+        hidden={tab === "replay"}
         className="mx-auto max-w-[680px] px-4 pt-4 pb-[calc(40px+env(safe-area-inset-bottom))]"
       >
-        {tab === "recap" ? (
+        {/* Kept in the DOM (empty, hidden) on the replay tab so every tab's aria-controls resolves */}
+        {tab === "replay" ? null : tab === "recap" ? (
           <>
             {game.headline && <h2 className="text-[22px] leading-snug font-black lg:text-[26px]">{game.headline}</h2>}
             {game.one_liner && <p className="mt-2 mb-5 text-[17px] leading-relaxed text-body">{game.one_liner}</p>}
@@ -292,6 +309,18 @@ export default function GameView({ game, media, siblings }) {
         ) : (
           <BoxScore game={game} summary={summary} />
         )}
+      </div>
+
+      {/* Always present (empty until first opened) so aria-controls resolves */}
+      <div
+        id="game-tabpanel-replay"
+        role="tabpanel"
+        aria-labelledby="tab-replay"
+        hidden={tab !== "replay"}
+        inert={tab !== "replay"}
+        className="mx-auto max-w-[680px] px-4 pt-4 pb-[calc(40px+env(safe-area-inset-bottom))]"
+      >
+        {replayMounted && <ReplayView key={game.id} game={game} active={tab === "replay"} onSelectTab={switchTab} />}
       </div>
     </div>
   );
