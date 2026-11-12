@@ -14,8 +14,8 @@ Single source of truth for progress. Maintained by the orchestrator; sub-agents 
 | W01 | R01–R02 baseline + real fixtures | | done | W01 | Validator PASS. Minor script nits (no fetch timeout, ID check per-loop) accepted. |
 | W02 | R03–R04 source audit, types, support matrix | A | done | W02 | Gate A PASS (validator reproduced roles, ordering, reconciliation, lineups). |
 | W03 | R05–R06 normalize teams/rosters/clocks/order | | done | W03 | Validator PASS; follow-up fix: all roles must match name captured from text (shooter etc.), `clock_fallback` issue. 112 tests. |
-| W04 | R07–R09 stat deltas (scoring, ast/reb, to/stl/blk/pf) | | in progress | | |
-| W05 | R10–R11 lineups + substitutions | | todo | | |
+| W04 | R07–R09 stat deltas (scoring, ast/reb, to/stl/blk/pf) | | done | W04 | Validator PASS (own reconciliation, all 5 fixtures). 156 tests. |
+| W05 | R10–R11 lineups + substitutions | | in progress | | |
 | W06 | R12–R13 win probability join + state/checkpoints | | todo | | |
 | W07 | R14 reconcile + quality classification | B | todo | | |
 | W08 | R15–R17 highlight detection/ranking | | todo | | |
@@ -54,7 +54,10 @@ _Record source-capability findings, contract changes, deviations from the plan (
 - Lineups: starters + subs in array order → always 5, 0 off-court actors (except the bad block), 42/42 period starting fives evidenced; between-period changes appear as subs at 12:00/5:00. Same-clock sub groups (≤7) apply atomically. Active-five feasible → no product escalation.
 - Corpus limits: no ejections, corrections, or reviews observed.
 - **W03** `lib/replay/normalize.js`: `normalizeGame(summary)` → `{espnGameId, final, format, teams:{home,away}, players, expected:{players,teams}, events, issues}`. Event `detail`: `made, points, attemptValue (2|3|null), heave, blocked, offensive, ftKind (regular|technical|flagrant), teamOnly`. Roles only set when participant matches the name captured from text; failures → `role_text_conflict` issue with `candidate` (never applied). Consequence: Porter Jr. reconstructs 0 blk vs box 1 (play 401810062656) → W07 must limit his blk. Corpus issues: only that conflict + 15 `sequence_out_of_order`.
+- **W04** `lib/replay/stats.js`: `statContext(normalized)`, `eventStatDeltas(event, ctx)` → `{eventIndex, players:{id:Partial}, teams:{teamId:TeamOnly}, unattributed:{teamId:Partial}, points:{teamId:n}, issues}` (non-zero only); `applyDeltas(state, event, deltas, teams)` in-place step w/ `score_delta_mismatch` check vs source scoreAfter; `initialStatState`, `accumulate(normalized,{uptoIndex})`; exports `PLAYER_COUNTERS`, `TEAM_ONLY_COUNTERS`. Unknown credit → `unattributed[team]` + `attribution_unknown`. Team-only counters incl. `teamRebounds`, `teamTurnovers`, `technicalFouls`. Reconciliation exact except the two known exceptions.
 
 ## Open issues / escalations
 
-_none yet_
+- (→W07) Per-player capability must mark Porter Jr. blk (401810062) and Holland II 3PA (401810792) as limited/unknown so UI never shows a supported-looking value.
+- (→W07, defensive) `lib/replay/stats.js` silently drops team rebound/turnover with null teamId and technicals for players not in `playerTeam` — add issues.
+- (→normalize, defensive) self-assist (assister = shooter) not guarded; not in corpus.
