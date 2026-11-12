@@ -1,0 +1,159 @@
+/* Replay-scoped styles (R32–R34). Everything here is a local class; nothing
+   leaks into the rest of the site. Layout and type use Tailwind utilities in
+   the components; this file holds what utilities cannot express cleanly:
+   the broadcast panel palette, the score/spotlight emphasis keyframes, the
+   progress track decorations and the reduced-motion overrides. */
+
+/* The broadcast panel is a dark "TV" surface in both site themes (mockup 5).
+   It re-declares the site's dark-theme tokens locally, so the Tailwind token
+   utilities (text-ink, text-subtle, bg-surface-2, …) resolve to readable
+   dark-surface values inside it regardless of the page theme. */
+.broadcast {
+  --surface: #141821;
+  --surface-2: #252d3c;
+  --line: #283143;
+  --ink: #eef1f6;
+  --body: #cfd5e0;
+  --subtle: #a9b1c2;
+  --faint: #8a93a6;
+  --brand: #ff7a1a;
+  --brand-ink: #ff7a1a;
+  --on-brand: #1a0b00;
+  color-scheme: dark;
+  color: var(--ink);
+  border: 1px solid #283143;
+  background:
+    radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--away-c) 26%, transparent), transparent 55%),
+    radial-gradient(ellipse at 0% 0%, color-mix(in srgb, var(--home-c) 26%, transparent), transparent 55%),
+    #10151f;
+}
+
+.broadcast :focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Black logos (Nets, Spurs …) get a light backing on the dark panel. */
+.broadcast :global(.logo-on-dark) {
+  background: #e9ecf1;
+  border-radius: 9999px;
+  padding: 2px;
+}
+
+/* Brief emphasis of a score that just changed during forward playback. */
+@keyframes score-flash {
+  from {
+    background: color-mix(in srgb, var(--flash-c, var(--brand)) 45%, transparent);
+  }
+  to {
+    background: transparent;
+  }
+}
+.scoreFlash {
+  animation: score-flash 1.1s ease-out;
+  border-radius: 10px;
+}
+
+/* New spotlight moment */
+@keyframes spotlight-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0.5;
+  }
+}
+.spotlightIn {
+  animation: spotlight-in 0.4s ease-out;
+}
+
+.spotlight {
+  border-inline-start: 3px solid var(--mc, #465065);
+  background: linear-gradient(270deg, color-mix(in srgb, var(--mc, #465065) 16%, transparent), #ffffff03);
+}
+
+.avatar {
+  background: color-mix(in srgb, var(--mc, #465065) 45%, #17202e);
+}
+
+/* Probability bar segments */
+.probSeg {
+  transition: width 0.25s;
+}
+
+/* Progress track: native range input stretched (transparent) over a drawn track. */
+.track {
+  position: relative;
+  height: 44px;
+  min-width: 80px;
+  flex: 1;
+}
+.track::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 99px;
+  background: var(--surface-2);
+}
+.track:focus-within::before {
+  outline: 2px solid var(--brand);
+  outline-offset: 4px;
+}
+.fill {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 99px;
+  background: var(--brand);
+  pointer-events: none;
+}
+.tick {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 14px;
+  margin-top: -7px;
+  margin-inline-start: -1px;
+  border-radius: 1px;
+  background: #10151f;
+  pointer-events: none;
+}
+.mark {
+  position: absolute;
+  top: 5px;
+  width: 6px;
+  height: 6px;
+  margin-inline-start: -3px;
+  border-radius: 99px;
+  background: var(--faint);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.markOn {
+  opacity: 1;
+  background: var(--mark-c, var(--brand));
+  transform: scale(1.25);
+  box-shadow: 0 0 0 1.5px #10151f;
+}
+.range {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scoreFlash,
+  .spotlightIn {
+    animation: none;
+  }
+  .probSeg {
+    transition: none;
+  }
+}
