@@ -1,0 +1,312 @@
+{
+  "description": "Full ESPN NBA summaries for replay work. Each fixture keeps the listed top-level keys verbatim and drops unrelated news/media/betting/standings keys. Produced by scripts/capture-replay-fixture.mjs.",
+  "fixtures": {
+    "401810062": {
+      "eventId": "401810062",
+      "file": "401810062.json",
+      "teams": {
+        "home": {
+          "id": "17",
+          "abbreviation": "BKN",
+          "name": "Brooklyn Nets"
+        },
+        "away": {
+          "id": "28",
+          "abbreviation": "TOR",
+          "name": "Toronto Raptors"
+        }
+      },
+      "gameDate": "2025-11-12T00:30Z",
+      "retrievedAt": "2026-11-12T09:49:41.235Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401810062",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 317838,
+      "playCount": 492,
+      "winProbabilityCount": 492,
+      "periods": 4,
+      "status": "STATUS_FINAL",
+      "finalScore": "TOR 119 @ BKN 109",
+      "winner": "TOR",
+      "margin": 10,
+      "largestDeficitOvercome": 9,
+      "largestLead": 17,
+      "leadChanges": 3,
+      "playsFinalScoreMatchesHeader": true,
+      "requestedShape": "ordinary",
+      "verifiedShapes": [
+        "ordinary"
+      ],
+      "requestedShapeConfirmed": true
+    },
+    "401810791": {
+      "eventId": "401810791",
+      "file": "401810791.json",
+      "teams": {
+        "home": {
+          "id": "20",
+          "abbreviation": "PHI",
+          "name": "Philadelphia 76ers"
+        },
+        "away": {
+          "id": "29",
+          "abbreviation": "MEM",
+          "name": "Memphis Grizzlies"
+        }
+      },
+      "gameDate": "2026-03-10T23:00Z",
+      "retrievedAt": "2026-11-12T09:49:41.235Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401810791",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 339957,
+      "playCount": 529,
+      "winProbabilityCount": 529,
+      "periods": 4,
+      "status": "STATUS_FINAL",
+      "finalScore": "MEM 129 @ PHI 139",
+      "winner": "PHI",
+      "margin": 10,
+      "largestDeficitOvercome": 14,
+      "largestLead": 14,
+      "leadChanges": 18,
+      "playsFinalScoreMatchesHeader": true,
+      "requestedShape": "comeback",
+      "verifiedShapes": [
+        "comeback (winner trailed by 14)"
+      ],
+      "requestedShapeConfirmed": true
+    },
+    "401810792": {
+      "eventId": "401810792",
+      "file": "401810792.json",
+      "teams": {
+        "home": {
+          "id": "17",
+          "abbreviation": "BKN",
+          "name": "Brooklyn Nets"
+        },
+        "away": {
+          "id": "8",
+          "abbreviation": "DET",
+          "name": "Detroit Pistons"
+        }
+      },
+      "gameDate": "2026-03-10T23:30Z",
+      "retrievedAt": "2026-11-12T09:49:41.235Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401810792",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 309592,
+      "playCount": 475,
+      "winProbabilityCount": 475,
+      "periods": 4,
+      "status": "STATUS_FINAL",
+      "finalScore": "DET 138 @ BKN 100",
+      "winner": "DET",
+      "margin": 38,
+      "largestDeficitOvercome": 0,
+      "largestLead": 43,
+      "leadChanges": 0,
+      "playsFinalScoreMatchesHeader": true,
+      "requestedShape": "blowout",
+      "verifiedShapes": [
+        "blowout (38-point margin)"
+      ],
+      "requestedShapeConfirmed": true
+    },
+    "401810798": {
+      "eventId": "401810798",
+      "file": "401810798.json",
+      "teams": {
+        "home": {
+          "id": "9",
+          "abbreviation": "GS",
+          "name": "Golden State Warriors"
+        },
+        "away": {
+          "id": "4",
+          "abbreviation": "CHI",
+          "name": "Chicago Bulls"
+        }
+      },
+      "gameDate": "2026-03-11T02:00Z",
+      "retrievedAt": "2026-11-12T09:49:41.235Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401810798",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 361957,
+      "playCount": 568,
+      "winProbabilityCount": 568,
+      "periods": 5,
+      "status": "STATUS_FINAL",
+      "finalScore": "CHI 130 @ GS 124",
+      "winner": "CHI",
+      "margin": 6,
+      "largestDeficitOvercome": 10,
+      "largestLead": 13,
+      "leadChanges": 9,
+      "playsFinalScoreMatchesHeader": true,
+      "requestedShape": "overtime",
+      "verifiedShapes": [
+        "overtime (1 OT)",
+        "comeback (winner trailed by 10)"
+      ],
+      "requestedShapeConfirmed": true
+    },
+    "401810799": {
+      "eventId": "401810799",
+      "file": "401810799.json",
+      "teams": {
+        "home": {
+          "id": "22",
+          "abbreviation": "POR",
+          "name": "Portland Trail Blazers"
+        },
+        "away": {
+          "id": "30",
+          "abbreviation": "CHA",
+          "name": "Charlotte Hornets"
+        }
+      },
+      "gameDate": "2026-03-11T02:00Z",
+      "retrievedAt": "2026-11-12T09:49:41.235Z",
+      "sourceUrl": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401810799",
+      "kind": "documented projection",
+      "keptKeys": [
+        "header",
+        "boxscore",
+        "plays",
+        "winprobability",
+        "format",
+        "gameInfo",
+        "meta",
+        "wallclockAvailable"
+      ],
+      "droppedKeys": [
+        "leaders",
+        "seasonseries",
+        "injuries",
+        "broadcasts",
+        "pickcenter",
+        "odds",
+        "againstTheSpread",
+        "news",
+        "article",
+        "videos",
+        "standings"
+      ],
+      "unknownDroppedKeys": [],
+      "bytes": 327784,
+      "playCount": 506,
+      "winProbabilityCount": 506,
+      "periods": 4,
+      "status": "STATUS_FINAL",
+      "finalScore": "CHA 103 @ POR 101",
+      "winner": "CHA",
+      "margin": 2,
+      "largestDeficitOvercome": 19,
+      "largestLead": 19,
+      "leadChanges": 6,
+      "playsFinalScoreMatchesHeader": true,
+      "requestedShape": "close finish",
+      "verifiedShapes": [
+        "comeback (winner trailed by 19)",
+        "close finish (2-point margin)"
+      ],
+      "requestedShapeConfirmed": true
+    }
+  }
+}

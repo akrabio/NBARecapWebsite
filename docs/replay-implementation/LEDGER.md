@@ -11,8 +11,8 @@ Single source of truth for progress. Maintained by the orchestrator; sub-agents 
 
 | Unit | Tasks | Gate | Status | Commit | Notes |
 | --- | --- | --- | --- | --- | --- |
-| W01 | R01–R02 baseline + real fixtures | | todo | | |
-| W02 | R03–R04 source audit, types, support matrix | A | todo | | |
+| W01 | R01–R02 baseline + real fixtures | | done | W01 | Validator PASS. Minor script nits (no fetch timeout, ID check per-loop) accepted. |
+| W02 | R03–R04 source audit, types, support matrix | A | in progress | | |
 | W03 | R05–R06 normalize teams/rosters/clocks/order | | todo | | |
 | W04 | R07–R09 stat deltas (scoring, ast/reb, to/stl/blk/pf) | | todo | | |
 | W05 | R10–R11 lineups + substitutions | | todo | | |
@@ -35,11 +35,17 @@ Single source of truth for progress. Maintained by the orchestrator; sub-agents 
 
 ## Baseline (R01)
 
-_pending_
+2026-11-12, before any replay code: `npm test` 9 files / 79 tests pass; `npm run lint` clean; `npm run build` succeeds (9 routes). Mockups present locally.
 
 ## Key findings & decisions (append-only)
 
 _Record source-capability findings, contract changes, deviations from the plan (with reason), and open product questions here._
+
+- **W01 fixtures** (`tests/fixtures/replay/`, documented projection; kept: header, boxscore, plays, winprobability, format, gameInfo, meta, wallclockAvailable; manifest.json): 401810791 MEM@PHI 129–139 comeback (PHI −14); 401810798 CHI@GS 130–124 OT (also comeback); 401810792 DET@BKN 138–100 blowout; 401810799 CHA@POR 103–101 close finish (CHA −19 comeback); 401810062 TOR@BKN 119–109 ordinary. Recapture: `node scripts/capture-replay-fixture.mjs [ids…]`.
+- All final; last-play score = header final; winprobability has exactly one entry per play, all linked.
+- `sequenceNumber` occasionally goes backwards vs array order (1–4×/game) → order by array order, not sequenceNumber (to confirm in W02).
+- Shot `coordinate` uses sentinel values (e.g. −214748340) on non-shots.
+- Substitutions: 53–95/game, all with 2 participants.
 
 ## Open issues / escalations
 
