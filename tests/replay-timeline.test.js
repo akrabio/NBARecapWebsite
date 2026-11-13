@@ -23,10 +23,10 @@ const periodShare = (tl, period) => {
 };
 
 describe("timeline — structure (all fixtures)", () => {
-  it.each(IDS)("%s: contiguous, monotonic, finite, covers [0, duration], 60–120 s", (id) => {
+  it.each(IDS)("%s: contiguous, monotonic, finite, covers [0, duration], 120–240 s", (id) => {
     const { tl, n } = fixtures[id];
-    expect(tl.durationSec).toBeGreaterThanOrEqual(60);
-    expect(tl.durationSec).toBeLessThanOrEqual(120);
+    expect(tl.durationSec).toBeGreaterThanOrEqual(120);
+    expect(tl.durationSec).toBeLessThanOrEqual(240);
     expect(tl.segments[0].startSec).toBe(0);
     expect(tl.segments.at(-1).endSec).toBe(tl.durationSec);
     tl.segments.forEach((s, i) => {
@@ -244,10 +244,10 @@ describe("pacing", () => {
 
   it("hold rule: by type, late bonus, clamped, independent of importance", () => {
     const ev = (period, clock) => ({ period, clockRemainingSec: clock });
-    expect(holdSecFor({ type: "steal", importance: 99 }, ev(1, 300))).toBe(1.5);
-    expect(holdSecFor({ type: "steal", importance: 1 }, ev(1, 300))).toBe(1.5);
-    expect(holdSecFor({ type: "steal" }, ev(4, 60))).toBe(1.8);
-    expect(holdSecFor({ type: "turnover" }, ev(5, 200))).toBe(1.6);
+    expect(holdSecFor({ type: "steal", importance: 99 }, ev(1, 300))).toBe(3);
+    expect(holdSecFor({ type: "steal", importance: 1 }, ev(1, 300))).toBe(3);
+    expect(holdSecFor({ type: "steal" }, ev(4, 60))).toBe(3.6);
+    expect(holdSecFor({ type: "turnover" }, ev(5, 200))).toBe(3.2);
     expect(holdSecFor({ type: "unknown" }, ev(2, 10))).toBe(TIMELINE_CONFIG.hold.defaultSec);
     expect(holdSecFor({ type: "game_end" }, ev(4, 0))).toBe(TIMELINE_CONFIG.hold.maxSec);
   });

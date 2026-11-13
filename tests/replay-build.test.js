@@ -45,8 +45,8 @@ describe("buildReplay — fixtures", () => {
       expect(r.replay).not.toBeNull();
       expect(r.replay.highlights.length).toBeGreaterThan(0);
       expect(r.replay.durationSec).toBe(r.replay.timeline.durationSec);
-      expect(r.replay.durationSec).toBeGreaterThanOrEqual(60);
-      expect(r.replay.durationSec).toBeLessThanOrEqual(120);
+      expect(r.replay.durationSec).toBeGreaterThanOrEqual(120);
+      expect(r.replay.durationSec).toBeLessThanOrEqual(240);
       expect(r.replay.state.patches).toHaveLength(r.replay.events.length);
     }
   });
