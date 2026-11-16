@@ -92,6 +92,29 @@ describe("stat tables", () => {
     expect(tablePlayers(tables.away).map((row) => row[0])).toEqual(["Kevin Durant"]);
   });
 
+  it("splits team-prefixed player rows into the Knicks–Raptors summary", () => {
+    const content = `| Team / player | PTS | AST | REB | TO | +/- |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| TOR — Starters | 74 | 19 | 35 | 12 | — |
+| TOR — Bench | 34 | 8 | 18 | 3 | — |
+| TOR — Team | 108 | 27 | 53 | 15 | — |
+| TOR — Scottie Barnes | 30 | 4 | 9 | 0 | -9 |
+| TOR — Jamal Shead | 19 | 4 | 2 | 2 | +3 |
+| NYK — Starters | 82 | 18 | 39 | 11 | — |
+| NYK — Bench | 30 | 8 | 11 | 4 | — |
+| NYK — Team | 112 | 26 | 50 | 15 | — |
+| NYK — Karl-Anthony Towns | 28 | 3 | 17 | 4 | +9 |
+| NYK — Landry Shamet | 23 | 0 | 2 | 2 | +12 |`;
+    const recap = parseRecap(content);
+    const tables = matchTablesToTeams({ home_score: 112, away_score: 108 }, recap.tables);
+
+    expect(recap.tables).toHaveLength(1);
+    expect(tableValue(tables.home, "Team", "PTS")).toBe(112);
+    expect(tableValue(tables.away, "Bench", "PTS")).toBe(34);
+    expect(tablePlayers(tables.home).map((row) => row[0])).toEqual(["Karl-Anthony Towns", "Landry Shamet"]);
+    expect(tablePlayers(tables.away).map((row) => row[0])).toEqual(["Scottie Barnes", "Jamal Shead"]);
+  });
+
   it("gives up when the points don't match the score", () => {
     expect(matchTablesToTeams({ ...game, home_score: 100 }, [nyk, sas])).toBeNull();
     expect(matchTablesToTeams({ ...game, home_score: null, away_score: null }, [nyk, sas])).toBeNull();
