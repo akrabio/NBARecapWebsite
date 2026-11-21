@@ -115,6 +115,28 @@ describe("stat tables", () => {
     expect(tablePlayers(tables.away).map((row) => row[0])).toEqual(["Scottie Barnes", "Jamal Shead"]);
   });
 
+  it("splits a combined Team/Group table into the Nuggets–Suns summary", () => {
+    const content = `| Team | Group | PTS | AST | REB | TO | 3PM | +/- |
+|---|---|---:|---:|---:|---:|---:|---:|
+| DEN | Starters | 86 | 16 | 23 | 16 | 7 | — |
+| DEN | Bench | 19 | 6 | 12 | 2 | 2 | — |
+| DEN | Team | 105 | 22 | 35 | 18 | 9 | — |
+| DEN | Nikola Jokić | 28 | 7 | 15 | 7 | 2 | +5 |
+| DEN | Jamal Murray | 28 | 4 | 4 | 3 | 1 | −4 |
+| PHX | Starters | 75 | 20 | 32 | 11 | 8 | — |
+| PHX | Bench | 42 | 5 | 19 | 3 | 8 | — |
+| PHX | Team | 117 | 25 | 51 | 14 | 16 | — |
+| PHX | Luke Kennard | 12 | 0 | 2 | 1 | 4 | +14 |
+| PHX | Jordan Goodwin | 11 | 2 | 6 | 0 | 1 | +15 |`;
+    const tables = matchTablesToTeams({ home_score: 105, away_score: 117 }, parseRecap(content).tables);
+
+    expect(tableValue(tables.home, "Team", "PTS")).toBe(105);
+    expect(tableValue(tables.away, "Bench", "PTS")).toBe(42);
+    expect(tableValue(tables.away, "Team", "3PM")).toBe(16);
+    expect(tablePlayers(tables.home).map((row) => row[0])).toEqual(["Nikola Jokić", "Jamal Murray"]);
+    expect(tablePlayers(tables.away).map((row) => row[0])).toEqual(["Luke Kennard", "Jordan Goodwin"]);
+  });
+
   it("gives up when the points don't match the score", () => {
     expect(matchTablesToTeams({ ...game, home_score: 100 }, [nyk, sas])).toBeNull();
     expect(matchTablesToTeams({ ...game, home_score: null, away_score: null }, [nyk, sas])).toBeNull();
